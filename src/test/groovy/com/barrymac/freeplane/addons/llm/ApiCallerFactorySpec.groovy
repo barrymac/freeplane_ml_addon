@@ -73,7 +73,7 @@ class ApiCallerFactorySpec extends Specification {
         scenario               | provider     | statusCode | responseBody           | expectedResponse   | expectedUrl                                | expectedError
         "successful response"  | "openai"     | 200        | '{"choices":[{}]}'     | '{"choices":[{}]}' | "https://api.openai.com/v1/chat/completions" | null
         "auth error"           | "openrouter" | 401        | '{"error": "invalid"}' | ""                 | "https://openrouter.ai/api/v1/chat/completions" | "Invalid authentication or incorrect API key provided for openrouter."
-        "rate limit"           | "openai"     | 429        | '{"error": "busy"}'    | ""                 | "https://api.openai.com/v1/chat/completions" | "Rate limit reached or quota exceeded for openai."
+        "rate limit"           | "openai"     | 429        | '{"error": "busy"}'    | ""                 | "https://api.openai.com/v1/chat/completions" | "LLM AddOn Error: API Error (429): Rate limit reached or quota exceeded for openai."
     }
 
     def "make_api_call handles network errors"() {

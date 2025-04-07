@@ -116,9 +116,9 @@ class ApiCallerFactory {
 
             def postRC = post.getResponseCode()
             if (logger) {
-                logger.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
+                logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
             } else {
-                LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
+                LogUtils.info("API Call to {} ({}) - Response Code: {}", [provider.name().toLowerCase(), apiUrl, postRC] as Object[])
             }
 
             if (postRC == 200) {
@@ -160,7 +160,7 @@ class ApiCallerFactory {
                     }
                 }
 
-                ui.errorMessage(errorMsg)
+                ui.errorMessage("LLM AddOn Error: API Error (${postRC}): ${errorMsg}")
 
                 // Log the error response body if available
                 try {
