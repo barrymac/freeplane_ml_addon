@@ -57,8 +57,8 @@ class ApiCallerFactory {
                 def provider = ApiProvider.fromString(providerStr)
                 return handleApiCall(provider, apiKey, payloadMap, ui, logger)
             } catch (ApiException e) {
-                // Add the LLM AddOn Error prefix here
-                ui.errorMessage("LLM AddOn Error: ${e.message}")
+                // The error prefix is already included in the exception message
+                ui.errorMessage(e.message)
                 return ""
             } catch (LlmAddonException e) {
                 ui.errorMessage(e.message)
@@ -178,7 +178,7 @@ class ApiCallerFactory {
                     // Ignore errors reading the error stream
                 }
 
-                throw new ApiException("API Error (${postRC}): ${errorMsg}", postRC)
+                throw new ApiException("LLM AddOn Error: API Error (${postRC}): ${errorMsg}", postRC)
             }
 
         } catch (ApiException e) {
