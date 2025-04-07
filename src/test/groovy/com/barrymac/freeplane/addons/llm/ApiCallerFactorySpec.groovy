@@ -11,8 +11,18 @@ interface UITest {
     void setDialogLocationRelativeTo(Object dialog, Object frame)
 }
 
+// Interface to properly mock the Logger
+interface LoggerTest {
+    void info(String message)
+    void info(String format, Object... args)
+    void warn(String message)
+    void warn(String format, Object... args)
+    void severe(String message)
+    void severe(String format, Object... args)
+}
+
 class ApiCallerFactorySpec extends Specification {
-    def mockLogger = Mock(Object)
+    def mockLogger = Mock(LoggerTest)
     def mockUi = Mock(UITest)
     def apiCaller
 
