@@ -1,12 +1,13 @@
 package com.barrymac.freeplane.addons.llm
 
+import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 import javax.swing.*
 import java.awt.Desktop
 
 class ApiCallerFactorySpec extends Specification {
-    def mockLogger = Mock(Object)
+    def mockLogger = Mock(Logger)
     def mockUi = Mock(Object)
     def apiCaller
     
@@ -43,7 +44,7 @@ class ApiCallerFactorySpec extends Specification {
 
         and: "Verify response handling"
         result == expectedResponse
-        1 * mockLogger.info("API Call to ${provider} (${expectedUrl}) - Response Code: ${statusCode}")
+        1 * mockLogger.info("API Call to ${provider} (${expectedUrl}) - Response Code: ${statusCode}".toString())
 
         where:
         scenario                 | provider     | statusCode | responseBody          | expectedResponse | expectedUrl
@@ -64,7 +65,7 @@ class ApiCallerFactorySpec extends Specification {
 
         then: "Verify error handling"
         result == ""
-        1 * mockLogger.warn("Exception during API call to openai", _)
+        1 * mockLogger.warn("Exception during API call to openai".toString(), _ as Throwable)
         1 * mockUi.errorMessage("Network or processing error during API call: Connection timeout")
     }
 
