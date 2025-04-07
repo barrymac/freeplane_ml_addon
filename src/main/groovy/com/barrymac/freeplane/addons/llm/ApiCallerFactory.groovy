@@ -11,7 +11,7 @@ import java.awt.*
 /**
  * Factory for creating API caller functions
  */
-@CompileStatic
+//@CompileStatic
 @Slf4j
 class ApiCallerFactory {
     /**
