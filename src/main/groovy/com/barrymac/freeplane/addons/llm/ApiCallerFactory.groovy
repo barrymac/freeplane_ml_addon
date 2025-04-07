@@ -61,7 +61,7 @@ class ApiCallerFactory {
                 ui.errorMessage("LLM AddOn Error: ${e.message}")
                 return ""
             } catch (LlmAddonException e) {
-                ui.errorMessage("LLM AddOn Error: ${e.message}")
+                ui.errorMessage(e.message)
                 return ""
             }
         }
