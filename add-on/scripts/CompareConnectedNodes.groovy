@@ -120,7 +120,7 @@ try {
         try {
             // --- Generate Comparative Dimension with Validation ---
             def dimensionPayload = [
-                'model': model,
+                'model': apiConfig.model,
                 'messages': [
                     [role: 'system', content: messages.dimensionSystemTemplate],
                     [role: 'user', content: "Create a focused comparative dimension for analyzing: ${comparisonType}"]
@@ -184,13 +184,13 @@ try {
 
             // --- Call API for Source Node ---
             def sourcePayloadMap = [
-                'model': model,
+                'model': apiConfig.model,
                 'messages': [
                     [role: 'system', content: systemMessageTemplate],
                     [role: 'user', content: sourceUserPrompt]
                 ],
-                'temperature': temperature,
-                'max_tokens': maxTokens
+                'temperature': apiConfig.temperature,
+                'max_tokens': apiConfig.maxTokens
             ]
             logger.info("Requesting analysis for source node: {}", sourceNode.text)
             // Use the unified API call function from deps
@@ -202,13 +202,13 @@ try {
 
             // --- Call API for Target Node ---
             def targetPayloadMap = [
-                'model': model,
+                'model': apiConfig.model,
                 'messages': [
                     [role: 'system', content: systemMessageTemplate],
                     [role: 'user', content: targetUserPrompt]
                 ],
-                'temperature': temperature,
-                'max_tokens': maxTokens
+                'temperature': apiConfig.temperature,
+                'max_tokens': apiConfig.maxTokens
             ]
             logger.info("Requesting analysis for target node: {}", targetNode.text)
             // Use the unified API call function from deps
@@ -244,8 +244,8 @@ try {
                 } else {
                     try {
                         // Add analysis branches, passing the tagging function and using the generated dimension
-                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, model, addModelTagRecursively)
-                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, model, addModelTagRecursively)
+                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively)
+                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively)
                         ui.informationMessage("Comparison analysis using '${comparativeDimension}' framework added to both nodes.")
                     } catch (Exception e) {
                         log.warn("Error during addAnalysisToNodeAsBranch calls on EDT", e)
