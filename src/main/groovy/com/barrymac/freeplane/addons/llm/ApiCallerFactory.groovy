@@ -57,8 +57,8 @@ class ApiCallerFactory {
                 def provider = ApiProvider.fromString(providerStr)
                 return handleApiCall(provider, apiKey, payloadMap, ui, logger)
             } catch (ApiException e) {
-                // Add the error prefix when displaying the message
-                ui.errorMessage("LLM AddOn Error: ${e.message}")
+                // Pass the exception message directly as it should contain necessary context
+                ui.errorMessage(e.message)
                 return ""
             } catch (LlmAddonException e) {
                 ui.errorMessage(e.message)
@@ -119,18 +119,21 @@ class ApiCallerFactory {
             post.getOutputStream().write(payload.getBytes("UTF-8"))
 
             def postRC = post.getResponseCode()
+            // Use parameterized logging if logger exists
             if (logger) {
-                logger.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
+                logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
             } else {
                 LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
             }
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
+                // Use parameterized logging if logger exists
+                def truncatedResponse = responseText.take(200)
                 if (logger) {
-                    logger.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
+                    logger.info("{} response: {}...", provider.name().toLowerCase(), truncatedResponse)
                 } else {
-                    LogUtils.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
+                    LogUtils.info("${provider.name().toLowerCase()} response: ${truncatedResponse}...")
                 }
                 // Log truncated response
             } else {
@@ -168,16 +171,19 @@ class ApiCallerFactory {
                 try {
                     def errorStream = post.getErrorStream()
                     if (errorStream) {
+                        def errorBody = errorStream.getText('UTF-8')
+                        // Use parameterized logging if logger exists
                         if (logger) {
-                            logger.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                            logger.warn("Error response body: {}", errorBody)
                         } else {
-                            LogUtils.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                            LogUtils.warn("Error response body: ${errorBody}")
                         }
                     }
                 } catch (Exception ignored) {
                     // Ignore errors reading the error stream
                 }
 
+                // Construct the ApiException message *here* to include the prefix
                 throw new ApiException("API Error (${postRC}): ${errorMsg}", postRC)
             }
 
@@ -185,12 +191,15 @@ class ApiCallerFactory {
             // Re-throw API exceptions
             throw e
         } catch (Exception e) {
+            // Use parameterized logging if logger exists
             if (logger) {
                 logger.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
             } else {
-                LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}") // LogUtils doesn't support formatting
+                // LogUtils doesn't support formatting, construct the message manually
+                LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
             }
             ui.errorMessage("Network or processing error during API call: ${e.message}")
+            // Wrap the original exception in LlmAddonException for consistent handling upstream
             throw new LlmAddonException("API call failed: ${e.message}", e)
         }
 
