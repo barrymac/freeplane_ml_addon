@@ -11,6 +11,7 @@ plugins {
     id 'groovy'
 }
 
+apply plugin: 'org.freeplane.gradle-freeplane-plugin'
 
 repositories {
     mavenCentral()
@@ -22,14 +23,6 @@ dependencies {
     // You might need groovy-all if not managed by the groovy plugin implicitly for tests
     // testImplementation 'org.codehaus.groovy:groovy-all:3.0.13' 
 }
-
-apply plugin: 'org.freeplane.gradle-freeplane-plugin'
-
-//java {
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(8)
-//    }
-//}
 
 def freeplaneVersion = "1.12.9"
 def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty('user.home')}/bin/freeplane-${freeplaneVersion}/"
@@ -65,14 +58,14 @@ freeplane {
 
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs = ['src/main/resources']
-            includes = ['**/*.txt']
-        }
-    }
-}
+//sourceSets {
+//    main {
+//        resources {
+//            srcDirs = ['src/main/resources']
+//            includes = ['**/*.txt']
+//        }
+//    }
+//}
 
 jar {
     archiveFileName = 'llm.jar'
