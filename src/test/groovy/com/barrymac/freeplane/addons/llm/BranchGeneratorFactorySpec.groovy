@@ -114,16 +114,22 @@ class BranchGeneratorFactorySpec extends Specification {
     }
 
     def "generator handles OpenRouter provider specific headers"() {
-        given: "Generator configured for OpenRouter"
-        // Update the deps map passed here
+        given: "Generator configured for OpenRouter and mock child"
+        def mockChild = Mock(NodeProxy)
+        mockNode.children >> []
+        // Simulate child node creation when appending branch
+        mockNode.appendTextOutlineAsBranch(_) >> { 
+            mockNode.children >> [mockChild]
+        }
+
         def generator = BranchGeneratorFactory.createGenerateBranches(
             [c: [selected: mockNode], ui: mockUi, logger: mockLogger, config: [:]],
             [
                 apiCaller: [make_api_call: mockApiClosure],
-                nodeTagger: mockNodeTaggerClosure // Include nodeTagger even if not verified here
+                nodeTagger: mockNodeTaggerClosure
             ]
         )
-        // Mock necessary preceding calls
+        
         1 * DialogHelper.createProgressDialog(_, _, _) >> {
             Mock(JDialog) {
                 setVisible(_) >> {}
@@ -131,15 +137,13 @@ class BranchGeneratorFactorySpec extends Specification {
             }
         }
 
-        when: "Generator is invoked with OpenRouter provider"
+        when: "Invoking generator with OpenRouter"
         generator("valid-key", "sys", "user", "model", 100, 0.7, "openrouter")
-        Thread.sleep(100) // Allow time for async call
+        Thread.sleep(200)  // Increase wait time for async operations
 
-        then: "Verify API call uses the correct provider"
-        // Use mockApiClosure.call
+        then: "Verify API call and tagging"
         1 * mockApiClosure.call("openrouter", "valid-key", _) >> '{"choices":[{"message":{"content":"response"}}]}'
-        // Optionally, verify tagging occurred if expected
-        1 * mockNodeTaggerClosure.call(_, "model")
+        1 * mockNodeTaggerClosure.call(mockChild, "model")
     }
 
     // Interface for UI mock
