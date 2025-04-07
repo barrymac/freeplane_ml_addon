@@ -90,8 +90,8 @@ class NodeHelper {
                 try {
                     // Use the passed function reference
                     addModelTagRecursivelyFunc(addedBranchRoot, model)
-                    log.info("CompareNodes: Tag 'LLM:{}' applied to comparison branch starting with node: {}", 
-                             model.replace('/', '_'), addedBranchRoot.text)
+                    log.info("CompareNodes: Tag 'LLM:{}' applied to comparison branch starting with node: {}",
+                            model.replace('/', '_'), addedBranchRoot.text)
                 } catch (Exception e) {
                     log.warn("Failed to apply node tagger function", e)
                 }

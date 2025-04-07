@@ -22,11 +22,11 @@ class ApiCallerFactory {
         OPENROUTER('https://openrouter.ai/api/v1/chat/completions')
 
         final String endpoint
-        
-        ApiProvider(String endpoint) { 
-            this.endpoint = endpoint 
+
+        ApiProvider(String endpoint) {
+            this.endpoint = endpoint
         }
-        
+
         /**
          * Get provider from string
          */
@@ -51,9 +51,9 @@ class ApiCallerFactory {
 
         def make_api_call = { String providerStr, String apiKey, Object requestObj ->
             // Convert request object to map if it's an ApiRequest
-            def payloadMap = requestObj instanceof ApiRequest ? 
-                requestObj.toMap() : requestObj as Map<String, Object>
-                
+            def payloadMap = requestObj instanceof ApiRequest ?
+                    requestObj.toMap() : requestObj as Map<String, Object>
+
             try {
                 // Convert string provider to enum
                 def provider = ApiProvider.fromString(providerStr)
@@ -79,7 +79,7 @@ class ApiCallerFactory {
                 make_openrouter_call: make_openrouter_call
         ]
     }
-    
+
     /**
      * Handles the API call to the specified provider
      *
@@ -89,13 +89,13 @@ class ApiCallerFactory {
      * @param ui The UI
      * @return The response text
      */
-    private static String handleApiCall(ApiProvider provider, String apiKey, 
-                                      Map<String, Object> payloadMap, def ui, Logger logger) {
+    private static String handleApiCall(ApiProvider provider, String apiKey,
+                                        Map<String, Object> payloadMap, def ui, Logger logger) {
         def responseText = ""
         String apiUrl = provider.endpoint
         Map<String, String> headers = [
-            "Content-Type": "application/json",
-            "Authorization": "Bearer $apiKey"
+                "Content-Type" : "application/json",
+                "Authorization": "Bearer $apiKey"
         ]
 
         // Add provider-specific headers
@@ -108,7 +108,7 @@ class ApiCallerFactory {
             def post = new URL(apiUrl).openConnection() as HttpURLConnection
             post.setRequestMethod("POST")
             post.setDoOutput(true)
-            
+
             // Apply all headers
             headers.each { key, value -> post.setRequestProperty(key, value) }
 
@@ -121,22 +121,23 @@ class ApiCallerFactory {
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
-                logger.info("{} response: {}", provider.name().toLowerCase(), responseText.take(200) + "...") // Log truncated response
+                logger.info("{} response: {}", provider.name().toLowerCase(), responseText.take(200) + "...")
+                // Log truncated response
             } else {
                 // Handle common error codes centrally
                 String errorMsg
                 String browseUrl = null
-                
+
                 switch (postRC) {
                     case 401:
                         errorMsg = "Invalid authentication or incorrect API key provided for ${provider.name().toLowerCase()}."
-                        browseUrl = (provider == ApiProvider.OPENROUTER) ? 
-                            "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
+                        browseUrl = (provider == ApiProvider.OPENROUTER) ?
+                                "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
                         break
                     case 404:
-                        errorMsg = (provider == ApiProvider.OPENROUTER) ? 
-                            "Endpoint not found. Check your OpenRouter configuration." : 
-                            "You might need organization membership for OpenAI API."
+                        errorMsg = (provider == ApiProvider.OPENROUTER) ?
+                                "Endpoint not found. Check your OpenRouter configuration." :
+                                "You might need organization membership for OpenAI API."
                         break
                     case 429:
                         errorMsg = "Rate limit reached or quota exceeded for ${provider.name().toLowerCase()}."
@@ -144,7 +145,7 @@ class ApiCallerFactory {
                     default:
                         errorMsg = "Unhandled error code $postRC returned from ${provider.name().toLowerCase()} API."
                 }
-                
+
                 if (browseUrl) {
                     try {
                         Desktop.desktop.browse(new URI(browseUrl))
@@ -152,9 +153,9 @@ class ApiCallerFactory {
                         log.warn("Failed to open browser for URL: {}", browseUrl, browseEx)
                     }
                 }
-                
+
                 ui.errorMessage(errorMsg)
-                
+
                 // Log the error response body if available
                 try {
                     def errorStream = post.getErrorStream()
@@ -164,7 +165,7 @@ class ApiCallerFactory {
                 } catch (Exception ignored) {
                     // Ignore errors reading the error stream
                 }
-                
+
                 throw new ApiException(errorMsg, postRC)
             }
 
