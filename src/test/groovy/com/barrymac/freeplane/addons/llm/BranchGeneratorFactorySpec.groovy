@@ -1,12 +1,13 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.lang.Closure
+import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
+
 import javax.swing.*
 
 class BranchGeneratorFactorySpec extends Specification {
-    def mockLogger = Mock(org.slf4j.Logger)
+    def mockLogger = Mock(Logger)
     def mockUi = Mock(UITest)
     def mockNode = Mock(NodeProxy)
     // Replace mockDeps map with individual mocks for closures
