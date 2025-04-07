@@ -26,7 +26,7 @@ dependencies {
 
     testImplementation platform("org.spockframework:spock-bom:2.3-groovy-4.0")
     testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
-    testImplementation "org.spockframework:spock-junit4:2.3-groovy-4.0"  // remove if not needed
+    // testImplementation "org.spockframework:spock-junit4:2.3-groovy-4.0"  // remove if not needed
 //
 //    // optional dependencies for Spock
     testImplementation "org.hamcrest:hamcrest-core:2.2"   // compatible version for Spock 2.x
