@@ -1,8 +1,7 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
-@Slf4j
 class NodeTagger {
     // Helper function to recursively add a dynamic tag (e.g., "LLM:model-name") to a node and its children
     static def addModelTagRecursively(node, modelName) {
@@ -18,7 +17,7 @@ class NodeTagger {
             // Pass original modelName recursively
         } catch (Exception e) {
             // Log error if tagging fails for any reason
-            log.warn("Failed to add tag '${tagName}' to node ${node.text}", e)
+            LogUtils.warn("Failed to add tag '${tagName}' to node ${node.text}: ${e.message}")
         }
     }
 }

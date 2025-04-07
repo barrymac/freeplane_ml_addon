@@ -1,11 +1,10 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 /**
  * Utility class for parsing LLM responses into structured formats
  */
-@Slf4j
 class ResponseParser {
     /**
      * Parses LLM response text into categories and points.
@@ -61,7 +60,7 @@ class ResponseParser {
 
             return results
         } catch (Exception e) {
-            log.warn("Failed to parse analysis text", e)
+            LogUtils.warn("Failed to parse analysis text: ${e.message}")
             // Return a simple map with the raw text on error
             return ["Analysis": [analysisText.trim()]]
         }

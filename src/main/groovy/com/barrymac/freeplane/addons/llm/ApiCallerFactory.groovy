@@ -3,8 +3,7 @@ package com.barrymac.freeplane.addons.llm
 import com.barrymac.freeplane.addons.llm.exceptions.ApiException
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonBuilder
-import groovy.util.logging.Slf4j
-import org.slf4j.Logger
+import org.freeplane.core.util.LogUtils
 
 import java.awt.*
 
@@ -12,7 +11,6 @@ import java.awt.*
  * Factory for creating API caller functions
  */
 //@CompileStatic
-@Slf4j
 class ApiCallerFactory {
     /**
      * Enum for supported API providers
@@ -47,7 +45,7 @@ class ApiCallerFactory {
      */
     static Map createApiCaller(Map closures) {
         def ui = closures.ui
-        def logger = closures.logger ?: log // Use provided logger or fallback to class logger
+        def logger = closures.logger // Use provided logger if available
 
         def make_api_call = { String providerStr, String apiKey, Object requestObj ->
             // Convert request object to map if it's an ApiRequest
@@ -90,7 +88,7 @@ class ApiCallerFactory {
      * @return The response text
      */
     private static String handleApiCall(ApiProvider provider, String apiKey,
-                                        Map<String, Object> payloadMap, def ui, Logger logger) {
+                                        Map<String, Object> payloadMap, def ui, def logger) {
         def responseText = ""
         String apiUrl = provider.endpoint
         Map<String, String> headers = [
@@ -117,11 +115,19 @@ class ApiCallerFactory {
             post.getOutputStream().write(payload.getBytes("UTF-8"))
 
             def postRC = post.getResponseCode()
-            logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
+            if (logger) {
+                logger.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
+            } else {
+                LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
+            }
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
-                logger.info("{} response: {}", provider.name().toLowerCase(), responseText.take(200) + "...")
+                if (logger) {
+                    logger.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
+                } else {
+                    LogUtils.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
+                }
                 // Log truncated response
             } else {
                 // Handle common error codes centrally
@@ -150,7 +156,7 @@ class ApiCallerFactory {
                     try {
                         Desktop.desktop.browse(new URI(browseUrl))
                     } catch (Exception browseEx) {
-                        log.warn("Failed to open browser for URL: {}", browseUrl, browseEx)
+                        LogUtils.warn("Failed to open browser for URL: ${browseUrl}: ${browseEx.message}")
                     }
                 }
 
@@ -160,7 +166,7 @@ class ApiCallerFactory {
                 try {
                     def errorStream = post.getErrorStream()
                     if (errorStream) {
-                        log.warn("Error response body: {}", errorStream.getText('UTF-8'))
+                        LogUtils.warn("Error response body: ${errorStream.getText('UTF-8')}")
                     }
                 } catch (Exception ignored) {
                     // Ignore errors reading the error stream
@@ -173,7 +179,11 @@ class ApiCallerFactory {
             // Re-throw API exceptions
             throw e
         } catch (Exception e) {
-            logger.warn("Exception during API call to {}", provider.name().toLowerCase(), e)
+            if (logger) {
+                logger.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
+            } else {
+                LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
+            }
             ui.errorMessage("Network or processing error during API call: ${e.message}")
             throw new LlmAddonException("API call failed: ${e.message}", e)
         }

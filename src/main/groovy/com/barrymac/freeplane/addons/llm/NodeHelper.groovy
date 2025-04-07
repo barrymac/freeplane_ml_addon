@@ -1,11 +1,10 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 /**
  * Helper class for node operations
  */
-@Slf4j
 class NodeHelper {
     /**
      * Validates that exactly two connected nodes are selected
@@ -36,11 +35,11 @@ class NodeHelper {
                 throw new Exception("There are multiple connectors between the selected nodes. Please ensure there is only one.")
             }
 
-            log.debug("Found valid connection between nodes: '{}' and '{}'", node1.text, node2.text)
+            LogUtils.info("Found valid connection between nodes: '${node1.text}' and '${node2.text}'")
             // Return the nodes in selection order
             return [node1, node2]
         } catch (Exception e) {
-            log.error("Node validation failed", e)
+            LogUtils.severe("Node validation failed: ${e.message}")
             throw e
         }
     }
@@ -55,9 +54,9 @@ class NodeHelper {
      * @param addModelTagRecursivelyFunc Optional function to tag nodes with model info
      */
     static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, String model, addModelTagRecursivelyFunc = null) {
-        log.info("Attempting to add analysis to node: {}", nodeProxy.text)
+        LogUtils.info("Attempting to add analysis to node: ${nodeProxy.text}")
         if (analysisMap.isEmpty()) {
-            log.warn("No analysis data to add for node: {}", nodeProxy.text)
+            LogUtils.warn("No analysis data to add for node: ${nodeProxy.text}")
             return
         }
 
@@ -71,7 +70,7 @@ class NodeHelper {
             }
         }
         def formattedAnalysis = builder.toString().trim()
-        log.debug("Formatted analysis string for node {}:\n---\n{}\n---", nodeProxy.text, formattedAnalysis)
+        LogUtils.info("Formatted analysis string for node ${nodeProxy.text}:\n---\n${formattedAnalysis}\n---")
 
         // Add the formatted string as a new branch
         try {
@@ -83,25 +82,24 @@ class NodeHelper {
             // Find the newly added root node (difference between the sets)
             def addedBranchRoot = (childrenAfterSet - childrenBeforeSet).find { true } // Get the single added node
 
-            log.info("Successfully called appendTextOutlineAsBranch for node: {}", nodeProxy.text)
+            LogUtils.info("Successfully called appendTextOutlineAsBranch for node: ${nodeProxy.text}")
 
             // Use the passed-in tagging function
             if (addedBranchRoot && addModelTagRecursivelyFunc != null) {
                 try {
                     // Use the passed function reference
                     addModelTagRecursivelyFunc(addedBranchRoot, model)
-                    log.info("CompareNodes: Tag 'LLM:{}' applied to comparison branch starting with node: {}",
-                            model.replace('/', '_'), addedBranchRoot.text)
+                    LogUtils.info("CompareNodes: Tag 'LLM:${model.replace('/', '_')}' applied to comparison branch starting with node: ${addedBranchRoot.text}")
                 } catch (Exception e) {
-                    log.warn("Failed to apply node tagger function", e)
+                    LogUtils.warn("Failed to apply node tagger function: ${e.message}")
                 }
             } else if (addModelTagRecursivelyFunc == null) {
-                log.warn("CompareNodes: Node tagging function was not provided for node: {}", nodeProxy.text)
+                LogUtils.warn("CompareNodes: Node tagging function was not provided for node: ${nodeProxy.text}")
             } else {
-                log.warn("CompareNodes: Could not identify newly added comparison branch root for tagging on node: {}", nodeProxy.text)
+                LogUtils.warn("CompareNodes: Could not identify newly added comparison branch root for tagging on node: ${nodeProxy.text}")
             }
         } catch (Exception e) {
-            log.warn("Error calling appendTextOutlineAsBranch or tagging for node {}", nodeProxy.text, e)
+            LogUtils.warn("Error calling appendTextOutlineAsBranch or tagging for node ${nodeProxy.text}: ${e.message}")
         }
     }
 }

@@ -16,10 +16,6 @@ repositories {
 
 dependencies {
 
-    implementation(
-            'org.slf4j:slf4j-api:1.7.36',
-            'ch.qos.logback:logback-classic:1.4.14'  // Add Logback implementation
-    )
 //    implementation(
 //            'org.apache.groovy:groovy:4.0.21',
 //            'org.apache.groovy:groovy-templates:4.0.21',
@@ -32,8 +28,7 @@ dependencies {
             platform("org.spockframework:spock-bom:2.3-groovy-4.0"),
             "org.hamcrest:hamcrest-core:2.2",
             'org.freeplane:gradle-freeplane-plugin:0.8',
-            "org.spockframework:spock-core:2.3-groovy-4.0",
-            'org.slf4j:slf4j-api:1.7.36'
+            "org.spockframework:spock-core:2.3-groovy-4.0"
     )
 
     testRuntimeOnly(

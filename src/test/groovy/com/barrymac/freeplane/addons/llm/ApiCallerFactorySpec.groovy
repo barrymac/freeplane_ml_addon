@@ -1,6 +1,5 @@
 package com.barrymac.freeplane.addons.llm
 
-import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -13,7 +12,7 @@ interface UITest {
 }
 
 class ApiCallerFactorySpec extends Specification {
-    def mockLogger = Mock(Logger)
+    def mockLogger = Mock(Object)
     def mockUi = Mock(UITest)
     def apiCaller
 
