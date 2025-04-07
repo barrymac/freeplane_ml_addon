@@ -88,7 +88,7 @@ class ApiCallerFactorySpec extends Specification {
         apiCaller.make_api_call("invalid", "key", [:])
 
         then: "Show error message"
-        1 * mockUi.errorMessage("Unsupported API provider: invalid")
+        1 * mockUi.errorMessage("LLM AddOn Error: Unsupported API provider: invalid")
     }
 }
 
