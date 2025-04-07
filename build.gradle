@@ -16,6 +16,9 @@ repositories {
 
 dependencies {
 
+    implementation(
+            'org.slf4j:slf4j-api:1.7.36'
+    )
 //    implementation(
 //            'org.apache.groovy:groovy:4.0.21',
 //            'org.apache.groovy:groovy-templates:4.0.21',
