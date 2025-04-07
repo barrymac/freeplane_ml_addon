@@ -162,7 +162,7 @@ try {
             }
             
             // --- Prepare Prompts with Generated Dimension ---
-            logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n{}\n---", compareNodesUserMessageTemplate)
+            logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
             
             // --- Prepare source node prompt ---
             def sourceBinding = getBindingMap(sourceNode)
@@ -195,7 +195,7 @@ try {
                 'temperature': apiConfig.temperature,
                 'max_tokens': apiConfig.maxTokens
             ]
-            logger.info("Requesting analysis for source node: {}", sourceNode.text)
+            logger.info("Requesting analysis for source node: ${sourceNode.text}")
             // Use the unified API call function from deps
             def sourceApiResponse = make_api_call(provider, apiConfig.apiKey, sourcePayloadMap)
 
@@ -213,7 +213,7 @@ try {
                 'temperature': apiConfig.temperature,
                 'max_tokens': apiConfig.maxTokens
             ]
-            logger.info("Requesting analysis for target node: {}", targetNode.text)
+            logger.info("Requesting analysis for target node: ${targetNode.text}")
             // Use the unified API call function from deps
             def targetApiResponse = make_api_call(provider, apiConfig.apiKey, targetPayloadMap)
 
@@ -232,8 +232,8 @@ try {
             def targetResponseContent = targetJsonResponse?.choices[0]?.message?.content
             if (!targetResponseContent?.trim()) throw new Exception("Empty content in target response. Model may have hit token limit.")
 
-            logger.info("Source Node Analysis received, length: {}", sourceResponseContent?.length() ?: 0)
-            logger.info("Target Node Analysis received, length: {}", targetResponseContent?.length() ?: 0)
+            logger.info("Source Node Analysis received, length: ${sourceResponseContent?.length() ?: 0}")
+            logger.info("Target Node Analysis received, length: ${targetResponseContent?.length() ?: 0}")
 
             // Parse responses
             def sourceAnalysis = parseAnalysis(sourceResponseContent)
