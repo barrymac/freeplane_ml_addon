@@ -16,6 +16,13 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    // Spock testing framework
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0' // Using Groovy 3.0 compatible version
+    // You might need groovy-all if not managed by the groovy plugin implicitly for tests
+    // testImplementation 'org.codehaus.groovy:groovy-all:3.0.13' 
+}
+
 apply plugin: 'org.freeplane.gradle-freeplane-plugin'
 
 //java {
