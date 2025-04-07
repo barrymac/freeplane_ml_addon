@@ -44,7 +44,18 @@ class ApiCallerFactorySpec extends Specification {
 
         and: "Verify response handling"
         result == expectedResponse
-        1 * mockLogger.info("API Call to {} ({}) - Response Code: {}", provider, expectedUrl, statusCode)
+        1 * mockLogger.info("API Call to {} ({}) - Response Code: {}", provider, expectedUrl, statusCode) // This log always happens
+        if (statusCode == 200) {
+            1 * mockLogger.info("${provider} response: ${responseBody.take(200)}...") // Expect response log only on success
+            0 * mockUi.errorMessage(_) // No error message on success
+        } else if (statusCode == 401) {
+            0 * mockLogger.info(!null, !null) // No success response log
+            1 * mockUi.errorMessage("Invalid authentication or incorrect API key provided for ${provider}.")
+        } else if (statusCode == 429) {
+            0 * mockLogger.info(!null, !null) // No success response log
+            1 * mockUi.errorMessage("Rate limit reached or quota exceeded for ${provider}.")
+        }
+        // Add other specific error code checks here if needed in the future
 
         where:
         scenario                 | provider     | statusCode | responseBody          | expectedResponse | expectedUrl
@@ -65,7 +76,7 @@ class ApiCallerFactorySpec extends Specification {
 
         then: "Verify error handling"
         result == ""
-        1 * mockLogger.warn(eq("Exception during API call to openai"), _ as Throwable)
+        1 * mockLogger.warn("Exception during API call to openai", _ as Throwable)
         1 * mockUi.errorMessage("Network or processing error during API call: Connection timeout")
     }
 
