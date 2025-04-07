@@ -2,12 +2,13 @@ package com.barrymac.freeplane.addons.llm
 
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.transform.CompileStatic
-import org.slf4j.Logger
+import groovy.util.logging.Slf4j
 
 /**
  * Utility class for node operations
  */
 @CompileStatic
+@Slf4j
 class NodeOperations {
     /**
      * Adds analysis as a branch to a node
