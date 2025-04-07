@@ -118,6 +118,9 @@ try {
         String errorMessage = null
 
         try {
+            // Get provider from config
+            def provider = apiConfig.provider
+            
             // --- Generate Comparative Dimension with Validation ---
             def dimensionPayload = [
                 'model': apiConfig.model,
@@ -194,7 +197,7 @@ try {
             ]
             logger.info("Requesting analysis for source node: {}", sourceNode.text)
             // Use the unified API call function from deps
-            sourceApiResponse = make_api_call(provider, apiConfig.apiKey, sourcePayloadMap)
+            def sourceApiResponse = make_api_call(provider, apiConfig.apiKey, sourcePayloadMap)
 
             if (sourceApiResponse == null || sourceApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for source node.")
@@ -212,7 +215,7 @@ try {
             ]
             logger.info("Requesting analysis for target node: {}", targetNode.text)
             // Use the unified API call function from deps
-            targetApiResponse = make_api_call(provider, apiConfig.apiKey, targetPayloadMap)
+            def targetApiResponse = make_api_call(provider, apiConfig.apiKey, targetPayloadMap)
 
             if (targetApiResponse == null || targetApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for target node.")
