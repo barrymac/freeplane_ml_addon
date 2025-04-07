@@ -1,22 +1,17 @@
-Compare these two ideas using the dimension '$comparativeDimension':
+Analyze **Idea 1** relative to **Idea 2** using the dimension '$comparativeDimension'.
 
 Idea 1: $nodeContent
 Idea 2: $otherNodeContent
 
-**Comparison Structure Requirements:**
-1. Analyze **Idea 1** relative to **Idea 2** based on the dimension '$comparativeDimension'.
-2. Use the comparison poles ($pole1 vs $pole2) provided in the system message.
-3. For each point:
-   - Describe **only** the characteristics of **Idea 1** as they compare to **Idea 2**.
-   - Start the point directly with the comparative statement (e.g., "Offers more...", "Is less...", "Has higher...").
-   - Be concise. The comparison to Idea 2 is implied by the context.
-   - Include concrete examples or characteristics relevant to Idea 1 and the dimension.
+**Instructions (Follow Strictly):**
+1.  Focus exclusively on **Idea 1**.
+2.  Determine if **Idea 1** primarily represents '$pole1' or '$pole2' when compared to **Idea 2**.
+3.  Your response MUST contain ONLY ONE heading: the name of the single most relevant pole for Idea 1.
+4.  Provide ONLY points describing **Idea 1** under that single heading.
+5.  Start points directly with concise comparative statements about **Idea 1**. Do NOT mention Idea 2 in the points.
 
-**Example Response Format (for analyzing Idea 1 using '$pole1 vs $pole2'):**
-$pole1:
-- Offers more [relevant characteristic for pole1], specifically regarding [example feature of Idea 1].
-- Provides greater [relevant characteristic for pole1] due to [specific reason related to Idea 1].
-
-$pole2:
-- Exhibits higher [relevant characteristic for pole2] because of [specific aspect of Idea 1].
-- Allows for more [relevant characteristic for pole2] in terms of [differentiating factor of Idea 1].
+**Example (Dimension: 'Lower Cost vs Higher Price', Analyzing Idea 1: 'fiat Uno' relative to Idea 2: 'ferrari testarossa'):**
+Lower Cost:
+- Is significantly more affordable to purchase.
+- Has lower running costs (fuel, maintenance, insurance).
+- Represents a budget-friendly transportation option.

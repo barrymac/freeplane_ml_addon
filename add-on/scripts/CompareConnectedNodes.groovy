@@ -236,18 +236,27 @@ try {
 
             def sourceJsonResponse = jsonSlurper.parseText(sourceApiResponse)
             def sourceResponseContent = sourceJsonResponse?.choices[0]?.message?.content
+            // Add logging for raw source response
+            logger.info("CompareConnectedNodes: Raw Source Response Content:\n---\n${sourceResponseContent}\n---")
             if (!sourceResponseContent?.trim()) throw new Exception("Empty content in source response. Model may have hit token limit.")
 
             def targetJsonResponse = jsonSlurper.parseText(targetApiResponse)
             def targetResponseContent = targetJsonResponse?.choices[0]?.message?.content
+            // Add logging for raw target response
+            logger.info("CompareConnectedNodes: Raw Target Response Content:\n---\n${targetResponseContent}\n---")
             if (!targetResponseContent?.trim()) throw new Exception("Empty content in target response. Model may have hit token limit.")
 
             logger.info("Source Node Analysis received, length: ${sourceResponseContent?.length() ?: 0}")
             logger.info("Target Node Analysis received, length: ${targetResponseContent?.length() ?: 0}")
 
             // Parse responses
+            logger.info("CompareConnectedNodes: Parsing source response...")
             def sourceAnalysis = parseAnalysis(sourceResponseContent)
+            logger.info("CompareConnectedNodes: Parsed Source Analysis Map: ${sourceAnalysis}")
+
+            logger.info("CompareConnectedNodes: Parsing target response...")
             def targetAnalysis = parseAnalysis(targetResponseContent)
+            logger.info("CompareConnectedNodes: Parsed Target Analysis Map: ${targetAnalysis}")
 
             // --- Update Map on EDT ---
             SwingUtilities.invokeLater {
