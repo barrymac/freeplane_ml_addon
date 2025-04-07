@@ -7,7 +7,7 @@ import javax.swing.*
 import java.awt.*
 
 class BranchGeneratorFactory {
-    static def createGenerateBranches(Map closures, Map deps) {
+    static def createGenerateBranches(Map closures, Dependencies deps) {
         return { apiKey, systemMessage, userMessage, model, maxTokens, temperature, provider ->
             def c = closures.c
             def ui = closures.ui
