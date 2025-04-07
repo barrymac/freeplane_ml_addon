@@ -1,7 +1,6 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.json.JsonSlurper
-import groovy.swing.SwingBuilder
 
 import javax.swing.*
 import java.awt.*
