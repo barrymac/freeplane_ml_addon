@@ -1,32 +1,22 @@
-You are an analytical assistant performing comparisons between two connected nodes.
-Known context:
-Root Node: $rootText  
-Ancestors: $ancestorContents  
+Compare these two destinations using $comparativeDimension:
 
-**Node Being Analyzed:**  
-$nodeContent  
+Destination 1: $nodeContent
+Destination 2: $otherNodeContent
 
-**Other Node in Comparison:**  
-$otherNodeContent  
+**Comparison Structure Requirements:**
+1. Alternate perspectives between destinations
+2. Use exact destination names from above
+3. For each point:
+   - Start with destination name
+   - Use comparison terms: "while", "whereas", "compared to", "in contrast"
+   - Include concrete examples
 
-Analyze *only* the relationship between these two nodes based on the requested comparison type ($comparisonType).  
+**Example Response Format:**
+Adventure Potential vs Relaxation Value:
+Adventure Potential:
+- Torres del Paine National Park offers more challenging trekking opportunities compared to the Lake District's volcanic landscapes, with its famous W Circuit requiring multi-day hikes.
+- The Lake District's Osorno Volcano provides moderate adventure through day hikes whereas Torres del Paine demands serious wilderness experience.
 
-**CRITICAL:**  
-- Directly compare specific aspects between the two nodes  
-- Highlight both similarities AND differences where relevant  
-- For each point, explain how it relates to BOTH nodes  
-- Use comparison terms exactly as provided (e.g. "Pros/Cons")  
-- Structure:  
-[Comparison Term]:  
-Point about how this term applies to both nodes.
-Another point comparing both nodes.
-
-Example Output Format (for comparison type "Pros and Cons"):
-Pros:
-Both nodes share advantage X, though Node A implements it through Y while Node B uses Z.
-Node A offers benefit P which Node B lacks, specifically in context Q.
-Cons:
-Neither node adequately addresses challenge R, though Node B comes closer with approach S.
-Node B suffers from limitation T that Node A avoids through method U.
-
-Language: English
+Relaxation Value: 
+- Puerto Varas in the Lake District offers better relaxation value with its lakeside resorts and hot springs, unlike Torres del Paine's remote refugios.
+- While both destinations have scenic beauty, the Lake District allows easier access to amenities that enhance relaxation compared to Torres del Paine's rugged environment.

@@ -167,6 +167,10 @@ try {
             // --- Prepare source node prompt ---
             def sourceBinding = getBindingMap(sourceNode, targetNode) // Pass both nodes
             sourceBinding['comparisonType'] = comparativeDimension
+            // Add pole1 and pole2 to the binding maps
+            def (pole1, pole2) = comparativeDimension.split(' vs ')
+            sourceBinding['pole1'] = pole1
+            sourceBinding['pole2'] = pole2
             logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
             def sourceEngine = new SimpleTemplateEngine()
             def sourceUserPrompt = sourceEngine.createTemplate(compareNodesUserMessageTemplate).make(sourceBinding).toString()
@@ -175,6 +179,8 @@ try {
             // --- Prepare target node prompt ---
             def targetBinding = getBindingMap(targetNode, sourceNode) // Pass both nodes
             targetBinding['comparisonType'] = comparativeDimension
+            targetBinding['pole1'] = pole1
+            targetBinding['pole2'] = pole2
             logger.info("CompareNodes: Target Binding Map: ${targetBinding}")
             def targetEngine = new SimpleTemplateEngine()
             def targetUserPrompt = targetEngine.createTemplate(compareNodesUserMessageTemplate).make(targetBinding).toString()

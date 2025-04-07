@@ -34,9 +34,10 @@ class ResponseParser {
                     results[currentCategory] = [] // Initialize category
                     potentialPoints = [] // Reset points buffer
                 } else {
-                    // Assume it's a point for the current category or general analysis
+                    // Improved point detection - handle bullet points and dashes
                     def point = line.replaceAll(/^[-*+•·]\s*/, '').trim() // Remove common leading bullets
                     if (!point.isEmpty()) {
+                        // Replace generic "Destination 1/2" with actual names if they appear
                         potentialPoints.add(point)
                     }
                 }
