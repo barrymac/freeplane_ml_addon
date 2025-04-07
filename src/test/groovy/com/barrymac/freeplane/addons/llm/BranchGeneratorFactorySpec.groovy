@@ -51,7 +51,7 @@ class BranchGeneratorFactorySpec extends Specification {
         }) >> apiResponse
         
         and: "Verify node tagging"
-        tagCalls * mockDeps.nodeTagger(_ as NodeProxy, "test-model", mockLogger)
+        tagCalls * mockDeps.nodeTagger.call(_ as NodeProxy, "test-model", mockLogger)
         
         and: "Verify error handling"
         errorCalls * mockUi.errorMessage(_ as String)
@@ -77,7 +77,7 @@ class BranchGeneratorFactorySpec extends Specification {
         generator("valid-key", "sys", "user", "model", 100, 0.7, "openai")
 
         then: "Verify node tagging"
-        1 * mockDeps.nodeTagger(mockChild, "model", mockLogger)
+        1 * mockDeps.nodeTagger.call(mockChild, "model", mockLogger)
     }
 
     def "generator handles OpenRouter provider specific headers"() {
