@@ -145,7 +145,7 @@ try {
                     dimensionContent = new JsonSlurper().parseText(dimensionResponse)?.choices[0]?.message?.content
                     def (pole1, pole2) = parseGeneratedDimension(dimensionContent)
                     comparativeDimension = "${pole1} vs ${pole2}"
-                    logger.info("Generated comparative dimension: {}", comparativeDimension)
+                    logger.info("Generated comparative dimension: ${comparativeDimension}")
                     break
                 } catch (Exception e) {
                     attempts++
@@ -167,18 +167,18 @@ try {
             // --- Prepare source node prompt ---
             def sourceBinding = getBindingMap(sourceNode)
             sourceBinding['comparisonType'] = comparativeDimension
-            logger.debug("CompareNodes: Source Binding Map: {}", sourceBinding)
+            logger.debug("CompareNodes: Source Binding Map: ${sourceBinding}")
             def sourceEngine = new SimpleTemplateEngine()
             def sourceUserPrompt = sourceEngine.createTemplate(compareNodesUserMessageTemplate).make(sourceBinding).toString()
-            logger.debug("CompareNodes: Source User Prompt:\n{}", sourceUserPrompt)
+            logger.debug("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
             
             // --- Prepare target node prompt ---
             def targetBinding = getBindingMap(targetNode)
             targetBinding['comparisonType'] = comparativeDimension
-            logger.debug("CompareNodes: Target Binding Map: {}", targetBinding)
+            logger.debug("CompareNodes: Target Binding Map: ${targetBinding}")
             def targetEngine = new SimpleTemplateEngine()
             def targetUserPrompt = targetEngine.createTemplate(compareNodesUserMessageTemplate).make(targetBinding).toString()
-            logger.debug("CompareNodes: Target User Prompt:\n{}", targetUserPrompt)
+            logger.debug("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
             
             // Update progress dialog
             SwingUtilities.invokeLater {
