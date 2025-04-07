@@ -1,12 +1,12 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.transform.CompileStatic
+
 import groovy.util.logging.Slf4j
 
 /**
  * Helper class to centralize configuration loading
  */
-@CompileStatic
+//@CompileStatic
 @Slf4j
 class ConfigManager {
     // Define default models directly in code
@@ -38,14 +38,14 @@ class ConfigManager {
             def model = config.getProperty('openai.gpt_model', 'gpt-4')
             def maxTokens = config.getProperty('openai.max_response_length', 2000) as int
             def temperature = config.getProperty('openai.temperature', 0.7) as double
-            
+
             // Get available models from config or use defaults
             def availableModels = config.getProperty('openai.available_models')?.split('\n') ?: DEFAULT_MODELS
-            
-            log.info("Loaded configuration: provider={}, model={}, maxTokens={}, temperature={}", 
+
+            log.info("Loaded configuration: provider={}, model={}, maxTokens={}, temperature={}",
                     provider, model, maxTokens, temperature)
             log.debug("Available models: {}", availableModels)
-            
+
             return new ApiConfig(
                     provider: provider,
                     apiKey: config.getProperty('openai.key', ''),
@@ -79,10 +79,10 @@ class ConfigManager {
         log.debug("Add-ons directory: {}", dir)
         return dir
     }
-    
+
     /**
      * Gets the system message index from config
-     * 
+     *
      * @param config The Freeplane config object
      * @return The system message index
      */
@@ -96,10 +96,10 @@ class ConfigManager {
             return 0
         }
     }
-    
+
     /**
      * Gets the user message index from config
-     * 
+     *
      * @param config The Freeplane config object
      * @return The user message index
      */

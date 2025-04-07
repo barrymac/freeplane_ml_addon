@@ -86,8 +86,8 @@ class BranchGeneratorFactory {
                                 newlyAddedNodes.each { newNode -> addModelTagRecursively(newNode, model) }
                             }
                             // Add logging to confirm tagging for Quick Prompt
-                            log.info("BranchGenerator: Tag 'LLM:{}' applied to {} newly added top-level node(s).", 
-                                     model.replace('/', '_'), newlyAddedNodes.size())
+                            log.info("BranchGenerator: Tag 'LLM:{}' applied to {} newly added top-level node(s).",
+                                    model.replace('/', '_'), newlyAddedNodes.size())
                         }
                     } catch (Exception e) {
                         log.warn("API call failed", e)

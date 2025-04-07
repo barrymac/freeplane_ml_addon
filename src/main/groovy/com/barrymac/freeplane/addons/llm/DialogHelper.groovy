@@ -33,8 +33,8 @@ class DialogHelper {
 
             // Combine defaults and custom, ensuring defaults come first and no duplicates
             def allTypes = (defaultTypes + customTypes).unique()
-            log.debug("Showing comparison dialog with {} types ({} defaults, {} custom)", 
-                     allTypes.size(), defaultTypes.size(), customTypes.size())
+            log.debug("Showing comparison dialog with {} types ({} defaults, {} custom)",
+                    allTypes.size(), defaultTypes.size(), customTypes.size())
 
             def selectedType = null // Variable to store the result
             def swing = new SwingBuilder()
@@ -87,7 +87,7 @@ class DialogHelper {
 
             // Show the dialog (it's modal, so execution waits here)
             dialog.visible = true
-            
+
             if (selectedType) {
                 log.info("User selected comparison type: {}", selectedType)
             } else {

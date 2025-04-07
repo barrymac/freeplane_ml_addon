@@ -19,39 +19,39 @@ class DependencyLoader {
     static Dependencies loadDependencies(def config, def logger, def ui) {
         log.debug("Loading dependencies for LLM add-on")
         return new Dependencies(
-            // Instantiate ApiCaller using its factory
-            apiCaller: ApiCallerFactory.createApiCaller([ui: ui]),
+                // Instantiate ApiCaller using its factory
+                apiCaller: ApiCallerFactory.createApiCaller([ui: ui]),
 
-            // Provide BranchGenerator factory method reference
-            branchGeneratorFactory: BranchGeneratorFactory.&createGenerateBranches,
+                // Provide BranchGenerator factory method reference
+                branchGeneratorFactory: BranchGeneratorFactory.&createGenerateBranches,
 
-            // Provide MessageExpander static method references
-            messageExpander: [expandMessage: MessageExpander.&expandMessage, getBindingMap: MessageExpander.&getBindingMap],
+                // Provide MessageExpander static method references
+                messageExpander: [expandMessage: MessageExpander.&expandMessage, getBindingMap: MessageExpander.&getBindingMap],
 
-            // Provide MessageFileHandler static method references
-            messageFileHandler: [loadMessagesFromFile: MessageFileHandler.&loadMessagesFromFile,
-                                 saveMessagesToFile: MessageFileHandler.&saveMessagesToFile],
+                // Provide MessageFileHandler static method references
+                messageFileHandler: [loadMessagesFromFile: MessageFileHandler.&loadMessagesFromFile,
+                                     saveMessagesToFile  : MessageFileHandler.&saveMessagesToFile],
 
-            // Provide NodeTagger static method reference
-            nodeTagger: NodeTagger.&addModelTagRecursively,
+                // Provide NodeTagger static method reference
+                nodeTagger: NodeTagger.&addModelTagRecursively,
 
-            // Provide ResponseParserClass directly
-            responseParser: ResponseParser,
+                // Provide ResponseParserClass directly
+                responseParser: ResponseParser,
 
-            // Add new ones
-            dialogHelper: DialogHelper,
+                // Add new ones
+                dialogHelper: DialogHelper,
 
-            // Provide NodeHelperClass directly
-            nodeHelperUtils: NodeHelper,
+                // Provide NodeHelperClass directly
+                nodeHelperUtils: NodeHelper,
 
-            configManager: ConfigManager,
+                configManager: ConfigManager,
 
-            // Provide messageLoader map directly using imported class/methods
-            messageLoader: [
-                MessageLoaderClass: MessageLoader,
-                loadDefaultMessages: MessageLoader.&loadDefaultMessages,
-                loadComparisonMessages: MessageLoader.&loadComparisonMessages
-            ]
+                // Provide messageLoader map directly using imported class/methods
+                messageLoader: [
+                        MessageLoaderClass    : MessageLoader,
+                        loadDefaultMessages   : MessageLoader.&loadDefaultMessages,
+                        loadComparisonMessages: MessageLoader.&loadComparisonMessages
+                ]
         )
     }
 }
