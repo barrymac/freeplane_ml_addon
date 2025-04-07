@@ -18,6 +18,7 @@ class BranchGeneratorFactorySpec extends Specification {
         // Mock node children handling
         mockNode.children >> []
         mockNode.text >> "Test Node"
+        mockNode.delegate >> mockNode // Add this line to mock delegate property
         
         // Add currentFrame mock to UI
         mockUi.currentFrame >> new Object() // Simple object mock for frame
@@ -105,5 +106,6 @@ class BranchGeneratorFactorySpec extends Specification {
         List<NodeProxy> getChildren()
         String getText()
         void appendTextOutlineAsBranch(String text)
+        Object getDelegate() // Add this line
     }
 }

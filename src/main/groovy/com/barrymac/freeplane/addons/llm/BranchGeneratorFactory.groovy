@@ -100,7 +100,7 @@ class BranchGeneratorFactory {
                 workerThread.setContextClassLoader(BranchGeneratorFactory.class.classLoader)
                 workerThread.start()
             } catch (Exception e) {
-                logger.severe("Error in BranchGenerator setup", e as Throwable)
+                logger.error("Error in BranchGenerator setup", e as Throwable)
                 ui.errorMessage("Setup Error: ${e.message}")
             }
         }
