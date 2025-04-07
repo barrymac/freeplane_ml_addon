@@ -3,7 +3,6 @@ package com.barrymac.freeplane.addons.llm
 import com.barrymac.freeplane.addons.llm.exceptions.ApiException
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonBuilder
-import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.slf4j.Logger
 
