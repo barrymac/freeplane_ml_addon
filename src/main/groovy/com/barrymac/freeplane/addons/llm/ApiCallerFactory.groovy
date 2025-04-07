@@ -116,17 +116,17 @@ class ApiCallerFactory {
 
             def postRC = post.getResponseCode()
             if (logger) {
-                logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
+                logger.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
             } else {
-                LogUtils.info("API Call to {} ({}) - Response Code: {}", [provider.name().toLowerCase(), apiUrl, postRC] as Object[])
+                LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
             }
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
                 if (logger) {
-                    logger.info("{} response: {}", provider.name().toLowerCase(), responseText.take(200) + "...")
+                    logger.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
                 } else {
-                    LogUtils.info("{} response: {}", [provider.name().toLowerCase(), responseText.take(200) + "..."] as Object[])
+                    LogUtils.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
                 }
                 // Log truncated response
             } else {
@@ -166,7 +166,11 @@ class ApiCallerFactory {
                 try {
                     def errorStream = post.getErrorStream()
                     if (errorStream) {
-                        LogUtils.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                        if (logger) {
+                            logger.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                        } else {
+                            LogUtils.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                        }
                     }
                 } catch (Exception ignored) {
                     // Ignore errors reading the error stream
@@ -180,9 +184,9 @@ class ApiCallerFactory {
             throw e
         } catch (Exception e) {
             if (logger) {
-                logger.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
+                logger.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
             } else {
-                LogUtils.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
+                LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
             }
             ui.errorMessage("Network or processing error during API call: ${e.message}")
             throw new LlmAddonException("API call failed: ${e.message}", e)
