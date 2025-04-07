@@ -29,7 +29,14 @@ class BranchGeneratorFactorySpec extends Specification {
 
     @Unroll
     def "generateBranches handles #scenario"() {
-        given: "Configured branch generator"
+        given: "Configured branch generator and mock child node"
+        def mockChild = Mock(NodeProxy)
+        mockNode.children >> [] // Start with empty children
+        // Simulate child creation when appending branch
+        mockNode.appendTextOutlineAsBranch(_) >> { 
+            mockNode.children >> [mockChild]
+        }
+
         def generator = BranchGeneratorFactory.createGenerateBranches(
             [c: [selected: mockNode], ui: mockUi, logger: mockLogger, config: [:]],
             // Update the deps map passed to the factory
@@ -42,8 +49,8 @@ class BranchGeneratorFactorySpec extends Specification {
 
         when: "Invoking generator with parameters"
         generator(apiKey, "system-msg", "user-msg", "test-model", 100, 0.7, "openai")
-        // Add sleep if needed for async operations, especially for success/failure cases
-        if (apiCalls > 0) Thread.sleep(100)
+        // Increase sleep for async operations
+        if (apiCalls > 0) Thread.sleep(200)
 
         then: "Verify interactions"
         // Verify progress dialog creation (static call)
