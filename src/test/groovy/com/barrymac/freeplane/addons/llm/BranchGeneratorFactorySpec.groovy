@@ -1,13 +1,12 @@
 package com.barrymac.freeplane.addons.llm
 
-import org.slf4j.Logger
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.swing.*
 
 class BranchGeneratorFactorySpec extends Specification {
-    def mockLogger = Mock(Logger)
+    def mockLogger = Mock(Object)
     def mockUi = Mock(UITest)
     def mockNode = Mock(NodeProxy)
     // Replace mockDeps map with individual mocks for closures
@@ -39,7 +38,7 @@ class BranchGeneratorFactorySpec extends Specification {
         }
 
         def generator = BranchGeneratorFactory.createGenerateBranches(
-            [c: [selected: mockNode], ui: mockUi, logger: mockLogger, config: [:]],
+            [c: [selected: mockNode], ui: mockUi, config: [:]],
             // Update the deps map passed to the factory
             [
                 apiCaller: [make_api_call: mockApiClosure],
@@ -95,7 +94,7 @@ class BranchGeneratorFactorySpec extends Specification {
 
         // Update the deps map passed here
         def generator = BranchGeneratorFactory.createGenerateBranches(
-            [c: [selected: mockNode], ui: mockUi, logger: mockLogger, config: [:]],
+            [c: [selected: mockNode], ui: mockUi, config: [:]],
             [
                 apiCaller: [make_api_call: mockApiClosure],
                 nodeTagger: mockNodeTaggerClosure
