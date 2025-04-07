@@ -30,7 +30,7 @@ class MessageExpander {
     }
 
     // Add this function inside the file, alongside the existing expandMessage function
-    static def getBindingMap(def node) {
+    static def getBindingMap(def node, def otherNode = null) {
         try {
             def pathToRoot = node.pathToRoot
             def rootText = node.mindMap.root.text
@@ -38,15 +38,25 @@ class MessageExpander {
             String ancestorContents = pathToRoot*.plainText.join('\n')
             String siblingContents = node.isRoot() ? '' : node.parent.children.findAll { it != node }*.plainText.join('\n')
 
-            return [
+            def result = [
                     rootText        : rootText,
                     nodeContent     : node.plainText,
                     ancestorContents: ancestorContents,
                     siblingContents : siblingContents
             ]
+            
+            // Add other node content if provided
+            if (otherNode) {
+                result.otherNodeContent = otherNode.plainText
+            }
+            
+            return result
         } catch (Exception e) {
             LogUtils.severe("Error creating binding map: ${e.message}")
-            return [nodeContent: node?.plainText ?: ""] // Return minimal binding on error
+            return [
+                nodeContent: node?.plainText ?: "", 
+                otherNodeContent: otherNode?.plainText ?: ""
+            ] // Return minimal binding on error
         }
     }
 }

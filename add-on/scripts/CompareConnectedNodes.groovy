@@ -165,7 +165,7 @@ try {
             logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
             
             // --- Prepare source node prompt ---
-            def sourceBinding = getBindingMap(sourceNode)
+            def sourceBinding = getBindingMap(sourceNode, targetNode) // Pass both nodes
             sourceBinding['comparisonType'] = comparativeDimension
             logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
             def sourceEngine = new SimpleTemplateEngine()
@@ -173,7 +173,7 @@ try {
             logger.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
             
             // --- Prepare target node prompt ---
-            def targetBinding = getBindingMap(targetNode)
+            def targetBinding = getBindingMap(targetNode, sourceNode) // Pass both nodes
             targetBinding['comparisonType'] = comparativeDimension
             logger.info("CompareNodes: Target Binding Map: ${targetBinding}")
             def targetEngine = new SimpleTemplateEngine()
@@ -246,10 +246,10 @@ try {
                     ui.informationMessage("The LLM analysis did not yield structured results for either node.")
                 } else {
                     try {
-                        // Add analysis branches, passing the tagging function and using the generated dimension
-                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively)
-                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively)
-                        ui.informationMessage("Comparison analysis using '${comparativeDimension}' framework added to both nodes.")
+                        // Add analysis branches, passing the tagging function, the generated dimension, and the other node
+                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively, targetNode)
+                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively, sourceNode)
+                        ui.informationMessage("Comparative analysis using '${comparativeDimension}' framework added to both nodes.")
                     } catch (Exception e) {
                         log.warn("Error during addAnalysisToNodeAsBranch calls on EDT", e)
                         ui.errorMessage("Failed to add analysis results to the map. Check logs. Error: ${e.message}")

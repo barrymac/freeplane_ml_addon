@@ -52,8 +52,9 @@ class NodeHelper {
      * @param comparisonType The type of comparison performed
      * @param model The LLM model used
      * @param addModelTagRecursivelyFunc Optional function to tag nodes with model info
+     * @param otherNode Optional reference to the other node being compared
      */
-    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, String model, addModelTagRecursivelyFunc = null) {
+    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, String model, addModelTagRecursivelyFunc = null, otherNode = null) {
         LogUtils.info("Attempting to add analysis to node: ${nodeProxy.text}")
         if (analysisMap.isEmpty()) {
             LogUtils.warn("No analysis data to add for node: ${nodeProxy.text}")
@@ -62,7 +63,14 @@ class NodeHelper {
 
         // Format the map into an indented string
         def builder = new StringBuilder()
-        builder.append("Comparison (${comparisonType})\n") // Root of the new branch
+        
+        // Add comparison title with other node reference if available
+        if (otherNode) {
+            builder.append("Comparative Analysis (${comparisonType}): ${nodeProxy.text} vs ${otherNode.text}\n")
+        } else {
+            builder.append("Comparison (${comparisonType})\n") // Root of the new branch
+        }
+        
         analysisMap.each { category, points ->
             builder.append("    ${category}\n") // Indent level 1 for category
             points.each { point ->
