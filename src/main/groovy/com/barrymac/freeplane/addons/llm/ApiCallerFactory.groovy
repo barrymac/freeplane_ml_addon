@@ -5,6 +5,7 @@ import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonBuilder
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import org.slf4j.Logger
 
 import java.awt.*
 
@@ -47,6 +48,7 @@ class ApiCallerFactory {
      */
     static Map createApiCaller(Map closures) {
         def ui = closures.ui
+        def logger = closures.logger ?: log // Use provided logger or fallback to class logger
 
         def make_api_call = { String providerStr, String apiKey, Object requestObj ->
             // Convert request object to map if it's an ApiRequest
@@ -56,7 +58,7 @@ class ApiCallerFactory {
             try {
                 // Convert string provider to enum
                 def provider = ApiProvider.fromString(providerStr)
-                return handleApiCall(provider, apiKey, payloadMap, ui)
+                return handleApiCall(provider, apiKey, payloadMap, ui, logger)
             } catch (LlmAddonException e) {
                 ui.errorMessage(e.message)
                 return ""
@@ -89,7 +91,7 @@ class ApiCallerFactory {
      * @return The response text
      */
     private static String handleApiCall(ApiProvider provider, String apiKey, 
-                                      Map<String, Object> payloadMap, def ui) {
+                                      Map<String, Object> payloadMap, def ui, Logger logger) {
         def responseText = ""
         String apiUrl = provider.endpoint
         Map<String, String> headers = [
@@ -116,11 +118,11 @@ class ApiCallerFactory {
             post.getOutputStream().write(payload.getBytes("UTF-8"))
 
             def postRC = post.getResponseCode()
-            log.info("API Call to {} ({}) - Response Code: {}", provider.name(), apiUrl, postRC)
+            logger.info("API Call to {} ({}) - Response Code: {}", provider.name(), apiUrl, postRC)
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
-                log.info("{} response: {}", provider.name(), responseText.take(200) + "...") // Log truncated response
+                logger.info("{} response: {}", provider.name(), responseText.take(200) + "...") // Log truncated response
             } else {
                 // Handle common error codes centrally
                 String errorMsg
@@ -171,7 +173,7 @@ class ApiCallerFactory {
             // Re-throw API exceptions
             throw e
         } catch (Exception e) {
-            log.warn("Exception during API call to {}", provider, e)
+            logger.warn("Exception during API call to {}", provider, e)
             ui.errorMessage("Network or processing error during API call: ${e.message}")
             throw new LlmAddonException("API call failed: ${e.message}", e)
         }
