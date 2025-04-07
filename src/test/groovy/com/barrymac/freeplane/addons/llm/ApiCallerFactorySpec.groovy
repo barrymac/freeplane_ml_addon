@@ -52,7 +52,7 @@ class ApiCallerFactorySpec extends Specification {
         result == expectedResponse
         1 * mockLogger.info("API Call to {} ({}) - Response Code: {}", provider, expectedUrl, statusCode) // This log always happens
         if (statusCode == 200) {
-            1 * mockLogger.info("${provider} response: ${responseBody.take(200)}...")
+            1 * mockLogger.info("{} response: {}", provider, responseBody.take(200) + "...")
             // Expect response log only on success
             0 * mockUi.errorMessage(_) // No error message on success
         } else if (statusCode == 401) {
