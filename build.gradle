@@ -22,7 +22,7 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0' // Using Groovy 3.0 compatible version
     // You might need groovy-all if not managed by the groovy plugin implicitly for tests
     // Explicitly add groovy-all for the test scope
-    testImplementation 'org.codehaus.groovy:groovy-all:3.0.13' 
+//    testImplementation 'org.codehaus.groovy:groovy-all:3.0.13'
 }
 
 // Configure the test task to use JUnit Platform for Spock 2.x
