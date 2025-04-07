@@ -24,7 +24,7 @@ class ApiCallerFactory {
                 headers["HTTP-Referer"] = "https://github.com/barrymac/freeplane_openai_addon"
                 headers["X-Title"] = "Freeplane GPT AddOn"
             } else {
-                ui.errorMessage("Unsupported API provider: ${provider}")
+                ui.errorMessage("Unsupported API provider: ${provider}".toString())
                 return "" // Or throw an exception
             }
 
@@ -52,17 +52,17 @@ class ApiCallerFactory {
                     String browseUrl = null
                     switch (postRC) {
                         case 401:
-                            errorMsg = "Invalid authentication or incorrect API key provided for ${provider}."
+                            errorMsg = "Invalid authentication or incorrect API key provided for ${provider}.".toString()
                             browseUrl = (provider == 'openrouter') ? "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
                             break
                         case 404:
-                            errorMsg = (provider == 'openrouter') ? "Endpoint not found. Check your OpenRouter configuration." : "You might need organization membership for OpenAI API."
+                            errorMsg = (provider == 'openrouter') ? "Endpoint not found. Check your OpenRouter configuration.".toString() : "You might need organization membership for OpenAI API.".toString()
                             break
                         case 429:
-                            errorMsg = "Rate limit reached or quota exceeded for ${provider}."
+                            errorMsg = "Rate limit reached or quota exceeded for ${provider}.".toString()
                             break
                         default:
-                            errorMsg = "Unhandled error code ${postRC} returned from ${provider} API."
+                            errorMsg = "Unhandled error code ${postRC} returned from ${provider} API.".toString()
                     }
                     if (browseUrl) {
                         try {
@@ -84,7 +84,7 @@ class ApiCallerFactory {
 
             } catch (Exception e) {
                 logger.warn("Exception during API call to ${provider}".toString(), e as Throwable)
-                ui.errorMessage("Network or processing error during API call: ${e.message}")
+                ui.errorMessage("Network or processing error during API call: ${e.message}".toString())
             }
 
             return responseText
