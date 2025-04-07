@@ -18,18 +18,27 @@ repositories {
 }
 
 dependencies {
-    // Spock testing framework
-    testImplementation             "org.spockframework:spock-core:2.3-groovy-4.0"
-            // You might need groovy-all if not managed by the groovy plugin implicitly for tests
-    // Explicitly add groovy-all for the test scope
-    testImplementation 'org.codehaus.groovy:groovy-all:4.0.12' // Use a Groovy 4 version
+//    implementation("org.codehaus.groovy:groovy-all:3.0.24")
+//    implementation platform('org.apache.groovy:groovy-bom:4.0.25')
+//    implementation 'org.apache.groovy:groovy-json:4.0.25'
+//    implementation 'org.apache.groovy:groovy-templates:4.0.25'
+//    implementation 'org.apache.groovy:groovy-swing:4.0.25'
+
+    testImplementation platform("org.spockframework:spock-bom:2.3-groovy-4.0")
+    testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
+    testImplementation "org.spockframework:spock-junit4:2.3-groovy-4.0"  // remove if not needed
+//
+//    // optional dependencies for Spock
+    testImplementation "org.hamcrest:hamcrest-core:2.2"   // compatible version for Spock 2.x
+    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.14.12' // compatible version for Spock 2.x
+    testRuntimeOnly "org.objenesis:objenesis:3.4"
 }
 
 // Configure the test task to use JUnit Platform for Spock 2.x
 test {
     useJUnitPlatform()
     testLogging {
-        events "passed", "skipped", "failed" // Optional: Improve logging output
+        events "passed", "skipped", "failed"
     }
 }
 
@@ -37,44 +46,15 @@ def freeplaneVersion = "1.12.9"
 def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty('user.home')}/bin/freeplane-${freeplaneVersion}/"
 
 freeplane {
-    // mandatory, freeplane installation directory.
-    // (Freeplane.app directory on MacOS)
-    // In this example it is taken from system environment.
     freeplaneDirectory = freeplaneBasePath
-
-    // recommended, freeplane user setting directory.
-    // It should be specified without the version number suffix.
-    // The value used by default can be different from your OS default.
-    // userDirectory = 'user-directory'
-
-    // optional, addon source directory
-     addonSourceDirectory = 'add-on'
-
-    // optional, to be set only if more then one mind map file in the addon source directory
+    addonSourceDirectory = 'add-on'
     // addonDefinitionMindMapFileName = 'Greetings.mm'
-
-    // optional, includes
+    // userDirectory = 'user-directory'
     // includes = ['**/*']
-
-    // optional, excludes
     // excludes = ['**/*.bak', '**/~*', '**/$~*.mm~', '**/*.gdsl', '**/*.dsld']
-
-    // optional, max heap size for freeplane
     // maxHeapSize = '1024m'
-
-    // optional, additional Java Runtime options
     // jvmArgs = []
-
 }
-
-//sourceSets {
-//    main {
-//        resources {
-//            srcDirs = ['src/main/resources']
-//            includes = ['**/*.txt']
-//        }
-//    }
-//}
 
 jar {
     archiveFileName = 'llm.jar'
