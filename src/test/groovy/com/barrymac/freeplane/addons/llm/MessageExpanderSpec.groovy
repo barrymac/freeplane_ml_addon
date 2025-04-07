@@ -10,6 +10,15 @@ import spock.lang.Unroll
  */
 class MessageExpanderSpec extends Specification {
 
+    // --- MOCK DEFINITIONS MOVED TO CLASS LEVEL ---
+    def mockNode = Mock(NodeRO)
+    def mockParent = Mock(NodeRO)
+    def mockRoot = Mock(NodeRO)
+    def mockSibling1 = Mock(NodeRO)
+    def mockSibling2 = Mock(NodeRO)
+    def mockGrandParent = Mock(NodeRO) // For ancestor path
+    // --- END MOCK DEFINITIONS ---
+
     // Use @Subject to indicate the class under test
     @Subject
     def messageExpander = new MessageExpander() // Instance needed if methods weren't static, but good practice
@@ -17,13 +26,8 @@ class MessageExpanderSpec extends Specification {
     @Unroll // Report each iteration separately
     def "getBindingMap should correctly extract context for #description"() {
         given: "A mock node representing the scenario"
-        // NodeRO is an interface, easy to mock
-        def mockNode = Mock(NodeRO)
-        def mockParent = Mock(NodeRO)
-        def mockRoot = Mock(NodeRO)
-        def mockSibling1 = Mock(NodeRO)
-        def mockSibling2 = Mock(NodeRO)
-        def mockGrandParent = Mock(NodeRO) // For ancestor path
+        // Mocks are now instance variables, defined above.
+        // We configure their behavior here based on the 'where' block data.
 
         // --- Configure Mock Interactions based on scenario ---
         // Common setup
