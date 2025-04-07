@@ -67,7 +67,7 @@ def compareNodesUserMessageTemplate = messages.userTemplate
 // Wrap the entire script in a try-catch block for better error handling
 try {
     // 1. Check API Key
-    if (apiKey.isEmpty()) {
+    if (apiConfig.apiKey.isEmpty()) {
         if (provider == 'openrouter') {
             Desktop.desktop.browse(new URI("https://openrouter.ai/keys"))
         } else {
@@ -138,7 +138,7 @@ try {
             
             while (attempts <= maxRetries) {
                 try {
-                    def dimensionResponse = make_api_call(provider, apiKey, dimensionPayload)
+                    def dimensionResponse = make_api_call(provider, apiConfig.apiKey, dimensionPayload)
                     dimensionContent = new JsonSlurper().parseText(dimensionResponse)?.choices[0]?.message?.content
                     def (pole1, pole2) = parseGeneratedDimension(dimensionContent)
                     comparativeDimension = "${pole1} vs ${pole2}"
@@ -194,7 +194,7 @@ try {
             ]
             logger.info("Requesting analysis for source node: {}", sourceNode.text)
             // Use the unified API call function from deps
-            sourceApiResponse = make_api_call(provider, apiKey, sourcePayloadMap)
+            sourceApiResponse = make_api_call(provider, apiConfig.apiKey, sourcePayloadMap)
 
             if (sourceApiResponse == null || sourceApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for source node.")
@@ -212,7 +212,7 @@ try {
             ]
             logger.info("Requesting analysis for target node: {}", targetNode.text)
             // Use the unified API call function from deps
-            targetApiResponse = make_api_call(provider, apiKey, targetPayloadMap)
+            targetApiResponse = make_api_call(provider, apiConfig.apiKey, targetPayloadMap)
 
             if (targetApiResponse == null || targetApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for target node.")
