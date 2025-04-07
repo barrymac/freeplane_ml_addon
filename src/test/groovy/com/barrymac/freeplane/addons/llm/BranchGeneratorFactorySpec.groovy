@@ -18,6 +18,9 @@ class BranchGeneratorFactorySpec extends Specification {
         // Mock node children handling
         mockNode.children >> []
         mockNode.text >> "Test Node"
+        
+        // Add currentFrame mock to UI
+        mockUi.currentFrame >> new Object() // Simple object mock for frame
     }
 
     @Unroll
@@ -32,7 +35,11 @@ class BranchGeneratorFactorySpec extends Specification {
         generator(apiKey, "system-msg", "user-msg", "test-model", 100, 0.7, "openai")
 
         then: "Verify progress dialog creation"
-        1 * mockDeps.dialogHelper.createProgressDialog(mockUi, "I am asking your question. Wait for the response.", "user-msg") >> Mock(JDialog)
+        1 * mockDeps.dialogHelper.createProgressDialog(mockUi, "I am asking your question. Wait for the response.", "user-msg") >> {
+            def mockDialog = Mock(JDialog)
+            mockDialog.setVisible(_) >> { /* no-op */ }
+            return mockDialog
+        }
         
         and: "Verify API call execution"
         apiCalls * mockDeps.apiCaller.make_api_call("openai", apiKey, {
@@ -90,6 +97,7 @@ class BranchGeneratorFactorySpec extends Specification {
     interface UITest {
         void errorMessage(String message)
         void setDialogLocationRelativeTo(Object dialog, Object node)
+        Object getCurrentFrame() // Add missing method
     }
 
     // Mock node proxy interface
