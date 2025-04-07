@@ -153,28 +153,28 @@ swingBuilder.edt { // edt method makes sure the GUI is built on the Event Dispat
                 c.gridx = 0
                 c.gridy = 0
                 swingBuilder.panel(constraints: c, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('API Key')) {
-                    apiKeyField = passwordField(columns: 10, text: apiKey)
+                    apiKeyField = passwordField(columns: 10, text: apiConfig.apiKey)
                 }
                 c.gridx++
                 swingBuilder.panel(constraints: c, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Max Response Length'), toolTipText: 'Maximum Response Length') {
-                    responseLengthField = formattedTextField(columns: 5, value: maxResponseLength)
+                    responseLengthField = formattedTextField(columns: 5, value: apiConfig.maxTokens)
                 }
                 c.gridx++
                 swingBuilder.panel(constraints: c, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Language Model')) {
                     gptModelBox = comboBox(
-                        items: configMap.availableModels,
-                        selectedItem: gptModel,
-                        prototypeDisplayValue: configMap.availableModels.max { it.length() }
+                        items: apiConfig.availableModels,
+                        selectedItem: apiConfig.model,
+                        prototypeDisplayValue: apiConfig.availableModels.max { it.length() }
                     )
                 }
                 c.gridx++
                 swingBuilder.panel(constraints: c, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('API Provider')) {
-                    apiProviderBox = comboBox(items: ['openai', 'openrouter'], selectedItem: apiProvider)
+                    apiProviderBox = comboBox(items: ['openai', 'openrouter'], selectedItem: apiConfig.provider)
                 }
                 c.gridx++
                 swingBuilder.panel(constraints: c, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Randomness')) {
                     temperatureSlider = slider(minimum: 0, maximum: 100, minorTickSpacing: 5, majorTickSpacing: 50, snapToTicks: true,
-                            paintTicks: true, paintLabels: true, value: (int) (temperature * 100.0 + 0.5))
+                            paintTicks: true, paintLabels: true, value: (int) (apiConfig.temperature * 100.0 + 0.5))
                 }
             }
             constraints.gridy++
