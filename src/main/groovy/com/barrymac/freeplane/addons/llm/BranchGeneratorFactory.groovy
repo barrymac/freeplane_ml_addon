@@ -17,7 +17,7 @@ class BranchGeneratorFactory {
             // Get functions/classes from deps map
             def make_api_call = deps.apiCaller.make_api_call
             def addModelTagRecursively = deps.nodeTagger // Get method reference directly
-            def DialogHelper = deps.dialogHelper
+            // DialogHelper is now used statically
 
             try {
                 log.info("Starting branch generation with model: {}", model)
