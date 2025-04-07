@@ -79,7 +79,7 @@ class ApiCallerFactorySpec extends Specification {
 
         then: "Verify error handling"
         result == ""
-        1 * mockLogger.warn("Exception during API call to openai", _ as Throwable)
+        1 * mockLogger.warn("Exception during API call to {}", "openai", _ as Throwable)
         1 * mockUi.errorMessage("Network or processing error during API call: Connection timeout")
     }
 
