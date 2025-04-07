@@ -7,57 +7,60 @@ import org.freeplane.core.util.LogUtils
  */
 class ResponseParser {
     /**
-     * Parses LLM response text into categories and points.
-     * Assumes simple structure: "Category:\n- Point 1\n- Point 2" or just lines of text.
+     * Parses LLM response text, expecting a single category heading (the relevant pole)
+     * followed by bullet points describing the first idea relative to the second.
      *
      * @param analysisText The raw text from the LLM response
-     * @return A map with categories as keys and lists of points as values
+     * @return A map containing a single category key (the pole) and a list of points as its value.
      */
     static Map parseAnalysis(String analysisText) {
         try {
-            def results = [:] // Map to store results, e.g., ["Pros": ["Point 1", "Point 2"], "Cons": ["Point A"]]
-            def currentCategory = null
-            def potentialPoints = []
+            def results = [:] // Map to store results, e.g., ["Lower Cost": ["Point 1", "Point 2"]]
+            String currentCategory = null
+            def pointsList = []
 
             analysisText.eachLine { line ->
                 line = line.trim()
                 if (line.isEmpty()) return // continue
 
-                // Basic heading detection (ends with ':')
-                if (line.endsWith(':') && line.length() > 1) {
-                    // Store previous points if any
-                    if (currentCategory != null && !potentialPoints.isEmpty()) {
-                        results[currentCategory] = potentialPoints
+                // Check for a heading line (ends with ':' and doesn't start with a bullet)
+                if (currentCategory == null && line.endsWith(':') && !line.matches(/^[-*+•·]\s*.*/)) {
+                    currentCategory = line.replaceAll(':', '').trim()
+                    if (currentCategory) {
+                        results[currentCategory] = pointsList // Assign the list (might be empty initially)
                     }
-                    // Start new category
-                    currentCategory = line.substring(0, line.length() - 1).trim()
-                    results[currentCategory] = [] // Initialize category
-                    potentialPoints = [] // Reset points buffer
-                } else {
-                    // Improved point detection - handle bullet points and dashes
-                    def point = line.replaceAll(/^[-*+•·]\s*/, '').trim() // Remove common leading bullets
-                    if (!point.isEmpty()) {
-                        // Replace generic "Destination 1/2" with actual names if they appear
-                        potentialPoints.add(point)
+                }
+                // Check for a point line (starts with a bullet)
+                else if (line.matches(/^[-*+•·]\s*.*/)) {
+                    def point = line.replaceAll(/^[-*+•·]\s*/, '').trim() // Remove leading bullet
+                    if (point) {
+                        pointsList.add(point)
                     }
+                }
+                // Handle lines that are neither headers nor bullet points (could be part of multi-line points or unexpected format)
+                // For now, we'll ignore them unless they follow a bullet point (handled implicitly by list add)
+                // Or if no category is found yet, maybe the LLM just gave points without a header
+                else if (currentCategory == null && !point.isEmpty()) {
+                     pointsList.add(line) // Treat as a point if no category found yet
                 }
             }
 
-            // Add any remaining points under the last category
-            if (currentCategory != null && !potentialPoints.isEmpty()) {
-                results[currentCategory] = (results[currentCategory] ?: []) + potentialPoints
+            // If points were collected but no category header was found
+            if (currentCategory == null && !pointsList.isEmpty()) {
+                 results["Analysis"] = pointsList // Use a generic category key
+            }
+            // Ensure the category in the map actually points to the final list
+            else if (currentCategory != null) {
+                 results[currentCategory] = pointsList
             }
 
-            // Handle cases where no headings were found - treat the whole text as one category
-            if (results.isEmpty() && !potentialPoints.isEmpty()) {
-                results["Analysis"] = potentialPoints
-            } else if (results.isEmpty() && !analysisText.trim().isEmpty()) {
-                // Fallback if potentialPoints is also empty but text exists
-                results["Analysis"] = analysisText.trim().split('\n').collect { it.trim() }.findAll { !it.isEmpty() }
-            }
+            // Filter out empty categories or categories with empty lists
+            results = results.findAll { category, points -> points != null && !points.isEmpty() }
 
-            // Filter out empty categories
-            results = results.findAll { category, points -> !points.isEmpty() }
+            // If still empty after parsing, but original text wasn't, add raw text as fallback
+            if (results.isEmpty() && analysisText?.trim()) {
+                 results["Analysis"] = analysisText.trim().split('\n').collect { it.trim() }.findAll { !it.isEmpty() }
+            }
 
             return results
         } catch (Exception e) {
