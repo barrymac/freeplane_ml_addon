@@ -18,16 +18,16 @@ repositories {
 }
 
 dependencies {
-    // Spock Core will bring in necessary JUnit Platform dependencies transitively
-    testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
-    // Explicitly provide Groovy runtime for test execution classpath
-    testImplementation 'org.apache.groovy:groovy-all:4.0.21' // Ensure this version matches your project needs
-    // JUnit 5 engine is still needed at runtime for Spock 2.x
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    // Optional/runtime dependencies for Spock
-    testImplementation "org.hamcrest:hamcrest-core:2.2"
-    testRuntimeOnly 'net.bytebuddy:byte-buddy:1.14.12'
-    testRuntimeOnly "org.objenesis:objenesis:3.4"
+    testImplementation platform('org.junit:junit-bom:5.10.2'),
+            platform("org.spockframework:spock-bom:2.3-groovy-4.0"),
+            "org.spockframework:spock-core:2.3-groovy-4.0",
+            "org.hamcrest:hamcrest-core:2.2"
+
+    testRuntimeOnly(
+            'org.junit.jupiter:junit-jupiter-engine',
+            'net.bytebuddy:byte-buddy:1.14.12',
+            "org.objenesis:objenesis:3.4"
+    )
 }
 
 test {
