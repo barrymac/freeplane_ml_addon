@@ -4,7 +4,7 @@ import com.barrymac.freeplane.addons.llm.exceptions.ApiException
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonBuilder
 import groovy.transform.CompileStatic
-import org.slf4j.Logger
+import groovy.util.logging.Slf4j
 
 import java.awt.*
 
@@ -12,6 +12,7 @@ import java.awt.*
  * Factory for creating API caller functions
  */
 @CompileStatic
+@Slf4j
 class ApiCallerFactory {
     /**
      * Enum for supported API providers

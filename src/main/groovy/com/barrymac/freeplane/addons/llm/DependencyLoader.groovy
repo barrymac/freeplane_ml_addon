@@ -1,12 +1,13 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.transform.CompileStatic
-import org.slf4j.Logger
+import groovy.util.logging.Slf4j
 
 /**
  * Helper class to centralize dependency loading
  */
 @CompileStatic
+@Slf4j
 class DependencyLoader {
     /**
      * Loads all dependencies needed by the add-on
