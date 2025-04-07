@@ -124,9 +124,9 @@ class ApiCallerFactory {
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
                 if (logger) {
-                    logger.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
+                    logger.info("{} response: {}", provider.name().toLowerCase(), responseText.take(200) + "...")
                 } else {
-                    LogUtils.info("${provider.name().toLowerCase()} response: ${responseText.take(200)}...")
+                    LogUtils.info("{} response: {}", [provider.name().toLowerCase(), responseText.take(200) + "..."] as Object[])
                 }
                 // Log truncated response
             } else {

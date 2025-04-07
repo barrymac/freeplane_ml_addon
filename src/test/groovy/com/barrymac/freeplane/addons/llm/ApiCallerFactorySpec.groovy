@@ -62,7 +62,7 @@ class ApiCallerFactorySpec extends Specification {
         1 * mockLogger.info("API Call to {} ({}) - Response Code: {}", provider, expectedUrl, statusCode) // This log always happens
 
         if (statusCode == 200) {
-            1 * mockLogger.info("{} response: {}", provider, responseBody.take(200) + "...")
+            1 * mockLogger.info("{} response: {}", provider, responseBody + "...")
             0 * mockUi.errorMessage(_)
         } else {
             0 * mockLogger.info("{} response: {}", _, _) // Specifically check response log isn't called
