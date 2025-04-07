@@ -1,8 +1,9 @@
 import groovy.swing.SwingBuilder
 import javax.swing.JOptionPane
 
-// Import the compiled DependencyLoader
-import com.barrymac.freeplane.addons.llm.DependencyLoader
+// Import the compiled DependencyLoader and other classes
+import com.barrymac.freeplane.addons.llm.*
+import com.barrymac.freeplane.addons.llm.exceptions.*
 
 // Load all dependencies
 // Call static method directly
@@ -16,14 +17,9 @@ def loadDefaultMessages = deps.messageLoader.loadDefaultMessages // Get the new 
 def createBranchGenerator = deps.branchGeneratorFactory // Get factory method
 
 // Load configuration using ConfigManager
-def configMap = ConfigManager.loadBaseConfig(config)
-def apiKey = configMap.apiKey
-def model = configMap.model
-def maxTokens = configMap.maxTokens
-def temperature = configMap.temperature
-def provider = configMap.provider
-def systemMessageIndex = config.getProperty('openai.system_message_index', 0) as int
-def userMessageIndex = config.getProperty('openai.user_message_index', 0) as int
+def apiConfig = ConfigManager.loadBaseConfig(config)
+def systemMessageIndex = ConfigManager.getSystemMessageIndex(config)
+def userMessageIndex = ConfigManager.getUserMessageIndex(config)
 
 // Initialize the branch generator with necessary dependencies
 def generateBranches = createBranchGenerator([ // Call the factory method
@@ -45,7 +41,7 @@ def userMessages = loadMessagesFromFile(userMessagesFilePath, "/defaultUserMessa
 def systemMessage = systemMessageIndex < systemMessages.size() ? systemMessages[systemMessageIndex] : systemMessages[0]
 def userMessageTemplate = userMessageIndex < userMessages.size() ? userMessages[userMessageIndex] : userMessages[0]
 
-if (!apiKey) {
+if (!apiConfig.apiKey) {
     JOptionPane.showMessageDialog(ui.currentFrame, 
         "Please configure API settings first via the LLM menu",
         "Configuration Required",
@@ -55,7 +51,25 @@ if (!apiKey) {
 
 try {
     def expandedUserMessage = expandMessage(userMessageTemplate, c.selected)
-    generateBranches(apiKey, systemMessage, expandedUserMessage, model, maxTokens, temperature, provider)
+    
+    // Create a proper Message object for system and user messages
+    def systemMsg = new Message(role: 'system', content: systemMessage)
+    def userMsg = new Message(role: 'user', content: expandedUserMessage)
+    
+    // Create an ApiRequest object
+    def request = new ApiRequest(
+        model: apiConfig.model,
+        messages: [systemMsg, userMsg],
+        temperature: apiConfig.temperature,
+        maxTokens: apiConfig.maxTokens
+    )
+    
+    // Call the API with the structured request
+    generateBranches(apiConfig.apiKey, systemMessage, expandedUserMessage, 
+                    apiConfig.model, apiConfig.maxTokens, apiConfig.temperature, apiConfig.provider)
+} catch (LlmAddonException e) {
+    logger.warn("Quick prompt failed: ${e.message}")
+    ui.errorMessage(e.message)
 } catch (Exception e) {
     logger.warn("Quick prompt failed", e)
     ui.errorMessage("Quick prompt error: ${e.message}")

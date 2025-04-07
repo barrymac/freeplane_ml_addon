@@ -1,93 +1,66 @@
 package com.barrymac.freeplane.addons.llm
 
+import com.barrymac.freeplane.addons.llm.exceptions.ApiException
+import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonBuilder
+import groovy.transform.CompileStatic
+import org.slf4j.Logger
 
 import java.awt.*
 
+/**
+ * Factory for creating API caller functions
+ */
+@CompileStatic
 class ApiCallerFactory {
-    static def createApiCaller(Map closures) {
-        def logger = closures.logger
+    /**
+     * Enum for supported API providers
+     */
+    enum ApiProvider {
+        OPENAI('https://api.openai.com/v1/chat/completions'),
+        OPENROUTER('https://openrouter.ai/api/v1/chat/completions')
+
+        final String endpoint
+        
+        ApiProvider(String endpoint) { 
+            this.endpoint = endpoint 
+        }
+        
+        /**
+         * Get provider from string
+         */
+        static ApiProvider fromString(String provider) {
+            switch (provider.toLowerCase()) {
+                case 'openai': return OPENAI
+                case 'openrouter': return OPENROUTER
+                default: throw new LlmAddonException("Unsupported API provider: $provider")
+            }
+        }
+    }
+
+    /**
+     * Creates an API caller with the necessary functions
+     *
+     * @param closures Map containing logger and ui
+     * @return Map of API caller functions
+     */
+    static Map createApiCaller(Map closures) {
+        def logger = closures.logger as Logger
         def ui = closures.ui
 
-        def make_api_call = { String provider, String apiKey, Map<String, Object> payloadMap ->
-            def responseText = ""
-            String apiUrl
-            Map<String, String> headers = [:]
-
-            if (provider == 'openai') {
-                apiUrl = 'https://api.openai.com/v1/chat/completions'
-                headers["Authorization"] = "Bearer " + apiKey
-            } else if (provider == 'openrouter') {
-                apiUrl = 'https://openrouter.ai/api/v1/chat/completions'
-                headers["Authorization"] = "Bearer " + apiKey
-                // Add OpenRouter specific headers
-                headers["HTTP-Referer"] = "https://github.com/barrymac/freeplane_openai_addon"
-                headers["X-Title"] = "Freeplane GPT AddOn"
-            } else {
-                ui.errorMessage("Unsupported API provider: " + provider)
-                return "" // Or throw an exception
-            }
-
+        def make_api_call = { String providerStr, String apiKey, Object requestObj ->
+            // Convert request object to map if it's an ApiRequest
+            def payloadMap = requestObj instanceof ApiRequest ? 
+                requestObj.toMap() : requestObj as Map<String, Object>
+                
             try {
-                def post = new URL(apiUrl).openConnection()
-                post.setRequestMethod("POST")
-                post.setDoOutput(true)
-                post.setRequestProperty("Content-Type", "application/json")
-                // Apply all headers
-                headers.each { key, value -> post.setRequestProperty(key, value) }
-
-                // Use JsonBuilder to create the payload string
-                def payload = new JsonBuilder(payloadMap).toString()
-                post.getOutputStream().write(payload.getBytes("UTF-8"))
-
-                def postRC = post.getResponseCode()
-                logger.info("API Call to {} ({}) - Response Code: {}", provider, apiUrl, postRC)
-
-                if (postRC.equals(200)) {
-                    responseText = post.getInputStream().getText("UTF-8")
-                    logger.info("{} response: {}", provider, responseText.take(200) + "...") // Log truncated response
-                } else {
-                    // Handle common error codes centrally
-                    String errorMsg
-                    String browseUrl = null
-                    switch (postRC) {
-                        case 401:
-                            errorMsg = "Invalid authentication or incorrect API key provided for " + provider + "."
-                            browseUrl = (provider == 'openrouter') ? "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
-                            break
-                        case 404:
-                            errorMsg = (provider == 'openrouter') ? "Endpoint not found. Check your OpenRouter configuration." : "You might need organization membership for OpenAI API."
-                            break
-                        case 429:
-                            errorMsg = "Rate limit reached or quota exceeded for " + provider + "."
-                            break
-                        default:
-                            errorMsg = "Unhandled error code " + postRC + " returned from " + provider + " API."
-                    }
-                    if (browseUrl) {
-                        try {
-                            Desktop.desktop.browse(new URI(browseUrl))
-                        } catch (Exception browseEx) {
-                            logger.warn("Failed to open browser for URL: " + browseUrl, browseEx as Throwable)
-                        }
-                    }
-                    ui.errorMessage(errorMsg)
-                    // Optionally log the full error response body if available
-                    try {
-                        def errorStream = post.getErrorStream()
-                        if (errorStream) {
-                            logger.warn("Error response body: ${errorStream.getText('UTF-8')}")
-                        }
-                    } catch (Exception ignored) {
-                    }
-                }
-
-            } catch (Exception e) {
-                logger.warn("Exception during API call to " + provider, e as Throwable)
-                ui.errorMessage("Network or processing error during API call: " + e.message)
+                // Convert string provider to enum
+                def provider = ApiProvider.fromString(providerStr)
+                return handleApiCall(provider, apiKey, payloadMap, logger, ui)
+            } catch (LlmAddonException e) {
+                ui.errorMessage(e.message)
+                return ""
             }
-
-            return responseText
         }
 
         // For backward compatibility
@@ -104,5 +77,106 @@ class ApiCallerFactory {
                 make_openai_call    : make_openai_call,
                 make_openrouter_call: make_openrouter_call
         ]
+    }
+    
+    /**
+     * Handles the API call to the specified provider
+     *
+     * @param provider The API provider
+     * @param apiKey The API key
+     * @param payloadMap The request payload
+     * @param logger The logger
+     * @param ui The UI
+     * @return The response text
+     */
+    private static String handleApiCall(ApiProvider provider, String apiKey, 
+                                      Map<String, Object> payloadMap, Logger logger, def ui) {
+        def responseText = ""
+        String apiUrl = provider.endpoint
+        Map<String, String> headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $apiKey"
+        ]
+
+        // Add provider-specific headers
+        if (provider == ApiProvider.OPENROUTER) {
+            headers["HTTP-Referer"] = "https://github.com/barrymac/freeplane_openai_addon"
+            headers["X-Title"] = "Freeplane GPT AddOn"
+        }
+
+        try {
+            def post = new URL(apiUrl).openConnection() as HttpURLConnection
+            post.setRequestMethod("POST")
+            post.setDoOutput(true)
+            
+            // Apply all headers
+            headers.each { key, value -> post.setRequestProperty(key, value) }
+
+            // Use JsonBuilder to create the payload string
+            def payload = new JsonBuilder(payloadMap).toString()
+            post.getOutputStream().write(payload.getBytes("UTF-8"))
+
+            def postRC = post.getResponseCode()
+            logger.info("API Call to {} ({}) - Response Code: {}", provider.name(), apiUrl, postRC)
+
+            if (postRC == 200) {
+                responseText = post.getInputStream().getText("UTF-8")
+                logger.info("{} response: {}", provider.name(), responseText.take(200) + "...") // Log truncated response
+            } else {
+                // Handle common error codes centrally
+                String errorMsg
+                String browseUrl = null
+                
+                switch (postRC) {
+                    case 401:
+                        errorMsg = "Invalid authentication or incorrect API key provided for $provider."
+                        browseUrl = (provider == ApiProvider.OPENROUTER) ? 
+                            "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
+                        break
+                    case 404:
+                        errorMsg = (provider == ApiProvider.OPENROUTER) ? 
+                            "Endpoint not found. Check your OpenRouter configuration." : 
+                            "You might need organization membership for OpenAI API."
+                        break
+                    case 429:
+                        errorMsg = "Rate limit reached or quota exceeded for $provider."
+                        break
+                    default:
+                        errorMsg = "Unhandled error code $postRC returned from $provider API."
+                }
+                
+                if (browseUrl) {
+                    try {
+                        Desktop.desktop.browse(new URI(browseUrl))
+                    } catch (Exception browseEx) {
+                        logger.warn("Failed to open browser for URL: $browseUrl", browseEx as Throwable)
+                    }
+                }
+                
+                ui.errorMessage(errorMsg)
+                
+                // Log the error response body if available
+                try {
+                    def errorStream = post.getErrorStream()
+                    if (errorStream) {
+                        logger.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                    }
+                } catch (Exception ignored) {
+                    // Ignore errors reading the error stream
+                }
+                
+                throw new ApiException(errorMsg, postRC)
+            }
+
+        } catch (ApiException e) {
+            // Re-throw API exceptions
+            throw e
+        } catch (Exception e) {
+            logger.warn("Exception during API call to $provider", e as Throwable)
+            ui.errorMessage("Network or processing error during API call: ${e.message}")
+            throw new LlmAddonException("API call failed: ${e.message}", e)
+        }
+
+        return responseText
     }
 }

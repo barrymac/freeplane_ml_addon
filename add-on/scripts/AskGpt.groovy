@@ -1,4 +1,5 @@
-import com.barrymac.freeplane.addons.llm.DependencyLoader
+import com.barrymac.freeplane.addons.llm.*
+import com.barrymac.freeplane.addons.llm.exceptions.*
 import groovy.swing.SwingBuilder
 
 import javax.swing.*
@@ -19,14 +20,9 @@ def loadDefaultMessages = deps.messageLoader.loadDefaultMessages // Get the new 
 def createBranchGenerator = deps.branchGeneratorFactory // Get factory method
 
 // Load configuration using ConfigManager
-def configMap = ConfigManager.loadBaseConfig(config)
-def apiKey = configMap.apiKey
-def gptModel = configMap.model
-def maxResponseLength = configMap.maxTokens
-def temperature = configMap.temperature
-def apiProvider = configMap.provider
-def selectedSystemMessageIndex = config.getProperty('openai.system_message_index', 0) as int
-def selectedUserMessageIndex = config.getProperty('openai.user_message_index', 0) as int
+def apiConfig = ConfigManager.loadBaseConfig(config)
+def selectedSystemMessageIndex = ConfigManager.getSystemMessageIndex(config)
+def selectedUserMessageIndex = ConfigManager.getUserMessageIndex(config)
 
 String systemMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptSystemMessages.txt"
 String userMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptUserMessages.txt"

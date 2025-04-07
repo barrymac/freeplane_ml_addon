@@ -1,4 +1,5 @@
-import com.barrymac.freeplane.addons.llm.DependencyLoader
+import com.barrymac.freeplane.addons.llm.*
+import com.barrymac.freeplane.addons.llm.exceptions.*
 import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
 
@@ -31,7 +32,7 @@ def parseGeneratedDimension(String response) {
         }
     }
     
-    throw new Exception("""Invalid dimension format. Received: '$response'
+    throw new LlmAddonException("""Invalid dimension format. Received: '$response'
         Expected format: 'Pole 1: [concept]; Pole 2: [concept]'""")
 }
 
@@ -54,12 +55,7 @@ def MessageLoader = deps.messageLoader
 def addModelTagRecursively = deps.nodeTagger
 
 // Load configuration using ConfigManager
-def configMap = ConfigManager.loadBaseConfig(config)
-def apiKey = configMap.apiKey
-def model = configMap.model
-def maxTokens = configMap.maxTokens
-def temperature = configMap.temperature
-def provider = configMap.provider
+def apiConfig = ConfigManager.loadBaseConfig(config)
 
 // Load comparison messages using MessageLoader from deps
 def messages = MessageLoader.loadComparisonMessages(config)
