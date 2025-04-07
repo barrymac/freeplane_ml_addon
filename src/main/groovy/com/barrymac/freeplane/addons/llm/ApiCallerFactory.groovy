@@ -129,7 +129,7 @@ class ApiCallerFactory {
                 
                 switch (postRC) {
                     case 401:
-                        errorMsg = "Invalid authentication or incorrect API key provided for $provider."
+                        errorMsg = "Invalid authentication or incorrect API key provided for ${provider.name().toLowerCase()}."
                         browseUrl = (provider == ApiProvider.OPENROUTER) ? 
                             "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
                         break
@@ -139,10 +139,10 @@ class ApiCallerFactory {
                             "You might need organization membership for OpenAI API."
                         break
                     case 429:
-                        errorMsg = "Rate limit reached or quota exceeded for $provider."
+                        errorMsg = "Rate limit reached or quota exceeded for ${provider.name().toLowerCase()}."
                         break
                     default:
-                        errorMsg = "Unhandled error code $postRC returned from $provider API."
+                        errorMsg = "Unhandled error code $postRC returned from ${provider.name().toLowerCase()} API."
                 }
                 
                 if (browseUrl) {
