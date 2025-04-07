@@ -4,18 +4,19 @@ Idea 1: $nodeContent
 Idea 2: $otherNodeContent
 
 **Comparison Structure Requirements:**
-1. Alternate perspectives between the ideas.
-2. Use the exact idea content from above in your comparison.
+1. Analyze **Idea 1** relative to **Idea 2** based on the dimension '$comparativeDimension'.
+2. Use the comparison poles ($pole1 vs $pole2) provided in the system message.
 3. For each point:
-   - Start with the idea's content.
-   - Use comparison terms: "while", "whereas", "compared to", "in contrast".
-   - Include concrete examples or characteristics relevant to the ideas and the dimension '$comparativeDimension'.
+   - Describe **only** the characteristics of **Idea 1** as they compare to **Idea 2**.
+   - Start the point directly with the comparative statement (e.g., "Offers more...", "Is less...", "Has higher...").
+   - Be concise. The comparison to Idea 2 is implied by the context.
+   - Include concrete examples or characteristics relevant to Idea 1 and the dimension.
 
-**Example Response Format (using '$pole1 vs $pole2' as the dimension):**
+**Example Response Format (for analyzing Idea 1 using '$pole1 vs $pole2'):**
 $pole1:
-- [Idea 1 Content] offers more [relevant characteristic for pole1] compared to [Idea 2 Content], specifically regarding [example feature].
-- [Idea 2 Content] provides greater [relevant characteristic for pole1] whereas [Idea 1 Content] focuses on [contrasting feature].
+- Offers more [relevant characteristic for pole1], specifically regarding [example feature of Idea 1].
+- Provides greater [relevant characteristic for pole1] due to [specific reason related to Idea 1].
 
 $pole2:
-- [Idea 1 Content] exhibits higher [relevant characteristic for pole2] due to [specific reason], unlike [Idea 2 Content]'s [alternative aspect].
-- While both ideas share [commonality], [Idea 2 Content] allows for more [relevant characteristic for pole2] compared to [Idea 1 Content] because of [differentiating factor].
+- Exhibits higher [relevant characteristic for pole2] because of [specific aspect of Idea 1].
+- Allows for more [relevant characteristic for pole2] in terms of [differentiating factor of Idea 1].
