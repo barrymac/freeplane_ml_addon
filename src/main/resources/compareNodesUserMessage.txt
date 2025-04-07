@@ -1,4 +1,4 @@
-Compare these two destinations using $comparativeDimension:
+Compare these two subjects using $comparativeDimension:
 
 Destination 1: $nodeContent
 Destination 2: $otherNodeContent
