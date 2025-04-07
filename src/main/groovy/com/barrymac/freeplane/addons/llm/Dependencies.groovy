@@ -15,6 +15,7 @@ class Dependencies {
     def responseParser
     def dialogHelper
     def nodeHelperUtils
+    def nodeOperations
     def configManager
     def messageLoader
 }
