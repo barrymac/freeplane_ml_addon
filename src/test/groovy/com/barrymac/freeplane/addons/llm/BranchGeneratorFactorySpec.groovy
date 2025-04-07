@@ -39,12 +39,12 @@ class BranchGeneratorFactorySpec extends Specification {
 
         def generator = BranchGeneratorFactory.createGenerateBranches(
             [c: [selected: mockNode], ui: mockUi, config: [:]],
-            // Update the deps map passed to the factory
-            [
+            // Create a proper Dependencies object instead of a Map
+            new Dependencies(
                 apiCaller: [make_api_call: mockApiClosure],
                 nodeTagger: mockNodeTaggerClosure
                 // dialogHelper entry removed as it's called statically
-            ]
+            )
         )
 
         when: "Invoking generator with parameters"
@@ -92,13 +92,13 @@ class BranchGeneratorFactorySpec extends Specification {
              mockNode.children >> [mockChild] // Simulate child being added *after* call
         }
 
-        // Update the deps map passed here
+        // Create a proper Dependencies object
         def generator = BranchGeneratorFactory.createGenerateBranches(
             [c: [selected: mockNode], ui: mockUi, config: [:]],
-            [
+            new Dependencies(
                 apiCaller: [make_api_call: mockApiClosure],
                 nodeTagger: mockNodeTaggerClosure
-            ]
+            )
         )
 
         // Mock necessary preceding calls for the flow to reach tagging
@@ -131,10 +131,10 @@ class BranchGeneratorFactorySpec extends Specification {
 
         def generator = BranchGeneratorFactory.createGenerateBranches(
             [c: [selected: mockNode], ui: mockUi, logger: mockLogger, config: [:]],
-            [
+            new Dependencies(
                 apiCaller: [make_api_call: mockApiClosure],
                 nodeTagger: mockNodeTaggerClosure
-            ]
+            )
         )
         
         1 * DialogHelper.createProgressDialog(_, _, _) >> {
