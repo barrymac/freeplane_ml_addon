@@ -64,17 +64,13 @@ class NodeHelper {
         // Format the map into an indented string
         def builder = new StringBuilder()
         
-        // Add comparison title with other node reference if available
-        if (otherNode) {
-            builder.append("Comparative Analysis (${comparisonType}): ${nodeProxy.text} vs ${otherNode.text}\n")
-        } else {
-            builder.append("Comparison (${comparisonType})\n") // Root of the new branch
-        }
+        // Concise title for the analysis branch
+        builder.append("Comparative Analysis: ${comparisonType}\n")
         
         analysisMap.each { category, points ->
             builder.append("    ${category}\n") // Indent level 1 for category
             points.each { point ->
-                builder.append("        ${point}\n") // Indent level 2 for points
+                builder.append("        - ${point}\n") // Indent level 2 for points, using standard '-'
             }
         }
         def formattedAnalysis = builder.toString().trim()
