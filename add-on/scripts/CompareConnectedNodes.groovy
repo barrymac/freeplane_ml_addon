@@ -166,24 +166,26 @@ try {
             
             // --- Prepare source node prompt ---
             def sourceBinding = getBindingMap(sourceNode, targetNode) // Pass both nodes
-            sourceBinding['comparisonType'] = comparativeDimension
+            // Remove incorrect assignment - comparisonType should be user input, not the generated dimension
             sourceBinding['comparativeDimension'] = comparativeDimension
             // Add pole1 and pole2 to the binding maps
             def (pole1, pole2) = comparativeDimension.split(' vs ')
             sourceBinding['pole1'] = pole1
             sourceBinding['pole2'] = pole2
             logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
+            logger.info("CompareNodes: Source Binding Map contains comparativeDimension? ${sourceBinding.containsKey('comparativeDimension')}")
             def sourceEngine = new SimpleTemplateEngine()
             def sourceUserPrompt = sourceEngine.createTemplate(compareNodesUserMessageTemplate).make(sourceBinding).toString()
             logger.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
             
             // --- Prepare target node prompt ---
             def targetBinding = getBindingMap(targetNode, sourceNode) // Pass both nodes
-            targetBinding['comparisonType'] = comparativeDimension
+            // Remove incorrect assignment - comparisonType should be user input, not the generated dimension
             targetBinding['comparativeDimension'] = comparativeDimension
             targetBinding['pole1'] = pole1
             targetBinding['pole2'] = pole2
             logger.info("CompareNodes: Target Binding Map: ${targetBinding}")
+            logger.info("CompareNodes: Target Binding Map contains comparativeDimension? ${targetBinding.containsKey('comparativeDimension')}")
             def targetEngine = new SimpleTemplateEngine()
             def targetUserPrompt = targetEngine.createTemplate(compareNodesUserMessageTemplate).make(targetBinding).toString()
             logger.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")

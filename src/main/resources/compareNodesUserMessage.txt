@@ -12,11 +12,11 @@ Destination 2: $otherNodeContent
    - Include concrete examples
 
 **Example Response Format:**
-Adventure Potential vs Relaxation Value:
-Adventure Potential:
+$pole1 vs $pole2:
+$pole1:
 - Torres del Paine National Park offers more challenging trekking opportunities compared to the Lake District's volcanic landscapes, with its famous W Circuit requiring multi-day hikes.
 - The Lake District's Osorno Volcano provides moderate adventure through day hikes whereas Torres del Paine demands serious wilderness experience.
 
-Relaxation Value: 
+$pole2: 
 - Puerto Varas in the Lake District offers better relaxation value with its lakeside resorts and hot springs, unlike Torres del Paine's remote refugios.
 - While both destinations have scenic beauty, the Lake District allows easier access to amenities that enhance relaxation compared to Torres del Paine's rugged environment.
