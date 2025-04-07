@@ -1,11 +1,12 @@
 package com.barrymac.freeplane.addons.llm
 
-import org.slf4j.Logger
+import groovy.util.logging.Slf4j
 import spock.lang.Specification
 import spock.lang.Unroll
-import javax.swing.*
-import java.awt.Desktop
 
+import java.awt.*
+
+@Slf4j
 class ApiCallerFactorySpec extends Specification {
     def mockLogger = Mock(Logger)
     def mockUi = Mock(Object)
