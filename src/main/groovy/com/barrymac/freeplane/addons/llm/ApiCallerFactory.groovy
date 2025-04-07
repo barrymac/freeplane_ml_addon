@@ -32,7 +32,7 @@ class ApiCallerFactory {
             switch (provider.toLowerCase()) {
                 case 'openai': return OPENAI
                 case 'openrouter': return OPENROUTER
-                default: throw new LlmAddonException("Unsupported API provider: $provider", false)
+                default: throw new LlmAddonException("Unsupported API provider: $provider")
             }
         }
     }
