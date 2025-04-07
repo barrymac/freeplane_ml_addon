@@ -1,13 +1,12 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 /**
  * Helper class to centralize dependency loading
  */
 @CompileStatic
-@Slf4j
 class DependencyLoader {
     /**
      * Loads all dependencies needed by the add-on
@@ -17,7 +16,7 @@ class DependencyLoader {
      * @return Dependencies object containing all dependencies
      */
     static Dependencies loadDependencies(def config, def logger, def ui) {
-        log.debug("Loading dependencies for LLM add-on")
+        LogUtils.info("Loading dependencies for LLM add-on")
         return new Dependencies(
                 // Instantiate ApiCaller using its factory
                 apiCaller: ApiCallerFactory.createApiCaller([ui: ui]),

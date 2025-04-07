@@ -1,9 +1,8 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.text.SimpleTemplateEngine
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
-@Slf4j
 class MessageExpander {
     // Function to expand message templates with node context
     static def expandMessage(String message, def node) {
@@ -25,7 +24,7 @@ class MessageExpander {
             def template = engine.createTemplate(message).make(binding)
             return template.toString()
         } catch (Exception e) {
-            log.error("Error expanding message template", e)
+            LogUtils.severe("Error expanding message template: ${e.message}")
             return message // Return original message on error
         }
     }
@@ -46,7 +45,7 @@ class MessageExpander {
                     siblingContents : siblingContents
             ]
         } catch (Exception e) {
-            log.error("Error creating binding map", e)
+            LogUtils.severe("Error creating binding map: ${e.message}")
             return [nodeContent: node?.plainText ?: ""] // Return minimal binding on error
         }
     }

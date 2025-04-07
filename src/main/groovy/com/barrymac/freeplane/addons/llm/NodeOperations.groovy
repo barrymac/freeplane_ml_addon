@@ -1,13 +1,12 @@
 package com.barrymac.freeplane.addons.llm
 
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 /**
  * Handles node-related operations with proper error handling and logging
  */
 //@CompileStatic
-@Slf4j
 class NodeOperations {
     /**
      * Adds analysis content as a branch to a node with proper tagging
@@ -21,7 +20,7 @@ class NodeOperations {
     static void addAnalysisBranch(def parentNode, String content,
                                   String model, Closure tagger) {
         try {
-            log.info("Adding analysis branch to node: {}", parentNode.text)
+            LogUtils.info("Adding analysis branch to node: ${parentNode.text}")
 
             // Track existing children before adding
             def childrenBefore = parentNode.children.toSet()
@@ -33,7 +32,7 @@ class NodeOperations {
             def newNodes = parentNode.children.toSet() - childrenBefore
 
             if (newNodes.isEmpty()) {
-                log.warn("No new nodes created when adding branch to: {}", parentNode.text)
+                LogUtils.warn("No new nodes created when adding branch to: ${parentNode.text}")
                 return
             }
 
@@ -41,15 +40,15 @@ class NodeOperations {
             newNodes.each { node ->
                 try {
                     tagger.call(node, model)
-                    log.debug("Tagged node: {}", node.text)
+                    LogUtils.info("Tagged node: ${node.text}")
                 } catch (Exception taggingError) {
-                    log.warn("Failed to tag node: {}", node.text, taggingError)
+                    LogUtils.warn("Failed to tag node: ${node.text}: ${taggingError.message}")
                 }
             }
 
         } catch (Exception e) {
             String errorMsg = "Failed to add branch to node: ${parentNode.text}"
-            log.error(errorMsg, e)
+            LogUtils.severe("${errorMsg}: ${e.message}")
             throw new LlmAddonException(errorMsg, e)
         }
     }
@@ -64,7 +63,7 @@ class NodeOperations {
      */
     List validateConnection(def node1, def node2) {
         try {
-            log.debug("Validating connection between {} and {}", node1.text, node2.text)
+            LogUtils.info("Validating connection between ${node1.text} and ${node2.text}")
 
             def connectors = node1.connectorsOut.findAll { it.target == node2 } +
                     node1.connectorsIn.findAll { it.source == node2 }
@@ -84,7 +83,7 @@ class NodeOperations {
             throw e // Re-throw validation errors
         } catch (Exception e) {
             String errorMsg = "Connection validation failed"
-            log.error(errorMsg, e)
+            LogUtils.severe("${errorMsg}: ${e.message}")
             throw new LlmAddonException(errorMsg, e)
         }
     }
@@ -99,7 +98,7 @@ class NodeOperations {
     static String formatAnalysis(Map<String, List<String>> analysisMap,
                                  String comparisonType) {
         try {
-            log.debug("Formatting analysis for {}", comparisonType)
+            LogUtils.info("Formatting analysis for ${comparisonType}")
 
             def builder = new StringBuilder().with {
                 append("Comparison (${comparisonType})\n")
@@ -115,7 +114,7 @@ class NodeOperations {
             return builder.toString().trim()
 
         } catch (Exception e) {
-            log.warn("Analysis formatting failed", e)
+            LogUtils.warn("Analysis formatting failed: ${e.message}")
             return "Analysis formatting error: ${e.message}"
         }
     }

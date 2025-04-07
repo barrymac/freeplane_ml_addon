@@ -1,8 +1,7 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
-@Slf4j
 class MessageFileHandler {
     /**
      * Loads messages from a user-specific file, falling back to a default resource from the JAR.
@@ -18,19 +17,19 @@ class MessageFileHandler {
         def fileContent
         try {
             fileContent = new File(filePath).text
-            log.debug("Loaded message file from: {}", filePath)
+            LogUtils.info("Loaded message file from: ${filePath}")
         } catch (Exception e) {
-            log.info("User message file not found at: {}. Loading default from resource: {}", filePath, defaultResourcePath)
+            LogUtils.info("User message file not found at: ${filePath}. Loading default from resource: ${defaultResourcePath}")
             fileContent = defaultLoaderFunc(defaultResourcePath) // Load default from JAR
             try {
                 new File(filePath).write(fileContent) // Write default content to user file
-                log.info("Created new message file at: {}", filePath)
+                LogUtils.info("Created new message file at: ${filePath}")
             } catch (Exception writeEx) {
-                log.warn("Failed to write default content to: {}", filePath, writeEx)
+                LogUtils.warn("Failed to write default content to: ${filePath}: ${writeEx.message}")
             }
         }
         messages = fileContent.split(/======+\n/)*.trim()
-        log.debug("Loaded {} messages from file", messages.size())
+        LogUtils.info("Loaded ${messages.size()} messages from file")
         return messages
     }
 
@@ -38,9 +37,9 @@ class MessageFileHandler {
         try {
             def fileContent = messages.join("\n======\n")
             new File(filePath).write(fileContent)
-            log.info("Saved {} messages to file: {}", messages.size(), filePath)
+            LogUtils.info("Saved ${messages.size()} messages to file: ${filePath}")
         } catch (Exception e) {
-            log.error("Failed to save messages to file: {}", filePath, e)
+            LogUtils.severe("Failed to save messages to file: ${filePath}: ${e.message}")
         }
     }
 }

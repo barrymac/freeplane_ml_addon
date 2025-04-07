@@ -1,13 +1,11 @@
 package com.barrymac.freeplane.addons.llm
 
-
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 /**
  * Helper class to centralize configuration loading
  */
 //@CompileStatic
-@Slf4j
 class ConfigManager {
     // Define default models directly in code
     static final List<String> DEFAULT_MODELS = [
@@ -42,9 +40,8 @@ class ConfigManager {
             // Get available models from config or use defaults
             def availableModels = config.getProperty('openai.available_models')?.split('\n') ?: DEFAULT_MODELS
 
-            log.info("Loaded configuration: provider={}, model={}, maxTokens={}, temperature={}",
-                    provider, model, maxTokens, temperature)
-            log.debug("Available models: {}", availableModels)
+            LogUtils.info("Loaded configuration: provider=${provider}, model=${model}, maxTokens=${maxTokens}, temperature=${temperature}")
+            LogUtils.info("Available models: ${availableModels}")
 
             return new ApiConfig(
                     provider: provider,
@@ -55,7 +52,7 @@ class ConfigManager {
                     availableModels: availableModels
             )
         } catch (Exception e) {
-            log.error("Error loading base configuration", e)
+            LogUtils.severe("Error loading base configuration: ${e.message}")
             // Return default config on error
             return new ApiConfig(
                     provider: 'openrouter',
@@ -76,7 +73,7 @@ class ConfigManager {
      */
     static String getAddonsDir(def config) {
         def dir = "${config.freeplaneUserDirectory}/addons/promptLlmAddOn"
-        log.debug("Add-ons directory: {}", dir)
+        LogUtils.info("Add-ons directory: ${dir}")
         return dir
     }
 
@@ -89,10 +86,10 @@ class ConfigManager {
     static int getSystemMessageIndex(def config) {
         try {
             def index = config.getProperty('openai.system_message_index', 0) as int
-            log.debug("System message index: {}", index)
+            LogUtils.info("System message index: ${index}")
             return index
         } catch (Exception e) {
-            log.warn("Error getting system message index, using default", e)
+            LogUtils.warn("Error getting system message index, using default: ${e.message}")
             return 0
         }
     }
@@ -106,10 +103,10 @@ class ConfigManager {
     static int getUserMessageIndex(def config) {
         try {
             def index = config.getProperty('openai.user_message_index', 0) as int
-            log.debug("User message index: {}", index)
+            LogUtils.info("User message index: ${index}")
             return index
         } catch (Exception e) {
-            log.warn("Error getting user message index, using default", e)
+            LogUtils.warn("Error getting user message index, using default: ${e.message}")
             return 0
         }
     }

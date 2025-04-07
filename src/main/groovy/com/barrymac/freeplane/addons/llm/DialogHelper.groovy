@@ -1,7 +1,7 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.swing.SwingBuilder
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 import javax.swing.*
 import java.awt.*
@@ -9,7 +9,6 @@ import java.awt.*
 /**
  * Helper class for creating and managing UI dialogs
  */
-@Slf4j
 class DialogHelper {
     /**
      * Shows a dialog for selecting or entering a comparison type
@@ -70,7 +69,7 @@ class DialogHelper {
                                     customTypes.add(selectedType)
                                     // Save updated custom types list
                                     config.setProperty(configKey, customTypes.join('|'))
-                                    log.info("Added new comparison type: {}", selectedType)
+                                    LogUtils.info("Added new comparison type: ${selectedType}")
                                 }
                             }
                             // Get the button source, find its window (the dialog), and dispose it
@@ -89,15 +88,15 @@ class DialogHelper {
             dialog.visible = true
 
             if (selectedType) {
-                log.info("User selected comparison type: {}", selectedType)
+                LogUtils.info("User selected comparison type: ${selectedType}")
             } else {
-                log.info("User cancelled comparison type selection")
+                LogUtils.info("User cancelled comparison type selection")
             }
 
             // Return the selected type (or null if cancelled)
             return selectedType
         } catch (Exception e) {
-            log.error("Error showing comparison dialog", e)
+            LogUtils.severe("Error showing comparison dialog: ${e.message}")
             ui.errorMessage("Error showing dialog: ${e.message}")
             return null
         }
@@ -113,7 +112,7 @@ class DialogHelper {
      */
     static JDialog createProgressDialog(ui, String title, String message) {
         try {
-            log.debug("Creating progress dialog: {}", title)
+            LogUtils.info("Creating progress dialog: ${title}")
             def swingBuilder = new SwingBuilder()
             def dialog = swingBuilder.dialog(
                     title: title,
@@ -142,7 +141,7 @@ class DialogHelper {
 
             return dialog
         } catch (Exception e) {
-            log.error("Error creating progress dialog", e)
+            LogUtils.severe("Error creating progress dialog: ${e.message}")
             // Return a minimal dialog in case of error
             return new JDialog(ui.currentFrame, title, false)
         }

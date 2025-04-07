@@ -1,12 +1,11 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.json.JsonSlurper
-import groovy.util.logging.Slf4j
+import org.freeplane.core.util.LogUtils
 
 import javax.swing.*
 import java.awt.*
 
-@Slf4j
 class BranchGeneratorFactory {
     static def createGenerateBranches(Map closures, Map deps) {
         return { apiKey, systemMessage, userMessage, model, maxTokens, temperature, provider ->
@@ -20,7 +19,7 @@ class BranchGeneratorFactory {
             // DialogHelper is now used statically
 
             try {
-                log.info("Starting branch generation with model: {}", model)
+                LogUtils.info("Starting branch generation with model: ${model}")
 
                 // Validate API key
                 if (apiKey.isEmpty()) {
@@ -43,7 +42,7 @@ class BranchGeneratorFactory {
                 )
                 ui.setDialogLocationRelativeTo(dialog, node.delegate)
                 dialog.setVisible(true)
-                log.info("User message: {}", userMessage)
+                LogUtils.info("User message: ${userMessage}")
 
                 // Run API call in background thread
                 def workerThread = new Thread({
@@ -69,7 +68,7 @@ class BranchGeneratorFactory {
                         def jsonResponse = jsonSlurper.parseText(responseText)
                         def response = jsonResponse.choices[0].message.content
 
-                        log.info("LLM response received, length: {}", response?.length() ?: 0)
+                        LogUtils.info("LLM response received, length: ${response?.length() ?: 0}")
                         SwingUtilities.invokeLater {
                             dialog.dispose()
                             // Get the set of children *before* adding
@@ -86,11 +85,10 @@ class BranchGeneratorFactory {
                                 newlyAddedNodes.each { newNode -> addModelTagRecursively(newNode, model) }
                             }
                             // Add logging to confirm tagging for Quick Prompt
-                            log.info("BranchGenerator: Tag 'LLM:{}' applied to {} newly added top-level node(s).",
-                                    model.replace('/', '_'), newlyAddedNodes.size())
+                            LogUtils.info("BranchGenerator: Tag 'LLM:${model.replace('/', '_')}' applied to ${newlyAddedNodes.size()} newly added top-level node(s).")
                         }
                     } catch (Exception e) {
-                        log.warn("API call failed", e)
+                        LogUtils.warn("API call failed: ${e.message}")
                         SwingUtilities.invokeLater {
                             dialog.dispose()
                             ui.errorMessage("API Error: ${e.message}")
@@ -101,7 +99,7 @@ class BranchGeneratorFactory {
                 workerThread.setContextClassLoader(BranchGeneratorFactory.class.classLoader)
                 workerThread.start()
             } catch (Exception e) {
-                log.error("Error in BranchGenerator setup", e)
+                LogUtils.severe("Error in BranchGenerator setup: ${e.message}")
                 ui.errorMessage("Setup Error: ${e.message}")
             }
         }
