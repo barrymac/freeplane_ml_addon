@@ -12,6 +12,6 @@ class ApiConfig {
     String model
     int maxTokens
     double temperature
-    
+
     List<String> availableModels
 }

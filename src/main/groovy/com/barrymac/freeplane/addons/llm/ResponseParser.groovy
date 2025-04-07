@@ -61,15 +61,15 @@ class ResponseParser {
 
             // Fallback: If no category header was found, but the text contains bullet points
             if (firstCategoryFound == null && analysisText?.contains("- ")) {
-                 LogUtils.info("ResponseParser: No category heading found, collecting all bullet points under 'Analysis'.")
-                 pointsList = analysisText.split('\n')
-                    .collect { it.trim() }
-                    .findAll { it.startsWith('- ') }
-                    .collect { it.substring(2).trim() }
-                    .findAll { it != null && !it.isEmpty() }
-                 if (pointsList) {
+                LogUtils.info("ResponseParser: No category heading found, collecting all bullet points under 'Analysis'.")
+                pointsList = analysisText.split('\n')
+                        .collect { it.trim() }
+                        .findAll { it.startsWith('- ') }
+                        .collect { it.substring(2).trim() }
+                        .findAll { it != null && !it.isEmpty() }
+                if (pointsList) {
                     results["Analysis"] = pointsList
-                 }
+                }
             }
 
             // Filter out empty categories or categories with empty lists
@@ -77,8 +77,8 @@ class ResponseParser {
 
             // Final fallback if parsing yields nothing but text exists
             if (results.isEmpty() && analysisText?.trim()) {
-                 LogUtils.warn("ResponseParser: Parsing yielded empty results despite non-empty input. Using raw text fallback.")
-                 results["Analysis"] = analysisText.trim().split('\n').collect { it.trim() }.findAll { !it.isEmpty() }
+                LogUtils.warn("ResponseParser: Parsing yielded empty results despite non-empty input. Using raw text fallback.")
+                results["Analysis"] = analysisText.trim().split('\n').collect { it.trim() }.findAll { !it.isEmpty() }
             }
 
             LogUtils.info("ResponseParser: Final parsed map: ${results}")

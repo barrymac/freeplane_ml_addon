@@ -44,18 +44,18 @@ class MessageExpander {
                     ancestorContents: ancestorContents,
                     siblingContents : siblingContents
             ]
-            
+
             // Add other node content if provided
             if (otherNode) {
                 result.otherNodeContent = otherNode.plainText
             }
-            
+
             return result
         } catch (Exception e) {
             LogUtils.severe("Error creating binding map: ${e.message}")
             return [
-                nodeContent: node?.plainText ?: "", 
-                otherNodeContent: otherNode?.plainText ?: ""
+                    nodeContent     : node?.plainText ?: "",
+                    otherNodeContent: otherNode?.plainText ?: ""
             ] // Return minimal binding on error
         }
     }

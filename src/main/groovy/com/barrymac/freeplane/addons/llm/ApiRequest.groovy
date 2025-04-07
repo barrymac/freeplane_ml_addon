@@ -11,14 +11,14 @@ class ApiRequest {
     List<Message> messages
     double temperature
     int maxTokens
-    
+
     // Convert to a Map for JSON serialization
     Map<String, Object> toMap() {
         [
-            'model': model,
-            'messages': messages.collect { it.toMap() },
-            'temperature': temperature,
-            'max_tokens': maxTokens
+                'model'      : model,
+                'messages'   : messages.collect { it.toMap() },
+                'temperature': temperature,
+                'max_tokens' : maxTokens
         ]
     }
 }

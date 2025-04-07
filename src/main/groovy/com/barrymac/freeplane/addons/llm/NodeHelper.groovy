@@ -63,10 +63,10 @@ class NodeHelper {
 
         // Format the map into an indented string
         def builder = new StringBuilder()
-        
+
         // Concise title for the analysis branch
-        builder.append("Comparative Analysis: ${comparisonType}\n")
-        
+        builder.append("${comparisonType}\n")
+
         analysisMap.each { category, points ->
             builder.append("    ${category}\n") // Indent level 1 for category
             points.each { point ->
