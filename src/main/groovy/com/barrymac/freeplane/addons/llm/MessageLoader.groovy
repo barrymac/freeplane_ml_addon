@@ -1,8 +1,11 @@
 package com.barrymac.freeplane.addons.llm
 
+import groovy.util.logging.Slf4j
+
 /**
  * Helper class for loading and managing message templates
  */
+@Slf4j
 class MessageLoader {
     /**
      * Load resource from JAR classpath
@@ -13,6 +16,7 @@ class MessageLoader {
     private static String getResourceContent(String path) {
         def stream = MessageLoader.class.getResourceAsStream(path)
         if (!stream) {
+            log.error("Missing required resource: {}", path)
             throw new Exception("Missing required resource: ${path}")
         }
         return stream.getText("UTF-8").trim()
@@ -26,8 +30,15 @@ class MessageLoader {
      * @throws Exception if the resource cannot be found.
      */
     static String loadDefaultMessages(String resourcePath) {
-        // Use the existing getResourceContent which already handles errors
-        return getResourceContent(resourcePath)
+        try {
+            // Use the existing getResourceContent which already handles errors
+            def content = getResourceContent(resourcePath)
+            log.debug("Loaded default message from resource: {}, size: {} chars", resourcePath, content.length())
+            return content
+        } catch (Exception e) {
+            log.error("Failed to load default message from resource: {}", resourcePath, e)
+            throw e
+        }
     }
 
     /**
@@ -38,12 +49,14 @@ class MessageLoader {
      */
     static Map loadComparisonMessages(config) {
         try {
+            log.info("Loading comparison message templates")
             return [
                     systemTemplate         : getResourceContent("/compareNodesSystem.txt"),
                     userTemplate           : getResourceContent("/compareNodesUserMessage.txt"),
                     dimensionSystemTemplate: getResourceContent("/generateComparativeDimensionSystem.txt")
             ]
         } catch (Exception e) {
+            log.error("Failed to load comparison templates", e)
             throw new Exception("Failed to load comparison templates: ${e.message}")
         }
     }

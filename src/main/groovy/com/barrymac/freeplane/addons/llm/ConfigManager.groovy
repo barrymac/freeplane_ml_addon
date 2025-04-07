@@ -1,11 +1,13 @@
 package com.barrymac.freeplane.addons.llm
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
 /**
  * Helper class to centralize configuration loading
  */
 @CompileStatic
+@Slf4j
 class ConfigManager {
     // Define default models directly in code
     static final List<String> DEFAULT_MODELS = [
@@ -31,14 +33,39 @@ class ConfigManager {
      * @return ApiConfig object with loaded configuration
      */
     static ApiConfig loadBaseConfig(def config) {
-        return new ApiConfig(
-                provider: config.getProperty('openai.api_provider', 'openrouter'),
-                apiKey: config.getProperty('openai.key', ''),
-                model: config.getProperty('openai.gpt_model', 'gpt-4'),
-                maxTokens: config.getProperty('openai.max_response_length', 2000) as int,
-                temperature: config.getProperty('openai.temperature', 0.7) as double,
-                availableModels: config.getProperty('openai.available_models')?.split('\n') ?: DEFAULT_MODELS
-        )
+        try {
+            def provider = config.getProperty('openai.api_provider', 'openrouter')
+            def model = config.getProperty('openai.gpt_model', 'gpt-4')
+            def maxTokens = config.getProperty('openai.max_response_length', 2000) as int
+            def temperature = config.getProperty('openai.temperature', 0.7) as double
+            
+            // Get available models from config or use defaults
+            def availableModels = config.getProperty('openai.available_models')?.split('\n') ?: DEFAULT_MODELS
+            
+            log.info("Loaded configuration: provider={}, model={}, maxTokens={}, temperature={}", 
+                    provider, model, maxTokens, temperature)
+            log.debug("Available models: {}", availableModels)
+            
+            return new ApiConfig(
+                    provider: provider,
+                    apiKey: config.getProperty('openai.key', ''),
+                    model: model,
+                    maxTokens: maxTokens,
+                    temperature: temperature,
+                    availableModels: availableModels
+            )
+        } catch (Exception e) {
+            log.error("Error loading base configuration", e)
+            // Return default config on error
+            return new ApiConfig(
+                    provider: 'openrouter',
+                    apiKey: '',
+                    model: 'gpt-4',
+                    maxTokens: 2000,
+                    temperature: 0.7,
+                    availableModels: DEFAULT_MODELS
+            )
+        }
     }
 
     /**
@@ -48,7 +75,9 @@ class ConfigManager {
      * @return String path to the add-ons directory
      */
     static String getAddonsDir(def config) {
-        return "${config.freeplaneUserDirectory}/addons/promptLlmAddOn"
+        def dir = "${config.freeplaneUserDirectory}/addons/promptLlmAddOn"
+        log.debug("Add-ons directory: {}", dir)
+        return dir
     }
     
     /**
@@ -58,7 +87,14 @@ class ConfigManager {
      * @return The system message index
      */
     static int getSystemMessageIndex(def config) {
-        return config.getProperty('openai.system_message_index', 0) as int
+        try {
+            def index = config.getProperty('openai.system_message_index', 0) as int
+            log.debug("System message index: {}", index)
+            return index
+        } catch (Exception e) {
+            log.warn("Error getting system message index, using default", e)
+            return 0
+        }
     }
     
     /**
@@ -68,6 +104,13 @@ class ConfigManager {
      * @return The user message index
      */
     static int getUserMessageIndex(def config) {
-        return config.getProperty('openai.user_message_index', 0) as int
+        try {
+            def index = config.getProperty('openai.user_message_index', 0) as int
+            log.debug("User message index: {}", index)
+            return index
+        } catch (Exception e) {
+            log.warn("Error getting user message index, using default", e)
+            return 0
+        }
     }
 }

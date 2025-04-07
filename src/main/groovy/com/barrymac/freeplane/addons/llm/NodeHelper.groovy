@@ -1,8 +1,11 @@
 package com.barrymac.freeplane.addons.llm
 
+import groovy.util.logging.Slf4j
+
 /**
  * Helper class for node operations
  */
+@Slf4j
 class NodeHelper {
     /**
      * Validates that exactly two connected nodes are selected
@@ -12,28 +15,34 @@ class NodeHelper {
      * @throws Exception if validation fails
      */
     static def validateAndGetConnectedNodes(selectedNodes) {
-        if (selectedNodes.size() != 2) {
-            throw new Exception("Please select exactly two nodes to compare.")
+        try {
+            if (selectedNodes.size() != 2) {
+                throw new Exception("Please select exactly two nodes to compare.")
+            }
+
+            def node1 = selectedNodes[0]
+            def node2 = selectedNodes[1]
+
+            // Find connectors between node1 and node2 (in either direction)
+            def connectorsOut = node1.connectorsOut.findAll { it.target == node2 }
+            def connectorsIn = node1.connectorsIn.findAll { it.source == node2 }
+            def allConnectorsBetween = connectorsOut + connectorsIn
+
+            if (allConnectorsBetween.size() == 0) {
+                throw new Exception("The two selected nodes are not connected. Please add a connector between them.")
+            }
+
+            if (allConnectorsBetween.size() > 1) {
+                throw new Exception("There are multiple connectors between the selected nodes. Please ensure there is only one.")
+            }
+
+            log.debug("Found valid connection between nodes: '{}' and '{}'", node1.text, node2.text)
+            // Return the nodes in selection order
+            return [node1, node2]
+        } catch (Exception e) {
+            log.error("Node validation failed", e)
+            throw e
         }
-
-        def node1 = selectedNodes[0]
-        def node2 = selectedNodes[1]
-
-        // Find connectors between node1 and node2 (in either direction)
-        def connectorsOut = node1.connectorsOut.findAll { it.target == node2 }
-        def connectorsIn = node1.connectorsIn.findAll { it.source == node2 }
-        def allConnectorsBetween = connectorsOut + connectorsIn
-
-        if (allConnectorsBetween.size() == 0) {
-            throw new Exception("The two selected nodes are not connected. Please add a connector between them.")
-        }
-
-        if (allConnectorsBetween.size() > 1) {
-            throw new Exception("There are multiple connectors between the selected nodes. Please ensure there is only one.")
-        }
-
-        // Return the nodes in selection order
-        return [node1, node2]
     }
 
     /**
@@ -43,13 +52,12 @@ class NodeHelper {
      * @param analysisMap The map of analysis data
      * @param comparisonType The type of comparison performed
      * @param model The LLM model used
-     * @param logger The logger instance
      * @param addModelTagRecursivelyFunc Optional function to tag nodes with model info
      */
-    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, String model, logger, addModelTagRecursivelyFunc = null) {
-        logger.info("Attempting to add analysis to node: ${nodeProxy.text}")
+    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, String model, addModelTagRecursivelyFunc = null) {
+        log.info("Attempting to add analysis to node: {}", nodeProxy.text)
         if (analysisMap.isEmpty()) {
-            logger.warn("No analysis data to add for node: ${nodeProxy.text}")
+            log.warn("No analysis data to add for node: {}", nodeProxy.text)
             return
         }
 
@@ -63,7 +71,7 @@ class NodeHelper {
             }
         }
         def formattedAnalysis = builder.toString().trim()
-        logger.info("Formatted analysis string for node ${nodeProxy.text}:\n---\n${formattedAnalysis}\n---")
+        log.debug("Formatted analysis string for node {}:\n---\n{}\n---", nodeProxy.text, formattedAnalysis)
 
         // Add the formatted string as a new branch
         try {
@@ -75,25 +83,25 @@ class NodeHelper {
             // Find the newly added root node (difference between the sets)
             def addedBranchRoot = (childrenAfterSet - childrenBeforeSet).find { true } // Get the single added node
 
-            logger.info("Successfully called appendTextOutlineAsBranch for node: ${nodeProxy.text}")
+            log.info("Successfully called appendTextOutlineAsBranch for node: {}", nodeProxy.text)
 
             // Use the passed-in tagging function
             if (addedBranchRoot && addModelTagRecursivelyFunc != null) {
                 try {
                     // Use the passed function reference
-                    addModelTagRecursivelyFunc(addedBranchRoot, model, logger)
-                    logger.info("CompareNodes: Tag 'LLM:${model.replace('/', '_')}' applied to comparison branch starting with node: ${addedBranchRoot.text}")
+                    addModelTagRecursivelyFunc(addedBranchRoot, model)
+                    log.info("CompareNodes: Tag 'LLM:{}' applied to comparison branch starting with node: {}", 
+                             model.replace('/', '_'), addedBranchRoot.text)
                 } catch (Exception e) {
-                    logger.warn("Failed to apply node tagger function".toString(), e as Throwable)
+                    log.warn("Failed to apply node tagger function", e)
                 }
             } else if (addModelTagRecursivelyFunc == null) {
-                logger.warn("CompareNodes: Node tagging function was not provided for node: ${nodeProxy.text}")
+                log.warn("CompareNodes: Node tagging function was not provided for node: {}", nodeProxy.text)
             } else {
-                logger.warn("CompareNodes: Could not identify newly added comparison branch root for tagging on node: ${nodeProxy.text}")
+                log.warn("CompareNodes: Could not identify newly added comparison branch root for tagging on node: {}", nodeProxy.text)
             }
         } catch (Exception e) {
-            // Force message to String and ensure exception is Throwable
-            logger.warn("Error calling appendTextOutlineAsBranch or tagging for node ${nodeProxy.text}".toString(), e as Throwable)
+            log.warn("Error calling appendTextOutlineAsBranch or tagging for node {}", nodeProxy.text, e)
         }
     }
 }

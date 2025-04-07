@@ -41,7 +41,7 @@ def parseGeneratedDimension(String response) {
 
 // Load all dependencies
 // Call static method directly
-def deps = DependencyLoader.loadDependencies(config, logger, ui)
+def deps = DependencyLoader.loadDependencies(config, null, ui)
 
 // Extract needed functions/classes from deps
 def ConfigManager = deps.configManager
@@ -129,7 +129,7 @@ try {
                 'max_tokens': 100
             ]
             
-            logger.info("Generating comparative dimension for: ${comparisonType}")
+            log.info("Generating comparative dimension for: ${comparisonType}")
             
             def maxRetries = 2
             def attempts = 0
@@ -142,7 +142,7 @@ try {
                     dimensionContent = new JsonSlurper().parseText(dimensionResponse)?.choices[0]?.message?.content
                     def (pole1, pole2) = parseGeneratedDimension(dimensionContent)
                     comparativeDimension = "${pole1} vs ${pole2}"
-                    logger.info("Generated comparative dimension: ${comparativeDimension}")
+                    log.info("Generated comparative dimension: {}", comparativeDimension)
                     break
                 } catch (Exception e) {
                     attempts++
@@ -159,23 +159,23 @@ try {
             }
             
             // --- Prepare Prompts with Generated Dimension ---
-            logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
+            log.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n{}\n---", compareNodesUserMessageTemplate)
             
             // --- Prepare source node prompt ---
             def sourceBinding = getBindingMap(sourceNode)
             sourceBinding['comparisonType'] = comparativeDimension
-            logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
+            log.debug("CompareNodes: Source Binding Map: {}", sourceBinding)
             def sourceEngine = new SimpleTemplateEngine()
             def sourceUserPrompt = sourceEngine.createTemplate(compareNodesUserMessageTemplate).make(sourceBinding).toString()
-            logger.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
+            log.debug("CompareNodes: Source User Prompt:\n{}", sourceUserPrompt)
             
             // --- Prepare target node prompt ---
             def targetBinding = getBindingMap(targetNode)
             targetBinding['comparisonType'] = comparativeDimension
-            logger.info("CompareNodes: Target Binding Map: ${targetBinding}")
+            log.debug("CompareNodes: Target Binding Map: {}", targetBinding)
             def targetEngine = new SimpleTemplateEngine()
             def targetUserPrompt = targetEngine.createTemplate(compareNodesUserMessageTemplate).make(targetBinding).toString()
-            logger.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
+            log.debug("CompareNodes: Target User Prompt:\n{}", targetUserPrompt)
             
             // Update progress dialog
             SwingUtilities.invokeLater {
@@ -192,7 +192,7 @@ try {
                 'temperature': temperature,
                 'max_tokens': maxTokens
             ]
-            logger.info("Requesting analysis for source node: ${sourceNode.text}")
+            log.info("Requesting analysis for source node: {}", sourceNode.text)
             // Use the unified API call function from deps
             sourceApiResponse = make_api_call(provider, apiKey, sourcePayloadMap)
 
@@ -210,7 +210,7 @@ try {
                 'temperature': temperature,
                 'max_tokens': maxTokens
             ]
-            logger.info("Requesting analysis for target node: ${targetNode.text}")
+            log.info("Requesting analysis for target node: {}", targetNode.text)
             // Use the unified API call function from deps
             targetApiResponse = make_api_call(provider, apiKey, targetPayloadMap)
 
@@ -229,8 +229,8 @@ try {
             def targetResponseContent = targetJsonResponse?.choices[0]?.message?.content
             if (!targetResponseContent?.trim()) throw new Exception("Empty content in target response. Model may have hit token limit.")
 
-            logger.info("Source Node Analysis:\n${sourceResponseContent}")
-            logger.info("Target Node Analysis:\n${targetResponseContent}")
+            log.info("Source Node Analysis received, length: {}", sourceResponseContent?.length() ?: 0)
+            log.info("Target Node Analysis received, length: {}", targetResponseContent?.length() ?: 0)
 
             // Parse responses
             def sourceAnalysis = parseAnalysis(sourceResponseContent)
@@ -244,19 +244,18 @@ try {
                 } else {
                     try {
                         // Add analysis branches, passing the tagging function and using the generated dimension
-                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, model, logger, addModelTagRecursively)
-                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, model, logger, addModelTagRecursively)
+                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, model, addModelTagRecursively)
+                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, model, addModelTagRecursively)
                         ui.informationMessage("Comparison analysis using '${comparativeDimension}' framework added to both nodes.")
                     } catch (Exception e) {
-                        logger.warn("Error during addAnalysisToNodeAsBranch calls on EDT".toString(), e as Throwable)
+                        log.warn("Error during addAnalysisToNodeAsBranch calls on EDT", e)
                         ui.errorMessage("Failed to add analysis results to the map. Check logs. Error: ${e.message}")
                     }
                 }
             }
 
         } catch (Exception e) {
-            // Ensure message is String and exception is Throwable
-            logger.warn("LLM Comparison failed: ${e.message}".toString(), (Throwable)e)
+            log.warn("LLM Comparison failed", e)
             errorMessage = "Comparison Error: ${e.message.split('\n').head()}"
             // Ensure dialog is closed and error shown on EDT
             SwingUtilities.invokeLater {
@@ -272,6 +271,6 @@ try {
 } catch (Exception e) {
     // Handle all errors with a simple message
     ui.errorMessage(e.message)
-    // Ensure message is String and exception is Throwable
-    logger.warn("Error in CompareConnectedNodes: ${e.message}".toString(), (Throwable)e)
+    // Use SLF4J logging
+    log.warn("Error in CompareConnectedNodes", e)
 }

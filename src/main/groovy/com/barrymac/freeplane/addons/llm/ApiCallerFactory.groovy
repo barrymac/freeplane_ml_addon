@@ -42,11 +42,10 @@ class ApiCallerFactory {
     /**
      * Creates an API caller with the necessary functions
      *
-     * @param closures Map containing logger and ui
+     * @param closures Map containing ui
      * @return Map of API caller functions
      */
     static Map createApiCaller(Map closures) {
-        def logger = closures.logger as Logger
         def ui = closures.ui
 
         def make_api_call = { String providerStr, String apiKey, Object requestObj ->
@@ -57,7 +56,7 @@ class ApiCallerFactory {
             try {
                 // Convert string provider to enum
                 def provider = ApiProvider.fromString(providerStr)
-                return handleApiCall(provider, apiKey, payloadMap, logger, ui)
+                return handleApiCall(provider, apiKey, payloadMap, ui)
             } catch (LlmAddonException e) {
                 ui.errorMessage(e.message)
                 return ""
@@ -86,12 +85,11 @@ class ApiCallerFactory {
      * @param provider The API provider
      * @param apiKey The API key
      * @param payloadMap The request payload
-     * @param logger The logger
      * @param ui The UI
      * @return The response text
      */
     private static String handleApiCall(ApiProvider provider, String apiKey, 
-                                      Map<String, Object> payloadMap, Logger logger, def ui) {
+                                      Map<String, Object> payloadMap, def ui) {
         def responseText = ""
         String apiUrl = provider.endpoint
         Map<String, String> headers = [
@@ -118,11 +116,11 @@ class ApiCallerFactory {
             post.getOutputStream().write(payload.getBytes("UTF-8"))
 
             def postRC = post.getResponseCode()
-            logger.info("API Call to {} ({}) - Response Code: {}", provider.name(), apiUrl, postRC)
+            log.info("API Call to {} ({}) - Response Code: {}", provider.name(), apiUrl, postRC)
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
-                logger.info("{} response: {}", provider.name(), responseText.take(200) + "...") // Log truncated response
+                log.info("{} response: {}", provider.name(), responseText.take(200) + "...") // Log truncated response
             } else {
                 // Handle common error codes centrally
                 String errorMsg
@@ -150,7 +148,7 @@ class ApiCallerFactory {
                     try {
                         Desktop.desktop.browse(new URI(browseUrl))
                     } catch (Exception browseEx) {
-                        logger.warn("Failed to open browser for URL: $browseUrl", browseEx as Throwable)
+                        log.warn("Failed to open browser for URL: {}", browseUrl, browseEx)
                     }
                 }
                 
@@ -160,7 +158,7 @@ class ApiCallerFactory {
                 try {
                     def errorStream = post.getErrorStream()
                     if (errorStream) {
-                        logger.warn("Error response body: ${errorStream.getText('UTF-8')}")
+                        log.warn("Error response body: {}", errorStream.getText('UTF-8'))
                     }
                 } catch (Exception ignored) {
                     // Ignore errors reading the error stream
@@ -173,7 +171,7 @@ class ApiCallerFactory {
             // Re-throw API exceptions
             throw e
         } catch (Exception e) {
-            logger.warn("Exception during API call to $provider", e as Throwable)
+            log.warn("Exception during API call to {}", provider, e)
             ui.errorMessage("Network or processing error during API call: ${e.message}")
             throw new LlmAddonException("API call failed: ${e.message}", e)
         }

@@ -13,14 +13,14 @@ class DependencyLoader {
      * Loads all dependencies needed by the add-on
      *
      * @param config The Freeplane config object
-     * @param logger The logger
      * @param ui The UI
      * @return Dependencies object containing all dependencies
      */
-    static Dependencies loadDependencies(def config, Logger logger, def ui) {
+    static Dependencies loadDependencies(def config, def logger, def ui) {
+        log.debug("Loading dependencies for LLM add-on")
         return new Dependencies(
             // Instantiate ApiCaller using its factory
-            apiCaller: ApiCallerFactory.createApiCaller([logger: logger, ui: ui]),
+            apiCaller: ApiCallerFactory.createApiCaller([ui: ui]),
 
             // Provide BranchGenerator factory method reference
             branchGeneratorFactory: BranchGeneratorFactory.&createGenerateBranches,

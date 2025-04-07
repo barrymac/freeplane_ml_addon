@@ -1,5 +1,8 @@
 package com.barrymac.freeplane.addons.llm
 
+import groovy.util.logging.Slf4j
+
+@Slf4j
 class MessageFileHandler {
     /**
      * Loads messages from a user-specific file, falling back to a default resource from the JAR.
@@ -15,16 +18,29 @@ class MessageFileHandler {
         def fileContent
         try {
             fileContent = new File(filePath).text
+            log.debug("Loaded message file from: {}", filePath)
         } catch (Exception e) {
+            log.info("User message file not found at: {}. Loading default from resource: {}", filePath, defaultResourcePath)
             fileContent = defaultLoaderFunc(defaultResourcePath) // Load default from JAR
-            new File(filePath).write(fileContent) // Write default content to user file
+            try {
+                new File(filePath).write(fileContent) // Write default content to user file
+                log.info("Created new message file at: {}", filePath)
+            } catch (Exception writeEx) {
+                log.warn("Failed to write default content to: {}", filePath, writeEx)
+            }
         }
         messages = fileContent.split(/======+\n/)*.trim()
+        log.debug("Loaded {} messages from file", messages.size())
         return messages
     }
 
     static def saveMessagesToFile(String filePath, List messages) {
-        def fileContent = messages.join("\n======\n")
-        new File(filePath).write(fileContent)
+        try {
+            def fileContent = messages.join("\n======\n")
+            new File(filePath).write(fileContent)
+            log.info("Saved {} messages to file: {}", messages.size(), filePath)
+        } catch (Exception e) {
+            log.error("Failed to save messages to file: {}", filePath, e)
+        }
     }
 }

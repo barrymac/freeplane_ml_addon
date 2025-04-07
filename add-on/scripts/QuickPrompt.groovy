@@ -7,7 +7,7 @@ import com.barrymac.freeplane.addons.llm.exceptions.*
 
 // Load all dependencies
 // Call static method directly
-def deps = DependencyLoader.loadDependencies(config, logger, ui)
+def deps = DependencyLoader.loadDependencies(config, null, ui)
 
 // Extract needed functions/classes from deps
 def ConfigManager = deps.configManager
