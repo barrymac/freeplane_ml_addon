@@ -1,5 +1,3 @@
-import com.barrymac.freeplane.addons.llm.*
-import com.barrymac.freeplane.addons.llm.exceptions.*
 import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
 
