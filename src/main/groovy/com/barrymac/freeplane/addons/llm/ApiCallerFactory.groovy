@@ -117,11 +117,11 @@ class ApiCallerFactory {
             post.getOutputStream().write(payload.getBytes("UTF-8"))
 
             def postRC = post.getResponseCode()
-            logger.info("API Call to {} ({}) - Response Code: {}", provider.name(), apiUrl, postRC)
+            logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
-                logger.info("{} response: {}", provider.name(), responseText.take(200) + "...") // Log truncated response
+                logger.info("{} response: {}", provider.name().toLowerCase(), responseText.take(200) + "...") // Log truncated response
             } else {
                 // Handle common error codes centrally
                 String errorMsg
