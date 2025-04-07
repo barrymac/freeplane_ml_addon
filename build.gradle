@@ -18,33 +18,15 @@ repositories {
 }
 
 dependencies {
-    // --- ADD THIS LINE ---
-    // Explicitly provide Groovy runtime for test execution classpath
-    testImplementation 'org.apache.groovy:groovy-all:4.0.21' // Or another recent 4.0.x version
-
-//    implementation("org.codehaus.groovy:groovy-all:3.0.24")
-//    implementation platform('org.apache.groovy:groovy-bom:4.0.25')
-//    implementation 'org.apache.groovy:groovy-json:4.0.25'
-//    implementation 'org.apache.groovy:groovy-templates:4.0.25'
-//    implementation 'org.apache.groovy:groovy-swing:4.0.25'
-
     testImplementation platform("org.spockframework:spock-bom:2.3-groovy-4.0")
     testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
-
-    // --- ADD THESE LINES ---
-    // Add JUnit Platform BOM to enforce consistent JUnit 5 versions
     testImplementation platform('org.junit:junit-bom:5.10.2') // Use a recent JUnit 5 version
-    // Add the JUnit 5 engine needed to run the tests
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-    // --- END OF ADDED LINES ---
-
-    // Optional dependencies for Spock (keep these)
     testImplementation "org.hamcrest:hamcrest-core:2.2"
     testRuntimeOnly 'net.bytebuddy:byte-buddy:1.14.12'
     testRuntimeOnly "org.objenesis:objenesis:3.4"
 }
 
-// Configure the test task to use JUnit Platform for Spock 2.x
 test {
     useJUnitPlatform()
     testLogging {
@@ -58,12 +40,6 @@ def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty
 freeplane {
     freeplaneDirectory = freeplaneBasePath
     addonSourceDirectory = 'add-on'
-    // addonDefinitionMindMapFileName = 'Greetings.mm'
-    // userDirectory = 'user-directory'
-    // includes = ['**/*']
-    // excludes = ['**/*.bak', '**/~*', '**/$~*.mm~', '**/*.gdsl', '**/*.dsld']
-    // maxHeapSize = '1024m'
-    // jvmArgs = []
 }
 
 jar {
