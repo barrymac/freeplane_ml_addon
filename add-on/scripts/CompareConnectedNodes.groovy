@@ -167,18 +167,18 @@ try {
             // --- Prepare source node prompt ---
             def sourceBinding = getBindingMap(sourceNode)
             sourceBinding['comparisonType'] = comparativeDimension
-            logger.debug("CompareNodes: Source Binding Map: ${sourceBinding}")
+            logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
             def sourceEngine = new SimpleTemplateEngine()
             def sourceUserPrompt = sourceEngine.createTemplate(compareNodesUserMessageTemplate).make(sourceBinding).toString()
-            logger.debug("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
+            logger.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
             
             // --- Prepare target node prompt ---
             def targetBinding = getBindingMap(targetNode)
             targetBinding['comparisonType'] = comparativeDimension
-            logger.debug("CompareNodes: Target Binding Map: ${targetBinding}")
+            logger.info("CompareNodes: Target Binding Map: ${targetBinding}")
             def targetEngine = new SimpleTemplateEngine()
             def targetUserPrompt = targetEngine.createTemplate(compareNodesUserMessageTemplate).make(targetBinding).toString()
-            logger.debug("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
+            logger.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
             
             // Update progress dialog
             SwingUtilities.invokeLater {
