@@ -32,7 +32,7 @@ class ApiCallerFactory {
             switch (provider.toLowerCase()) {
                 case 'openai': return OPENAI
                 case 'openrouter': return OPENROUTER
-                default: throw new LlmAddonException("Unsupported API provider: $provider")
+                default: throw new LlmAddonException("Unsupported API provider: $provider", false)
             }
         }
     }
@@ -61,7 +61,7 @@ class ApiCallerFactory {
                 ui.errorMessage(e.message)
                 return ""
             } catch (LlmAddonException e) {
-                ui.errorMessage("LLM AddOn Error: ${e.message}")
+                ui.errorMessage(e.message) // Message already contains prefix if needed
                 return ""
             }
         }
