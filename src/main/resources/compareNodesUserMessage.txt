@@ -1,21 +1,21 @@
-Compare these two subjects using the dimension '$comparativeDimension':
+Compare these two ideas using the dimension '$comparativeDimension':
 
-Subject 1: $nodeContent
-Subject 2: $otherNodeContent
+Idea 1: $nodeContent
+Idea 2: $otherNodeContent
 
 **Comparison Structure Requirements:**
-1. Alternate perspectives between the subjects.
-2. Use the exact subject content from above in your comparison.
+1. Alternate perspectives between the ideas.
+2. Use the exact idea content from above in your comparison.
 3. For each point:
-   - Start with the subject's content.
+   - Start with the idea's content.
    - Use comparison terms: "while", "whereas", "compared to", "in contrast".
-   - Include concrete examples or characteristics relevant to the subjects and the dimension '$comparativeDimension'.
+   - Include concrete examples or characteristics relevant to the ideas and the dimension '$comparativeDimension'.
 
 **Example Response Format (using '$pole1 vs $pole2' as the dimension):**
 $pole1:
-- [Subject 1 Content] offers more [relevant characteristic for pole1] compared to [Subject 2 Content], specifically regarding [example feature].
-- [Subject 2 Content] provides greater [relevant characteristic for pole1] whereas [Subject 1 Content] focuses on [contrasting feature].
+- [Idea 1 Content] offers more [relevant characteristic for pole1] compared to [Idea 2 Content], specifically regarding [example feature].
+- [Idea 2 Content] provides greater [relevant characteristic for pole1] whereas [Idea 1 Content] focuses on [contrasting feature].
 
 $pole2:
-- [Subject 1 Content] exhibits higher [relevant characteristic for pole2] due to [specific reason], unlike [Subject 2 Content]'s [alternative aspect].
-- While both subjects share [commonality], [Subject 2 Content] allows for more [relevant characteristic for pole2] compared to [Subject 1 Content] because of [differentiating factor].
+- [Idea 1 Content] exhibits higher [relevant characteristic for pole2] due to [specific reason], unlike [Idea 2 Content]'s [alternative aspect].
+- While both ideas share [commonality], [Idea 2 Content] allows for more [relevant characteristic for pole2] compared to [Idea 1 Content] because of [differentiating factor].
