@@ -51,24 +51,20 @@ class ApiCallerFactorySpec extends Specification {
         and: "Verify response handling"
         result == expectedResponse
         1 * mockLogger.info("API Call to {} ({}) - Response Code: {}", provider, expectedUrl, statusCode) // This log always happens
+
         if (statusCode == 200) {
             1 * mockLogger.info("{} response: {}", provider, responseBody.take(200) + "...")
-            // Expect response log only on success
-            0 * mockUi.errorMessage(_) // No error message on success
-        } else if (statusCode == 401) {
-            0 * mockLogger.info(!null, !null) // No success response log
-            1 * mockUi.errorMessage("Invalid authentication or incorrect API key provided for ${provider}.")
-        } else if (statusCode == 429) {
-            0 * mockLogger.info(!null, !null) // No success response log
-            1 * mockUi.errorMessage("Rate limit reached or quota exceeded for ${provider}.")
+            0 * mockUi.errorMessage(_)
+        } else {
+            0 * mockLogger.info("{} response: {}", _, _) // Specifically check response log isn't called
+            1 * mockUi.errorMessage(expectedError)
         }
-        // Add other specific error code checks here if needed in the future
 
         where:
-        scenario               | provider     | statusCode | responseBody           | expectedResponse   | expectedUrl
-        "successful response"  | "openai"     | 200        | '{"choices":[{}]}'     | '{"choices":[{}]}' | "https://api.openai.com/v1/chat/completions"
-        "authentication error" | "openrouter" | 401        | '{"error": "invalid"}' | ""                 | "https://openrouter.ai/api/v1/chat/completions"
-        "rate limit exceeded"  | "openai"     | 429        | '{"error": "busy"}'    | ""                 | "https://api.openai.com/v1/chat/completions"
+        scenario               | provider     | statusCode | responseBody           | expectedResponse   | expectedUrl                                | expectedError
+        "successful response"  | "openai"     | 200        | '{"choices":[{}]}'     | '{"choices":[{}]}' | "https://api.openai.com/v1/chat/completions" | null
+        "auth error"           | "openrouter" | 401        | '{"error": "invalid"}' | ""                 | "https://openrouter.ai/api/v1/chat/completions" | "Invalid authentication or incorrect API key provided for openrouter."
+        "rate limit"           | "openai"     | 429        | '{"error": "busy"}'    | ""                 | "https://api.openai.com/v1/chat/completions" | "Rate limit reached or quota exceeded for openai."
     }
 
     def "make_api_call handles network errors"() {
