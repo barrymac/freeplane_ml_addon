@@ -6,9 +6,15 @@ import spock.lang.Unroll
 
 import java.awt.*
 
+// Interface to properly mock the UI
+interface UITest {
+    void errorMessage(String message)
+    void setDialogLocationRelativeTo(Object dialog, Object frame)
+}
+
 class ApiCallerFactorySpec extends Specification {
     def mockLogger = Mock(Logger)
-    def mockUi = Mock(Object)
+    def mockUi = Mock(UITest)
     def apiCaller
 
     def setup() {
