@@ -67,15 +67,5 @@ class MessageExpanderSpec extends Specification {
         "node with siblings" | false  | "Node B"      | "Root"        | [mockSibling1, mockNode, mockSibling2] | [mockNode, mockParent, mockRoot]                    | ["Parent A", "Root"]               | ["Sibling 1", "Sibling 2"] | [rootText: "Root", nodeContent: "Node B", ancestorContents: "Parent A\nRoot", siblingContents: "Sibling 1\nSibling 2"]
         "deeply nested node" | false  | "Leaf C"      | "Main Root"   | [mockNode]                         | [mockNode, mockParent, mockGrandParent, mockRoot] | ["Parent B", "GrandParent A", "Main Root"] | []                     | [rootText: "Main Root", nodeContent: "Leaf C", ancestorContents: "Parent B\nGrandParent A\nMain Root", siblingContents: ""]
         "node with no text"  | false  | ""            | "Root"        | [mockNode]                         | [mockNode, mockParent, mockRoot]                    | ["Parent", "Root"]                 | []                     | [rootText: "Root", nodeContent: "", ancestorContents: "Parent\nRoot", siblingContents: ""]
-        // --- Mock setup for sibling/ancestor text extraction ---
-        // Need to ensure the mocks respond correctly to getPlainText()
-        mockParent.getPlainText() >> "Parent A" // For "node with siblings" ancestor
-        mockSibling1.getPlainText() >> "Sibling 1"
-        mockSibling2.getPlainText() >> "Sibling 2"
-        mockGrandParent.getPlainText() >> "GrandParent A" // For "deeply nested node" ancestor
-        // Reusing mockParent for "deeply nested node" and "node with no text"
-        mockParent.getPlainText() >>> ["Parent A", "Parent B", "Parent"] // Stubbing multiple calls if needed, or specific setup per 'where' block if clearer
-        // Reusing mockRoot for different scenarios
-        mockRoot.getPlainText() >>> ["Root Node", "The Root", "Root", "Main Root", "Root"]
     }
 }
