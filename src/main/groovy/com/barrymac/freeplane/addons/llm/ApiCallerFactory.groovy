@@ -56,8 +56,12 @@ class ApiCallerFactory {
                 // Convert string provider to enum
                 def provider = ApiProvider.fromString(providerStr)
                 return handleApiCall(provider, apiKey, payloadMap, ui, logger)
-            } catch (LlmAddonException e) {
+            } catch (ApiException e) {
+                // ApiException already contains the formatted error message
                 ui.errorMessage(e.message)
+                return ""
+            } catch (LlmAddonException e) {
+                ui.errorMessage("LLM AddOn Error: ${e.message}")
                 return ""
             }
         }
@@ -160,8 +164,6 @@ class ApiCallerFactory {
                     }
                 }
 
-                ui.errorMessage("LLM AddOn Error: API Error (${postRC}): ${errorMsg}")
-
                 // Log the error response body if available
                 try {
                     def errorStream = post.getErrorStream()
@@ -176,7 +178,7 @@ class ApiCallerFactory {
                     // Ignore errors reading the error stream
                 }
 
-                throw new ApiException(errorMsg, postRC)
+                throw new ApiException("LLM AddOn Error: API Error (${postRC}): ${errorMsg}", postRC)
             }
 
         } catch (ApiException e) {
