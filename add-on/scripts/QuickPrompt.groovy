@@ -1,12 +1,12 @@
 import groovy.swing.SwingBuilder
 import javax.swing.JOptionPane
 
-// Import the compiled DependencyLoaderClass
-import com.barrymac.freeplane.addons.llm.DependencyLoaderClass
+// Import the compiled DependencyLoader
+import com.barrymac.freeplane.addons.llm.DependencyLoader
 
 // Load all dependencies
 // Call static method directly
-def deps = DependencyLoaderClass.loadDependencies(config, logger, ui)
+def deps = DependencyLoader.loadDependencies(config, logger, ui)
 
 // Extract needed functions/classes from deps
 def ConfigManager = deps.configManager

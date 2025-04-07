@@ -3,7 +3,7 @@ package com.barrymac.freeplane.addons.llm
 /**
  * Helper class for node operations
  */
-class NodeHelperClass {
+class NodeHelper {
     /**
      * Validates that exactly two connected nodes are selected
      *

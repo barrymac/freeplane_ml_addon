@@ -3,7 +3,7 @@ package com.barrymac.freeplane.addons.llm
 /**
  * Helper class for loading and managing message templates
  */
-class MessageLoaderClass {
+class MessageLoader {
     /**
      * Load resource from JAR classpath
      *
@@ -11,7 +11,7 @@ class MessageLoaderClass {
      * @return String containing the resource content
      */
     private static String getResourceContent(String path) {
-        def stream = MessageLoaderClass.class.getResourceAsStream(path)
+        def stream = MessageLoader.class.getResourceAsStream(path)
         if (!stream) {
             throw new Exception("Missing required resource: ${path}")
         }

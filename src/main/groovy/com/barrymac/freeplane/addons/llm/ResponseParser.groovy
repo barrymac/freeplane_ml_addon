@@ -3,7 +3,7 @@ package com.barrymac.freeplane.addons.llm
 /**
  * Utility class for parsing LLM responses into structured formats
  */
-class ResponseParserClass {
+class ResponseParser {
     /**
      * Parses LLM response text into categories and points.
      * Assumes simple structure: "Category:\n- Point 1\n- Point 2" or just lines of text.

@@ -2,7 +2,7 @@ package com.barrymac.freeplane.addons.llm
 
 // Helper class to centralize dependency loading
 
-class DependencyLoaderClass {
+class DependencyLoader {
     static Map loadDependencies(config, logger, ui) {
 
         // Load all dependencies with a consistent approach
@@ -24,21 +24,21 @@ class DependencyLoaderClass {
                 nodeTagger            : NodeTagger.&addModelTagRecursively,
 
                 // Provide ResponseParserClass directly
-                responseParser        : ResponseParserClass,
+                responseParser        : ResponseParser,
 
                 // Add new ones
-                dialogHelper          : DialogHelperClass,
+                dialogHelper          : DialogHelper,
 
                 // Provide NodeHelperClass directly
-                nodeHelperUtils       : NodeHelperClass,
+                nodeHelperUtils       : NodeHelper,
 
                 configManager         : ConfigManager,
 
                 // Provide messageLoader map directly using imported class/methods
                 messageLoader         : [
-                        MessageLoaderClass    : MessageLoaderClass,
-                        loadDefaultMessages   : MessageLoaderClass.&loadDefaultMessages,
-                        loadComparisonMessages: MessageLoaderClass.&loadComparisonMessages
+                        MessageLoaderClass    : MessageLoader,
+                        loadDefaultMessages   : MessageLoader.&loadDefaultMessages,
+                        loadComparisonMessages: MessageLoader.&loadComparisonMessages
                 ]
         ]
     }

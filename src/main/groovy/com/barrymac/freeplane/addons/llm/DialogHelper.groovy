@@ -8,7 +8,7 @@ import java.awt.*
 /**
  * Helper class for creating and managing UI dialogs
  */
-class DialogHelperClass {
+class DialogHelper {
     /**
      * Shows a dialog for selecting or entering a comparison type
      *

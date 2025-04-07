@@ -1,4 +1,4 @@
-import com.barrymac.freeplane.addons.llm.DependencyLoaderClass
+import com.barrymac.freeplane.addons.llm.DependencyLoader
 import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
 
@@ -36,11 +36,11 @@ def parseGeneratedDimension(String response) {
 }
 
 // --- Load Core Dependencies ---
-// Import the compiled DependencyLoaderClass
+// Import the compiled DependencyLoader
 
 // Load all dependencies
 // Call static method directly
-def deps = DependencyLoaderClass.loadDependencies(config, logger, ui)
+def deps = DependencyLoader.loadDependencies(config, logger, ui)
 
 // Extract needed functions/classes from deps
 def ConfigManager = deps.configManager
@@ -270,7 +270,7 @@ try {
         }
     })
     // Use the classloader of a known compiled class from the JAR
-    workerThread.setContextClassLoader(DependencyLoaderClass.class.classLoader)
+    workerThread.setContextClassLoader(DependencyLoader.class.classLoader)
     workerThread.start()
 
 } catch (Exception e) {
