@@ -180,9 +180,9 @@ class ApiCallerFactory {
             throw e
         } catch (Exception e) {
             if (logger) {
-                logger.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
+                logger.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
             } else {
-                LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
+                LogUtils.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
             }
             ui.errorMessage("Network or processing error during API call: ${e.message}")
             throw new LlmAddonException("API call failed: ${e.message}", e)
