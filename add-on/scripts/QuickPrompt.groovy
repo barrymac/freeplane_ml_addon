@@ -36,73 +36,88 @@ def generateBranches = BranchGeneratorFactory.createGenerateBranches(
         // Pass only the required dependencies for the factory
         new Dependencies(apiCaller: apiCaller, nodeTagger: nodeTagger)
 )
+    // Load messages using MessageFileHandler and MessageLoader
+    def systemMessages = MessageFileHandler.loadMessagesFromFile(
+            systemMessagesFilePath,
+            "/defaultSystemMessages.txt",
+            MessageLoader.&loadDefaultMessages
+    )
+    def userMessages = MessageFileHandler.loadMessagesFromFile(
+            userMessagesFilePath,
+            "/defaultUserMessages.txt",
+            MessageLoader.&loadDefaultMessages
+    )
 
-// Load message templates directly
-def systemMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptSystemMessages.txt"
-def userMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptUserMessages.txt"
+    // Get the specific messages based on saved index
+    String systemMessageText = systemMessages[selectedSystemMessageIndex]
+    String userMessageTemplate = userMessages[selectedUserMessageIndex]
 
-// REPLACE deps.messageFileHandler/deps.messageLoader calls
-// Pass MessageLoader.loadDefaultMessages directly as the closure argument
-def systemMessages = MessageFileHandler.loadMessagesFromFile(
-        systemMessagesFilePath,
-        "/defaultSystemMessages.txt",
-        MessageLoader.&loadDefaultMessages // Pass method reference
-)
-def userMessages = MessageFileHandler.loadMessagesFromFile(
-        userMessagesFilePath,
-        "/defaultUserMessages.txt",
-        MessageLoader.&loadDefaultMessages // Pass method reference
-)
+    // Get selected node
+    def node = c.selected
+    if (node == null) {
+        ui.informationMessage("Please select a node first.")
+        return
+    }
 
-// Validate and fallback to defaults if needed (using indices loaded via ConfigManager)
-def systemMessage = systemMessageIndex < systemMessages.size() ? systemMessages[systemMessageIndex] : systemMessages[0]
-def userMessageTemplate = userMessageIndex < userMessages.size() ? userMessages[userMessageIndex] : userMessages[0]
-
-if (!apiConfig.apiKey) {
-    JOptionPane.showMessageDialog(ui.currentFrame,
-        "Please configure API settings first via the LLM menu",
-        "Configuration Required",
-        JOptionPane.WARNING_MESSAGE)
-    return
-}
-
-try {
-    // REPLACE deps.messageExpander call with MessageExpander static call
+    // Expand user message template
     def expandedUserMessage = MessageExpander.expandTemplate(
         userMessageTemplate,
-        MessageExpander.createBinding(c.selected, null, null, null, null) // Use createBinding for context
+        MessageExpander.createBinding(node, null, null, null, null)
     )
 
-    // Create Message and ApiRequest objects (this part remains the same)
-    def systemMsg = new Message(role: 'system', content: systemMessage)
-    def userMsg = new Message(role: 'user', content: expandedUserMessage)
-    def request = new ApiRequest(
-        model: apiConfig.model,
-        messages: [systemMsg, userMsg],
-        temperature: apiConfig.temperature,
-        maxTokens: apiConfig.maxTokens
+    LogUtils.info("QuickPrompt: Using System Message:\n${systemMessageText}")
+    LogUtils.info("QuickPrompt: Using Expanded User Message:\n${expandedUserMessage}")
+
+    // --- Prepare API Payload ---
+    // Construct messages list directly as maps
+    def messagesList = [
+        [role: 'system', content: systemMessageText],
+        [role: 'user', content: expandedUserMessage]
+    ]
+
+    // Construct payload map directly
+    Map<String, Object> payload = [
+        'model'      : apiConfig.model,
+        'messages'   : messagesList,
+        'temperature': apiConfig.temperature,
+        'max_tokens' : apiConfig.maxTokens,
+        // Add response_format for OpenAI models if applicable
+        'response_format': (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "text"] : null
+    ].findAll { key, value -> value != null }
+
+    LogUtils.info("QuickPrompt: Sending payload: ${payload}")
+
+    // --- Call API ---
+    // Show progress indicator (optional, simple message)
+    ui.informationMessage("Sending prompt to ${apiConfig.model}...")
+
+    def rawApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, payload)
+
+    if (rawApiResponse == null || rawApiResponse.isEmpty()) {
+        throw new Exception("Received empty or null response from API.")
+    }
+
+    // --- Process Response ---
+    // Extract content using JsonUtils (assuming standard OpenAI/compatible structure)
+    def responseContent = JsonUtils.extractLlmContent(rawApiResponse)
+
+    LogUtils.info("QuickPrompt: Received response content:\n${responseContent}")
+
+    // --- Update Map ---
+    // Add response as a new branch using NodeOperations
+    NodeOperations.addAnalysisBranch(
+            node,                   // Parent node
+            null,                   // No analysis map for QuickPrompt
+            responseContent,        // The raw text content
+            apiConfig.model,        // Model used
+            tagWithModel,           // Tagger function
+            "Quick Prompt Result"   // Optional type string
     )
 
-    // Call the generateBranches closure obtained earlier
-    // The arguments are already passed individually, so this call structure is correct
-    generateBranches(
-            apiConfig.apiKey,
-            systemMessage, // Pass the selected system message content
-            expandedUserMessage, // Pass the expanded user message content
-            apiConfig.model,
-            apiConfig.maxTokens,
-            apiConfig.temperature,
-            apiConfig.provider
-    )
-} catch (LlmAddonException e) {
-    // Use logger if available, otherwise LogUtils
-    def log = binding.variables.containsKey('logger') ? logger : LogUtils
-    log.warn("Quick prompt failed: ${e.message}")
-    ui.errorMessage(e.message)
+    ui.informationMessage("Response added as a new branch.")
+    LogUtils.info("QuickPrompt script finished successfully.")
+
 } catch (Exception e) {
-    def log = binding.variables.containsKey('logger') ? logger : LogUtils
-    log.warn("Quick prompt failed", e) // Log the exception object too
-    ui.errorMessage("Quick prompt error: ${e.message}")
+    LogUtils.severe("Error in QuickPrompt script: ${e.message}", e)
+    UiHelper.showErrorMessage(ui, "QuickPrompt Error: ${e.message.split('\n').head()}")
 }
-
-LogUtils.info("QuickPrompt script finished.") // Add logging if desired

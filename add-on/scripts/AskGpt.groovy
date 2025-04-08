@@ -17,30 +17,28 @@ import com.barrymac.freeplane.addons.llm.ApiConfig // Ensure ApiConfig is import
 import com.barrymac.freeplane.addons.llm.Message // Ensure Message is imported
 import org.freeplane.core.util.LogUtils // Ensure LogUtils is imported
 
+// --- Initialize Core Components ---
+LogUtils.info("QuickPrompt script started.")
+try {
+    // Load configuration FIRST
+    ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
 
-// REPLACE deps.configManager calls with ConfigManager static calls
-def apiConfig = ConfigManager.loadBaseConfig(config)
-// Use ConfigManager directly for indices
-def selectedSystemMessageIndex = ConfigManager.getSystemMessageIndex(config)
-def selectedUserMessageIndex = ConfigManager.getUserMessageIndex(config)
+    // Use ConfigManager directly for indices
+    def selectedSystemMessageIndex = ConfigManager.getSystemMessageIndex(config)
+    def selectedUserMessageIndex = ConfigManager.getUserMessageIndex(config)
 
-// Define file paths directly
-String systemMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptSystemMessages.txt"
-String userMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptUserMessages.txt"
+    // Define file paths directly
+    String systemMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptSystemMessages.txt"
+    String userMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptUserMessages.txt"
 
-// Instantiate ApiCaller and get NodeTagger reference
-// Pass logger if available, otherwise null
-def apiCaller = ApiCallerFactory.createApiCaller([ui: ui, logger: (binding.variables.containsKey('logger') ? logger : null)])
-def nodeTagger = NodeTagger.&tagWithModel // Get method reference
-
-// REPLACE deps.branchGeneratorFactory call:
-// 1. Call BranchGeneratorFactory.createGenerateBranches directly
-// 2. Pass required dependencies (apiCaller, nodeTagger) in a Dependencies object
-def generateBranches = BranchGeneratorFactory.createGenerateBranches(
-        [c: c, ui: ui], // Pass context needed by the *generated* closure
-        // Pass only the required dependencies for the factory
-        new Dependencies(apiCaller: apiCaller, nodeTagger: nodeTagger)
-)
+    // Instantiate ApiCaller and get NodeTagger reference
+    def apiCallerClosures = ApiCallerFactory.createApiCaller([ui: ui])
+    if (!apiCallerClosures) {
+        throw new Exception("Failed to create API caller closures.")
+    }
+    // Get the specific make_api_call closure from the returned map
+    Closure make_api_call = apiCallerClosures.make_api_call
+    Closure tagWithModel = NodeTagger.&tagWithModel // Get method reference
 
 
 class MessageItem {
