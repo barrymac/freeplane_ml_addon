@@ -17,16 +17,25 @@ import com.barrymac.freeplane.addons.llm.maps.NodeOperations
 import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import org.freeplane.core.util.LogUtils
 
+// --- Initialize Core Components ---
+LogUtils.info("QuickPrompt script started.")
+try {
+    // Load configuration FIRST
+    ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
+    def selectedSystemMessageIndex = ConfigManager.getSystemMessageIndex(config)
+    def selectedUserMessageIndex = ConfigManager.getUserMessageIndex(config)
 
-// REPLACE deps.configManager calls with ConfigManager static calls
-def apiConfig = ConfigManager.loadBaseConfig(config)
-def systemMessageIndex = ConfigManager.getSystemMessageIndex(config)
-def userMessageIndex = ConfigManager.getUserMessageIndex(config)
+    // Define file paths
+    String systemMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptSystemMessages.txt"
+    String userMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptUserMessages.txt"
 
-// Instantiate ApiCaller and get NodeTagger reference
-// Pass logger if available, otherwise null
-def apiCaller = ApiCallerFactory.createApiCaller([ui: ui, logger: (binding.variables.containsKey('logger') ? logger : null)])
-def nodeTagger = NodeTagger.&tagWithModel // Get method reference
+    // Instantiate ApiCaller and get NodeTagger reference
+    def apiCallerClosures = ApiCallerFactory.createApiCaller([ui: ui])
+    if (!apiCallerClosures) {
+        throw new Exception("Failed to create API caller closures.")
+    }
+    Closure make_api_call = apiCallerClosures.make_api_call
+    Closure nodeTagger = NodeTagger.&tagWithModel
 
     // Load messages using MessageFileHandler and MessageLoader
     def systemMessages = MessageFileHandler.loadMessagesFromFile(
@@ -47,69 +56,62 @@ def nodeTagger = NodeTagger.&tagWithModel // Get method reference
     // Get selected node
     def node = c.selected
     if (node == null) {
-        ui.informationMessage("Please select a node first.")
-        return
+        UiHelper.showInformationMessage(ui, "Please select a node first.")
+    } else {
+        // Expand user message template
+        def expandedUserMessage = MessageExpander.expandTemplate(
+            userMessageTemplate,
+            MessageExpander.createBinding(node, null, null, null, null)
+        )
+
+        LogUtils.info("QuickPrompt: Using System Message:\n${systemMessageText}")
+        LogUtils.info("QuickPrompt: Using Expanded User Message:\n${expandedUserMessage}")
+
+        // --- Prepare API Payload ---
+        def messagesList = [
+            [role: 'system', content: systemMessageText],
+            [role: 'user', content: expandedUserMessage]
+        ]
+
+        Map<String, Object> payload = [
+            'model'      : apiConfig.model,
+            'messages'   : messagesList,
+            'temperature': apiConfig.temperature,
+            'max_tokens' : apiConfig.maxTokens,
+            'response_format': (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "text"] : null
+        ].findAll { key, value -> value != null }
+
+        LogUtils.info("QuickPrompt: Sending payload: ${payload}")
+
+        // Show progress indicator
+        UiHelper.showInformationMessage(ui, "Sending prompt to ${apiConfig.model}...")
+
+        def rawApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, payload)
+
+        if (rawApiResponse == null || rawApiResponse.isEmpty()) {
+            throw new Exception("Received empty or null response from API.")
+        }
+
+        def responseContent = JsonUtils.extractLlmContent(rawApiResponse)
+        LogUtils.info("QuickPrompt: Received response content:\n${responseContent}")
+
+        // Update Map
+        NodeOperations.addAnalysisBranch(
+                node,                   // Parent node
+                null,                   // No analysis map for QuickPrompt
+                responseContent,        // The raw text content
+                apiConfig.model,        // Model used
+                nodeTagger,            // Use correct variable name
+                "Quick Prompt Result"   // Optional type string
+        )
+
+        UiHelper.showInformationMessage(ui, "Response added as a new branch.")
+        LogUtils.info("QuickPrompt script finished successfully.")
     }
-
-    // Expand user message template
-    def expandedUserMessage = MessageExpander.expandTemplate(
-        userMessageTemplate,
-        MessageExpander.createBinding(node, null, null, null, null)
-    )
-
-    LogUtils.info("QuickPrompt: Using System Message:\n${systemMessageText}")
-    LogUtils.info("QuickPrompt: Using Expanded User Message:\n${expandedUserMessage}")
-
-    // --- Prepare API Payload ---
-    // Construct messages list directly as maps
-    def messagesList = [
-        [role: 'system', content: systemMessageText],
-        [role: 'user', content: expandedUserMessage]
-    ]
-
-    // Construct payload map directly
-    Map<String, Object> payload = [
-        'model'      : apiConfig.model,
-        'messages'   : messagesList,
-        'temperature': apiConfig.temperature,
-        'max_tokens' : apiConfig.maxTokens,
-        // Add response_format for OpenAI models if applicable
-        'response_format': (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "text"] : null
-    ].findAll { key, value -> value != null }
-
-    LogUtils.info("QuickPrompt: Sending payload: ${payload}")
-
-    // --- Call API ---
-    // Show progress indicator (optional, simple message)
-    ui.informationMessage("Sending prompt to ${apiConfig.model}...")
-
-    def rawApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, payload)
-
-    if (rawApiResponse == null || rawApiResponse.isEmpty()) {
-        throw new Exception("Received empty or null response from API.")
-    }
-
-    // --- Process Response ---
-    // Extract content using JsonUtils (assuming standard OpenAI/compatible structure)
-    def responseContent = JsonUtils.extractLlmContent(rawApiResponse)
-
-    LogUtils.info("QuickPrompt: Received response content:\n${responseContent}")
-
-    // --- Update Map ---
-    // Add response as a new branch using NodeOperations
-    NodeOperations.addAnalysisBranch(
-            node,                   // Parent node
-            null,                   // No analysis map for QuickPrompt
-            responseContent,        // The raw text content
-            apiConfig.model,        // Model used
-            tagWithModel,           // Tagger function
-            "Quick Prompt Result"   // Optional type string
-    )
-
-    ui.informationMessage("Response added as a new branch.")
-    LogUtils.info("QuickPrompt script finished successfully.")
 
 } catch (Exception e) {
     LogUtils.severe("Error in QuickPrompt script: ${e.message}", e)
     UiHelper.showErrorMessage(ui, "QuickPrompt Error: ${e.message.split('\n').head()}")
 }
+
+LogUtils.info("QuickPrompt script finished execution path.")
