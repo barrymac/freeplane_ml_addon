@@ -29,3 +29,42 @@ Concept B: $otherNodeContent
     }
   }
 }
+**Example for 'Easy vs Hard':**
+{
+  "comparison": {
+    "dimension": {
+      "pole1": "Easy",
+      "pole2": "Hard"
+    },
+    "concepts": {
+      "concept_a": {
+        "Easy": ["Simple setup", "Intuitive interface"],
+        "Hard": ["Steep learning curve", "Requires expert knowledge"]
+      },
+      "concept_b": {
+        "Easy": ["Quick start guide", "Minimal configuration"],
+        "Hard": ["Complex dependencies", "Advanced customization needed"]
+      }
+    }
+  }
+}
+
+**Example for 'Cheap vs Expensive':**
+{
+  "comparison": {
+    "dimension": {
+      "pole1": "Cheap",
+      "pole2": "Expensive"
+    },
+    "concepts": {
+      "concept_a": {
+        "Cheap": ["Low initial cost", "Free basic tier"],
+        "Expensive": ["High subscription fee", "Costly add-ons"]
+      },
+      "concept_b": {
+        "Cheap": ["Open source alternative", "Minimal running costs"],
+        "Expensive": ["Requires specialized hardware", "Paid support necessary"]
+      }
+    }
+  }
+}
