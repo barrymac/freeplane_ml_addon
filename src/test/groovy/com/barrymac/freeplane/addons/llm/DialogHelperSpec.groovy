@@ -30,16 +30,19 @@ class DialogHelperSpec extends Specification {
 
     def setupSpec() {
         // Mock LogUtils and SwingUtilities statically
-        GroovyMock(LogUtils, global: true)
-        GroovyMock(SwingUtilities, global: true)
+        // GroovyMock(LogUtils, global: true) // <-- REMOVED
+        // GroovyMock(SwingUtilities, global: true) // <-- REMOVED
         // Mock SwingBuilder globally to intercept its creation
-        GroovyMock(SwingBuilder, global: true)
+        // GroovyMock(SwingBuilder, global: true) // <-- REMOVED
     }
 
     def setup() {
         // Reset interactions for static mocks if needed (though usually handled by Spock)
         // Stub SwingBuilder constructor/methods if necessary, but often mocking interactions is enough
         // Stub getCurrentFrame
+        GroovyMock(LogUtils, global: true) // <-- ENSURED PRESENT
+        GroovyMock(SwingUtilities, global: true) // <-- ENSURED PRESENT
+        GroovyMock(SwingBuilder, global: true) // <-- ENSURED PRESENT
         mockUi.getCurrentFrame() >> new Frame() // Return a dummy frame
     }
 
