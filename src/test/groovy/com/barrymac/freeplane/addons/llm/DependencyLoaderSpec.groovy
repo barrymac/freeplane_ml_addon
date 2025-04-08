@@ -12,10 +12,14 @@ class DependencyLoaderSpec extends Specification {
     def mockLogger = Mock(LoggerTest)
     def mockUi = Mock(UITest)
 
-    def setupSpec() {
+    // setupSpec removed
+
+    // Add setup() method with the GroovyMock lines
+    def setup() {
         GroovyMock(LogUtils, global: true)
         // Mock the ApiCallerFactory to return a predictable object
         GroovyMock(ApiCallerFactory, global: true)
+        // Re-apply the stubbing for the factory here as well
         ApiCallerFactory.createApiCaller(_) >> [make_api_call: { /* mock closure */ }]
     }
 
