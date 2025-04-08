@@ -1,4 +1,4 @@
-import com.barrymac.freeplane.addons.llm.ApiCaller
+import com.barrymac.freeplane.addons.llm.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.DialogHelper
 import com.barrymac.freeplane.addons.llm.MessageExpander
@@ -45,7 +45,12 @@ List<String> parseGeneratedDimension(String response) throws LlmAddonException {
 
 // --- Initialize Core Components ---
 // Create instances of required classes
-ApiCaller apiCaller = new ApiCaller()
+def provider = apiConfig.provider
+def apiKey = apiConfig.apiKey
+def apiCaller = ApiCallerFactory.createApiCaller(provider, apiKey)
+if (!apiCaller) {
+    throw new Exception("Failed to create API caller for provider: ${provider}")
+}
 NodeTagger nodeTagger = new NodeTagger()
 
 // Get method references for commonly used functions
@@ -64,15 +69,6 @@ def compareNodesUserMessageTemplate = messages.userTemplate
 
 // Wrap the entire script in a try-catch block for better error handling
 try {
-    // 1. Check API Key
-    if (apiConfig.apiKey.isEmpty()) {
-        if (provider == 'openrouter') {
-            Desktop.desktop.browse(new URI("https://openrouter.ai/keys"))
-        } else {
-            Desktop.desktop.browse(new URI("https://platform.openai.com/account/api-keys"))
-        }
-        throw new Exception("API key is missing. Please configure it first via the LLM menu.")
-    }
 
     // Check if templates are loaded
     if (systemMessageTemplate.isEmpty() || compareNodesUserMessageTemplate.isEmpty()) {
@@ -143,7 +139,7 @@ try {
             
             while (attempts <= maxRetries) {
                 try {
-                    def dimensionResponse = make_api_call(provider, apiConfig.apiKey, dimensionPayload)
+                    def dimensionResponse = make_api_call(dimensionPayload)
                     dimensionContent = new JsonSlurper().parseText(dimensionResponse)?.choices[0]?.message?.content
                     (pole1, pole2) = parseGeneratedDimension(dimensionContent)
                     comparativeDimension = "${pole1} vs ${pole2}"
@@ -208,7 +204,7 @@ try {
             ]
             logger.info("Requesting analysis for source node: ${sourceNode.text}")
             // Use the unified API call function from deps
-            def sourceApiResponse = make_api_call(provider, apiConfig.apiKey, sourcePayloadMap)
+            def sourceApiResponse = make_api_call(sourcePayloadMap)
 
             if (sourceApiResponse == null || sourceApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for source node.")
@@ -226,7 +222,7 @@ try {
             ]
             logger.info("Requesting analysis for target node: ${targetNode.text}")
             // Use the unified API call function from deps
-            def targetApiResponse = make_api_call(provider, apiConfig.apiKey, targetPayloadMap)
+            def targetApiResponse = make_api_call(targetPayloadMap)
 
             if (targetApiResponse == null || targetApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for target node.")
