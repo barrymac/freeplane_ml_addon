@@ -1,14 +1,14 @@
 package com.barrymac.freeplane.addons.llm
 
+// Add these imports:
+import com.barrymac.freeplane.addons.llm.mock.LoggerTest
+import com.barrymac.freeplane.addons.llm.mock.UITest
+// Keep existing imports
 import com.barrymac.freeplane.addons.llm.mock.MockHttpURLConnection
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.awt.*
-
-// Interface to properly mock the UI
-
-// Interface to properly mock the Logger
 
 class ApiCallerFactorySpec extends Specification {
     def mockLogger = Mock(LoggerTest)
