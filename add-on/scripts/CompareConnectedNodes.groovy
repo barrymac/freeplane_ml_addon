@@ -28,20 +28,21 @@ import org.freeplane.plugin.script.proxy.NodeProxy
 import javax.swing.JDialog // Explicitly needed by UiHelper methods used here
 
 // --- Initialize Core Components ---
-// Create instances of required classes
-def apiKey = apiConfig.apiKey
-def apiCaller = ApiCallerFactory.createApiCaller(apiConfig.provider, apiKey)
+// Load configuration FIRST
+ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
+
+// Create instances of required classes using the loaded config
+def apiCaller = ApiCallerFactory.createApiCaller(apiConfig.provider, apiConfig.apiKey)
 if (!apiCaller) {
-    throw new Exception("Failed to create API caller for provider: ${provider}")
+    throw new Exception("Failed to create API caller for provider: ${apiConfig.provider}")
 }
 NodeTagger nodeTagger = new NodeTagger()
 
 // Get method references for commonly used functions
 Closure make_api_call = apiCaller.&make_api_call
-Closure addModelTagRecursively = nodeTagger.&addModelTagRecursively
+Closure addModelTagRecursively = nodeTagger.&tagWithModel
 
-// Load configuration and messages
-Map<String, Object> apiConfig = ConfigManager.loadBaseConfig(config)
+// Load messages
 def messages = MessageLoader.loadComparisonMessages(config)
 def systemMessageTemplate = messages.systemTemplate
 def compareNodesUserMessageTemplate = messages.userTemplate
@@ -128,13 +129,13 @@ try {
 
             // --- Call API for Source Node ---
             Map<String, Object> sourcePayloadMap = [
-                'model': apiConfig.model as String,
+                'model': apiConfig.model,
                 'messages': [
-                    [role: 'system' as String, content: systemMessageTemplate as String],
-                    [role: 'user' as String, content: sourceUserPrompt as String]
-                ] as List<Map<String,String>>,
-                'temperature': apiConfig.temperature as Number,
-                'max_tokens': apiConfig.maxTokens as Integer
+                    [role: 'system', content: systemMessageTemplate],
+                    [role: 'user', content: sourceUserPrompt]
+                ],
+                'temperature': apiConfig.temperature,
+                'max_tokens': apiConfig.maxTokens
             ]
             logger.info("Requesting analysis for source node: ${sourceNode.text}")
             // Use the unified API call function from deps
@@ -145,7 +146,7 @@ try {
             }
 
             // --- Call API for Target Node ---
-            def targetPayloadMap = [
+            Map<String, Object> targetPayloadMap = [
                 'model': apiConfig.model,
                 'messages': [
                     [role: 'system', content: systemMessageTemplate],
