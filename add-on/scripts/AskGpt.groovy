@@ -192,6 +192,17 @@ try {
     Closure make_api_call = apiCallerClosures.make_api_call
     Closure tagWithModel = NodeTagger.&tagWithModel // Get method reference
 
+    // Load messages using MessageFileHandler and MessageLoader (MOVED HERE)
+    def systemMessages = MessageFileHandler.loadMessagesFromFile(
+            systemMessagesFilePath,
+            "/defaultSystemMessages.txt",
+            MessageLoader.&loadDefaultMessages // Pass method reference
+    )
+    def userMessages = MessageFileHandler.loadMessagesFromFile(
+            userMessagesFilePath,
+            "/defaultUserMessages.txt",
+            MessageLoader.&loadDefaultMessages // Pass method reference
+    )
 
     def swingBuilder = new SwingBuilder()
     swingBuilder.edt { // edt method makes sure the GUI is built on the Event Dispatch Thread.
@@ -202,18 +213,6 @@ try {
                 constraints.weightx = 1.0
                 constraints.gridx = 0
                 constraints.gridy = -1  // Will be incremented to 0 in the first call to createSection
-
-                // Load messages using MessageFileHandler and MessageLoader
-                def systemMessages = MessageFileHandler.loadMessagesFromFile(
-                        systemMessagesFilePath,
-                        "/defaultSystemMessages.txt",
-                        MessageLoader.&loadDefaultMessages // Pass method reference
-                )
-                def userMessages = MessageFileHandler.loadMessagesFromFile(
-                        userMessagesFilePath,
-                        "/defaultUserMessages.txt",
-                        MessageLoader.&loadDefaultMessages // Pass method reference
-                )
 
                 // Use the indices loaded earlier via ConfigManager
                 MessageArea systemMessageArea = createMessageSection(swingBuilder, systemMessages, "System Message", selectedSystemMessageIndex, constraints, 4)
