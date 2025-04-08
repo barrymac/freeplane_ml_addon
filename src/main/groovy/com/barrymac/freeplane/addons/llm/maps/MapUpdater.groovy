@@ -5,8 +5,8 @@ import org.freeplane.plugin.script.proxy.NodeProxy
 
 class MapUpdater {
     static void createComparisonStructure(
-            NodeProxy sourceNode,
-            NodeProxy targetNode,
+            def sourceNode,
+            def targetNode,
             Map sourceAnalysis,
             Map targetAnalysis,
             String dimension,

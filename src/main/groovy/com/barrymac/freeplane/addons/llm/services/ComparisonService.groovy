@@ -16,7 +16,7 @@ class ComparisonService {
         this.deps = deps
     }
 
-    Map performFullComparison(NodeProxy source, NodeProxy target, String comparisonType) {
+    Map performFullComparison(def source, def target, String comparisonType) {
         LogUtils.info("Starting full comparison for type: ${comparisonType}")
 
         // 1. Generate Dimension

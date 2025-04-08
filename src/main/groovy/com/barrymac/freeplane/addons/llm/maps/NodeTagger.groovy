@@ -4,7 +4,7 @@ import org.freeplane.core.util.LogUtils
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 class NodeTagger {
-    static void tagWithModel(NodeProxy node, String modelName) {
+    static void tagWithModel(def node, String modelName) {
         if (!node || !modelName?.trim()) return
 
         def tagName = "LLM:${modelName.replace('/', '_')}"
