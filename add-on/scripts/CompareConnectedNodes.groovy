@@ -60,11 +60,11 @@ try {
     }
 
     // 2. Get Selected Nodes and Validate (Use NodeHelper class from deps)
-    List<NodeProxy> selectedNodes = (List<NodeProxy>) c.selecteds
+    def selectedNodes = c.selecteds
     // Use the static method directly via the class obtained from deps
-    NodeProxy[] nodes = NodeHelper.validateSelectedNodes(selectedNodes) // This might throw ValidationException
-    NodeProxy sourceNode = nodes[0]
-    NodeProxy targetNode = nodes[1]
+    def nodes = NodeHelper.validateSelectedNodes(selectedNodes) // This might throw ValidationException
+    def sourceNode = nodes[0]
+    def targetNode = nodes[1]
 
     logger.info("Selected nodes for comparison: ${sourceNode.text} and ${targetNode.text}")
 
