@@ -81,15 +81,15 @@ try {
         throw new Exception("System message template or the dedicated compareNodesUserMessage.txt is missing or empty. Please check configuration or files.")
     }
 
-    // 2. Get Selected Nodes and Validate Connection (Use NodeHelper class from deps)
+    // 2. Get Selected Nodes and Validate (Use NodeHelper class from deps)
     def selectedNodes = c.selecteds
     // Use the static method directly via the class obtained from deps
-    def (sourceNode, targetNode) = NodeHelper.validateAndGetConnectedNodes(selectedNodes) // This might throw ValidationException
+    def (sourceNode, targetNode) = NodeHelper.validateSelectedNodes(selectedNodes) // This might throw ValidationException
 
     logger.info("Selected nodes for comparison: ${sourceNode.text} and ${targetNode.text}")
 
     // 3. Get Comparison Type from User
-    def dialogMessage = "Comparing nodes '${sourceNode.text}' and '${targetNode.text}'.\nEnter the type of comparison (e.g., 'Pros and Cons', 'Compare and Contrast', 'Strengths vs Weaknesses'):"
+    def dialogMessage = "Comparing selected nodes:\n'${sourceNode.text}'\nand\n'${targetNode.text}'\nEnter comparison type:"
     def defaultComparisonTypes = ["Pros and Cons", "Compare and Contrast", "Strengths vs Weaknesses", "Advantages and Disadvantages"]
     def comparisonTypesConfigKey = "promptLlmAddOn.comparisonTypes"
 
@@ -295,9 +295,8 @@ try {
                             centralTargetChild.createChild("(No analysis generated)")
                         }
 
-                        // 4. (Optional) Add connectors from central node to original nodes
-                        centralNode.addConnectorTo(sourceNode)
-                        centralNode.addConnectorTo(targetNode)
+                        // 4. (Optional) Create visual links to original nodes
+                        // Connectors removed to support non-connected nodes
 
                         // 5. Apply LLM tag to the central node
                         if (addModelTagRecursively != null) {

@@ -35,12 +35,13 @@ class NodeHelper {
     }
     /**
      * Validates that exactly two nodes are selected
+     * (No longer checks for existing connection)
      *
      * @param selectedNodes The list of selected nodes
      * @return A tuple containing [node1, node2] if valid
      * @throws Exception if validation fails
      */
-    static def validateAndGetConnectedNodes(selectedNodes) {
+    static def validateSelectedNodes(selectedNodes) {
         try {
             if (selectedNodes.size() != 2) {
                 throw new Exception("Please select exactly two nodes to compare.")
@@ -50,8 +51,7 @@ class NodeHelper {
             def node2 = selectedNodes[1]
 
             LogUtils.info("Valid selection: Comparing nodes '${node1.text}' and '${node2.text}'")
-            // Return the nodes in selection order
-            return [node1, node2]
+            return [node1, node2] // Return nodes in selection order
         } catch (Exception e) {
             LogUtils.severe("Node validation failed: ${e.message}")
             throw e
