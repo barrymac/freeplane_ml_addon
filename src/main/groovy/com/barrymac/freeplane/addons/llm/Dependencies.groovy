@@ -18,4 +18,7 @@ class Dependencies {
     def nodeOperations
     def configManager
     def messageLoader
+    def comparisonService
+    def validationHelper
+    def uiHelper
 }
