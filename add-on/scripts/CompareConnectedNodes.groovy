@@ -9,39 +9,11 @@ import com.barrymac.freeplane.addons.llm.ResponseParser
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
+import org.freeplane.plugin.script.proxy.NodeProxy
 
 import javax.swing.*
 import java.awt.*
 
-// Helper function to parse generated dimension from LLM response
-List<String> parseGeneratedDimension(String response) throws LlmAddonException {
-    // More flexible regex pattern
-    def pattern = ~/(?i)(Pole\s*1:\s*([^;]+?)\s*;\s*Pole\s*2:\s*([^\n]+?))\s*$/
-    def matcher = pattern.matcher(response)
-    
-    if (matcher.find()) {
-        def pole1 = matcher[0][2].trim().replaceAll(/["']/, '')
-        def pole2 = matcher[0][3].trim().replaceAll(/["']/, '')
-        return [pole1, pole2]
-    }
-    
-    // Try alternative patterns if initial fails
-    def altPatterns = [
-        ~/([A-Z][\w\s]+?)\s*\/\/\s*([A-Z][\w\s]+)/,
-        ~/(.+)\s+vs\s+(.+)/,
-        ~/^([^;]+);([^;]+)$/
-    ]
-    
-    for (p in altPatterns) {
-        matcher = p.matcher(response)
-        if (matcher.find() && matcher.groupCount() >= 2) {
-            return [matcher[0][1].trim(), matcher[0][2].trim()]
-        }
-    }
-    
-    throw new LlmAddonException("""Invalid dimension format. Received: '$response'
-        Expected format: 'Pole 1: [concept]; Pole 2: [concept]'""")
-}
 
 // --- Initialize Core Components ---
 // Create instances of required classes
@@ -350,4 +322,34 @@ try {
     ui.errorMessage(e.message)
     // Use SLF4J logging
     logger.warn("Error in CompareConnectedNodes", e)
+}
+
+// Helper function to parse generated dimension from LLM response
+List<String> parseGeneratedDimension(String response) throws LlmAddonException {
+    // More flexible regex pattern
+    def pattern = ~/(?i)(Pole\s*1:\s*([^;]+?)\s*;\s*Pole\s*2:\s*([^\n]+?))\s*$/
+    def matcher = pattern.matcher(response)
+
+    if (matcher.find()) {
+        def pole1 = matcher[0][2].trim().replaceAll(/["']/, '')
+        def pole2 = matcher[0][3].trim().replaceAll(/["']/, '')
+        return [pole1, pole2]
+    }
+
+    // Try alternative patterns if initial fails
+    def altPatterns = [
+            ~/([A-Z][\w\s]+?)\s*\/\/\s*([A-Z][\w\s]+)/,
+            ~/(.+)\s+vs\s+(.+)/,
+            ~/^([^;]+);([^;]+)$/
+    ]
+
+    for (p in altPatterns) {
+        matcher = p.matcher(response)
+        if (matcher.find() && matcher.groupCount() >= 2) {
+            return [matcher[0][1].trim(), matcher[0][2].trim()]
+        }
+    }
+
+    throw new LlmAddonException("""Invalid dimension format. Received: '$response'
+        Expected format: 'Pole 1: [concept]; Pole 2: [concept]'""")
 }
