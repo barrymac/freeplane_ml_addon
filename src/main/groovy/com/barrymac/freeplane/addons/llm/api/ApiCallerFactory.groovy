@@ -197,7 +197,7 @@ class ApiCallerFactory {
             if (logger) {
                 logger.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
             } else {
-                // Format string for LogUtils
+                // Format string for LogUtils using GString interpolation
                 LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
             }
             ui.errorMessage("Network or processing error during API call: ${e.message}")
