@@ -18,11 +18,11 @@ Concept B: $otherNodeContent
       "pole2": "Luxurious"
     },
     "concepts": {
-      "concept_a": {
+      "Toyota Camry": {
         "Practical": ["High cargo capacity", "Low maintenance costs"],
         "Luxurious": ["Premium materials", "Advanced comfort features"]
       },
-      "concept_b": {
+      "Mercedes S-Class": {
         "Practical": ["Fuel efficiency", "Affordable parts"],
         "Luxurious": ["Brand prestige", "Cutting-edge tech"]
       }
@@ -37,11 +37,11 @@ Concept B: $otherNodeContent
       "pole2": "Hard"
     },
     "concepts": {
-      "concept_a": {
+      "Google Docs": {
         "Easy": ["Simple setup", "Intuitive interface"],
         "Hard": ["Steep learning curve", "Requires expert knowledge"]
       },
-      "concept_b": {
+      "Adobe Photoshop": {
         "Easy": ["Quick start guide", "Minimal configuration"],
         "Hard": ["Complex dependencies", "Advanced customization needed"]
       }
@@ -57,11 +57,11 @@ Concept B: $otherNodeContent
       "pole2": "Expensive"
     },
     "concepts": {
-      "concept_a": {
+      "LibreOffice": {
         "Cheap": ["Low initial cost", "Free basic tier"],
         "Expensive": ["High subscription fee", "Costly add-ons"]
       },
-      "concept_b": {
+      "Microsoft 365": {
         "Cheap": ["Open source alternative", "Minimal running costs"],
         "Expensive": ["Requires specialized hardware", "Paid support necessary"]
       }
