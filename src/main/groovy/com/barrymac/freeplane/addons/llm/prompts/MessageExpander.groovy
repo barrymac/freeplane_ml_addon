@@ -5,7 +5,7 @@ import org.freeplane.core.util.LogUtils
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 class MessageExpander {
-    static Map createBinding(NodeProxy node, NodeProxy otherNode,
+    static Map createBinding(def node, def otherNode,
                              String dimension, String pole1, String pole2) {
         try {
             def pathToRoot = node.pathToRoot

@@ -6,8 +6,8 @@ import org.freeplane.plugin.script.proxy.NodeProxy
 
 class PromptBuilder {
     static String buildComparisonPrompt(
-            NodeProxy sourceNode,
-            NodeProxy targetNode,
+            def sourceNode,
+            def targetNode,
             String templateText,
             String comparativeDimension,
             String pole1,
