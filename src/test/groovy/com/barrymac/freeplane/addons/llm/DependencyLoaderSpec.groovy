@@ -1,10 +1,13 @@
 package com.barrymac.freeplane.addons.llm
 
-
+// Add these imports:
+import com.barrymac.freeplane.addons.llm.mock.ConfigTest
+import com.barrymac.freeplane.addons.llm.mock.LoggerTest
+import com.barrymac.freeplane.addons.llm.mock.UITest
+// Keep existing imports
 import org.freeplane.core.util.LogUtils
 import spock.lang.Specification
 
-// Use interfaces from other tests or define simple ones
 
 class DependencyLoaderSpec extends Specification {
 
