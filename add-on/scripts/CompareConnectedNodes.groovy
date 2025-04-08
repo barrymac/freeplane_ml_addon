@@ -1,7 +1,13 @@
 import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
-import com.barrymac.freeplane.addons.llm.DependencyLoader
+import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.MessageLoader
+import com.barrymac.freeplane.addons.llm.NodeHelper
+import com.barrymac.freeplane.addons.llm.DialogHelper
+import com.barrymac.freeplane.addons.llm.ApiCaller
+import com.barrymac.freeplane.addons.llm.MessageExpander
+import com.barrymac.freeplane.addons.llm.NodeTagger
 import com.barrymac.freeplane.addons.llm.ResponseParser
 
 import javax.swing.*
