@@ -9,8 +9,9 @@ import spock.lang.Unroll
 class ConfigManagerSpec extends Specification {
 
     def mockConfig = Mock(ConfigTest)
-    // Mock LogUtils statically
-    def setupSpec() {
+
+    // Mock LogUtils statically before each test
+    def setup() {
         GroovyMock(LogUtils, global: true)
     }
 
