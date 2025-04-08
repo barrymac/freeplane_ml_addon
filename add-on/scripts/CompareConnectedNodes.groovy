@@ -32,14 +32,16 @@ import javax.swing.JDialog // Explicitly needed by UiHelper methods used here
 ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
 
 // Create instances of required classes using the loaded config
-def apiCaller = ApiCallerFactory.createApiCaller(apiConfig.provider, apiConfig.apiKey)
-if (!apiCaller) {
-    throw new Exception("Failed to create API caller for provider: ${apiConfig.provider}")
+// Pass ui and logger in a map to createApiCaller
+def apiCallerClosures = ApiCallerFactory.createApiCaller([ui: ui, logger: logger])
+if (!apiCallerClosures) {
+    throw new Exception("Failed to create API caller closures.")
 }
 NodeTagger nodeTagger = new NodeTagger()
 
 // Get method references for commonly used functions
-Closure make_api_call = apiCaller.&make_api_call
+// Get the specific make_api_call closure from the returned map
+Closure make_api_call = apiCallerClosures.make_api_call
 Closure addModelTagRecursively = nodeTagger.&tagWithModel
 
 // Load messages
@@ -139,7 +141,7 @@ try {
             ]
             logger.info("Requesting analysis for source node: ${sourceNode.text}")
             // Use the unified API call function from deps
-            def sourceApiResponse = make_api_call(sourcePayloadMap)
+            def sourceApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, sourcePayloadMap)
 
             if (sourceApiResponse == null || sourceApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for source node.")
@@ -157,7 +159,7 @@ try {
             ]
             logger.info("Requesting analysis for target node: ${targetNode.text}")
             // Use the unified API call function from deps
-            def targetApiResponse = make_api_call(targetPayloadMap)
+            def targetApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, targetPayloadMap)
 
             if (targetApiResponse == null || targetApiResponse.isEmpty()) {
                 throw new Exception("Received empty or null response for target node.")
