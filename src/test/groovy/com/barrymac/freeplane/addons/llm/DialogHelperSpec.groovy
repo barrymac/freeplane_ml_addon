@@ -1,5 +1,6 @@
 package com.barrymac.freeplane.addons.llm
 
+import com.barrymac.freeplane.addons.llm.mock.NodeModelTest
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
 import spock.lang.Specification
@@ -8,19 +9,7 @@ import spock.lang.Unroll
 import javax.swing.*
 import java.awt.*
 
-// Interfaces for mocking
-interface UITest {
-    void errorMessage(String message)
-    Object getCurrentFrame() // Represents the parent frame
-    void setDialogLocationRelativeTo(Object dialog, Object parent)
-}
-
-interface ConfigTest {
-    String getProperty(String key, String defaultValue)
-    void setProperty(String key, String value)
-}
-
-interface NodeModelTest {} // Simple marker interface for node context
+// Simple marker interface for node context
 
 class DialogHelperSpec extends Specification {
 

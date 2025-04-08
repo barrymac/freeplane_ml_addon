@@ -1,12 +1,10 @@
 package com.barrymac.freeplane.addons.llm
 
+
 import org.freeplane.core.util.LogUtils
 import spock.lang.Specification
 
 // Use interfaces from other tests or define simple ones
-interface ConfigTest {}
-interface LoggerTest {}
-interface UITest {}
 
 class DependencyLoaderSpec extends Specification {
 
