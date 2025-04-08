@@ -175,6 +175,7 @@ class ApiCallerFactory {
                         if (logger) {
                             logger.warn("Error response body: {}", errorBody)
                         } else {
+                            // Format string for LogUtils
                             LogUtils.warn("Error response body: ${errorBody}")
                         }
                     }
@@ -194,7 +195,7 @@ class ApiCallerFactory {
             if (logger) {
                 logger.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
             } else {
-                // LogUtils doesn't support formatting, construct the message manually
+                // Format string for LogUtils
                 LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
             }
             ui.errorMessage("Network or processing error during API call: ${e.message}")
