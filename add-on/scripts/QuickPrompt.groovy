@@ -1,21 +1,21 @@
-import groovy.swing.SwingBuilder
-import javax.swing.JOptionPane
-
-// Import the compiled classes directly
+// --- Imports ---
 import com.barrymac.freeplane.addons.llm.exceptions.*
-// ADD these imports
+import groovy.swing.SwingBuilder
+import javax.swing.*
+import java.awt.*
+
+// Core LLM Addon Classes
 import com.barrymac.freeplane.addons.llm.ApiCallerFactory
-import com.barrymac.freeplane.addons.llm.BranchGeneratorFactory
 import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.Dependencies
 import com.barrymac.freeplane.addons.llm.MessageExpander
 import com.barrymac.freeplane.addons.llm.MessageFileHandler
 import com.barrymac.freeplane.addons.llm.MessageLoader
-import com.barrymac.freeplane.addons.llm.NodeTagger
-import com.barrymac.freeplane.addons.llm.ApiConfig // Ensure ApiConfig is imported
-import com.barrymac.freeplane.addons.llm.Message // Ensure Message is imported
-import com.barrymac.freeplane.addons.llm.ApiRequest // Ensure ApiRequest is imported
-import org.freeplane.core.util.LogUtils // Ensure LogUtils is imported
+import com.barrymac.freeplane.addons.llm.maps.NodeTagger
+import com.barrymac.freeplane.addons.llm.ApiConfig
+import com.barrymac.freeplane.addons.llm.utils.JsonUtils
+import com.barrymac.freeplane.addons.llm.maps.NodeOperations
+import com.barrymac.freeplane.addons.llm.utils.UiHelper
+import org.freeplane.core.util.LogUtils
 
 
 // REPLACE deps.configManager calls with ConfigManager static calls
