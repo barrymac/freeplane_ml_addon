@@ -295,8 +295,10 @@ try {
                             centralTargetChild.createChild("(No analysis generated)")
                         }
 
-                        // 4. (Optional) Create visual links to original nodes
-                        // Connectors removed to support non-connected nodes
+                        // 4. Create visual links from central node to original ideas
+                        centralNode.addConnectorTo(sourceNode)
+                        centralNode.addConnectorTo(targetNode)
+                        logger.info("Created connectors from comparison node to original ideas")
 
                         // 5. Apply LLM tag to the central node
                         if (addModelTagRecursively != null) {
