@@ -265,13 +265,58 @@ try {
                     ui.informationMessage("The LLM analysis did not yield structured results for either node.")
                 } else {
                     try {
-                        // Add analysis branches, passing the tagging function, the generated dimension, and the other node
-                        addAnalysisToNodeAsBranch(sourceNode, sourceAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively, targetNode)
-                        addAnalysisToNodeAsBranch(targetNode, targetAnalysis, comparativeDimension, apiConfig.model, addModelTagRecursively, sourceNode)
-                        ui.informationMessage("Comparative analysis using '${comparativeDimension}' framework added to both nodes.")
+                        // --- NEW LOGIC: Create Central Comparison Node ---
+
+                        // 1. Create the central node (position it logically, e.g., near the source node)
+                        //    The map structure doesn't guarantee positioning, but creating it as a child
+                        //    of the mind map root or near one of the nodes is common.
+                        //    Let's create it as a sibling of the source node for simplicity.
+                        def parentNode = sourceNode.parent // Or c.root if sourceNode is root
+                        def centralNode = parentNode.createChild()
+                        centralNode.text = "Comparison: ${comparativeDimension}" // Set concise title
+                        centralNode.style.backgroundColorCode = '#E8E8FF' // Optional: Style central node
+
+                        // 2. Create child nodes for each original idea under the central node
+                        def centralSourceChild = centralNode.createChild(sourceNode.text)
+                        def centralTargetChild = centralNode.createChild(targetNode.text)
+
+                        // 3. Add the parsed analysis under the corresponding child using the new helper
+                        if (!sourceAnalysis.isEmpty()) {
+                            // Use the new helper function from NodeHelper class
+                            NodeHelper.addAnalysisMapAsSubnodes(centralSourceChild, sourceAnalysis)
+                        } else {
+                            centralSourceChild.createChild("(No analysis generated)")
+                        }
+
+                        if (!targetAnalysis.isEmpty()) {
+                            // Use the new helper function from NodeHelper class
+                            NodeHelper.addAnalysisMapAsSubnodes(centralTargetChild, targetAnalysis)
+                        } else {
+                            centralTargetChild.createChild("(No analysis generated)")
+                        }
+
+                        // 4. (Optional) Add connectors from central node to original nodes
+                        centralNode.addConnectorTo(sourceNode)
+                        centralNode.addConnectorTo(targetNode)
+
+                        // 5. Apply LLM tag to the central node
+                        if (addModelTagRecursively != null) {
+                             try {
+                                 // Tag the central node
+                                 addModelTagRecursively(centralNode, apiConfig.model)
+                                 LogUtils.info("CompareNodes: Tag 'LLM:${apiConfig.model.replace('/', '_')}' applied to central comparison node: ${centralNode.text}")
+                             } catch (Exception e) {
+                                 LogUtils.warn("Failed to apply node tagger function to central node: ${e.message}")
+                             }
+                        }
+
+                        ui.informationMessage("Central comparison node using '${comparativeDimension}' created.")
+
+                        // --- END NEW LOGIC ---
+
                     } catch (Exception e) {
-                        log.warn("Error during addAnalysisToNodeAsBranch calls on EDT", e)
-                        ui.errorMessage("Failed to add analysis results to the map. Check logs. Error: ${e.message}")
+                        logger.warn("Error creating central comparison node structure on EDT", e)
+                        ui.errorMessage("Failed to add central comparison node to the map. Check logs. Error: ${e.message}")
                     }
                 }
             }

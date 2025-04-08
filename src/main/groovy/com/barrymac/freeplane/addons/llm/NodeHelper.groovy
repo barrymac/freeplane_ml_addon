@@ -7,6 +7,33 @@ import org.freeplane.core.util.LogUtils
  */
 class NodeHelper {
     /**
+     * Adds the structured analysis map as child nodes under a given parent node.
+     * Expects the map to contain one key (the relevant pole/category).
+     *
+     * @param parentNode The node under which to add the analysis structure.
+     * @param analysisMap A map containing one category key and a list of points.
+     */
+    static void addAnalysisMapAsSubnodes(parentNode, Map analysisMap) {
+        if (analysisMap.isEmpty()) {
+            LogUtils.warn("addAnalysisMapAsSubnodes: Received empty analysis map for node ${parentNode.text}. Skipping.")
+            return
+        }
+
+        // Since the map should only contain one key (the relevant pole)
+        analysisMap.each { category, points ->
+            LogUtils.info("addAnalysisMapAsSubnodes: Adding category '${category}' under node '${parentNode.text}'")
+            // Add the category (pole) as a direct child
+            def categoryNode = parentNode.createChild(category)
+            categoryNode.style.backgroundColorCode = '#F0F0F0' // Optional: Style the category node
+
+            // Add each point as a child of the category node
+            points.each { point ->
+                LogUtils.info("addAnalysisMapAsSubnodes: Adding point '${point}' under category '${category}'")
+                categoryNode.createChild(point)
+            }
+        }
+    }
+    /**
      * Validates that exactly two connected nodes are selected
      *
      * @param selectedNodes The list of selected nodes
