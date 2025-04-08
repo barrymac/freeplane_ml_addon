@@ -1,3 +1,4 @@
+import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import org.freeplane.plugin.script.proxy.NodeProxy
 
