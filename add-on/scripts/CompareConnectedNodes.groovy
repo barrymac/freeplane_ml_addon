@@ -252,7 +252,7 @@ try {
 
             // Parse responses
             logger.info("CompareConnectedNodes: Parsing source response...")
-            def (pole1, pole2) = comparativeDimension.split(' vs ')
+            (pole1, pole2) = comparativeDimension.split(' vs ') // Remove 'def' keyword
             def sourceAnalysis = ResponseParser.parseJsonAnalysis(sourceResponseContent, pole1, pole2)
             if (sourceAnalysis.error) {
                 throw new Exception("Source analysis error: ${sourceAnalysis.error}")
