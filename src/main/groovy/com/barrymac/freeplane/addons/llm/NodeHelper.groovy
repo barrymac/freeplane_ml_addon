@@ -19,12 +19,32 @@ class NodeHelper {
             return
         }
 
-        // Since the map should only contain one key (the relevant pole)
+        // Process each category in the map (now can handle multiple poles)
         analysisMap.each { category, points ->
             LogUtils.info("addAnalysisMapAsSubnodes: Adding category '${category}' under node '${parentNode.text}'")
             // Add the category (pole) as a direct child
             def categoryNode = parentNode.createChild(category)
-            categoryNode.style.backgroundColorCode = '#F0F0F0' // Optional: Style the category node
+            
+            // Apply different background colors based on category name to visually differentiate poles
+            // This is a simple heuristic - first pole is usually positive, second is negative
+            // A more sophisticated approach would be to have a configurable mapping of pole names to colors
+            def lowerCategory = category.toLowerCase()
+            if (lowerCategory.contains("benefit") || 
+                lowerCategory.contains("advantage") || 
+                lowerCategory.contains("strength") || 
+                lowerCategory.contains("pro") || 
+                lowerCategory.contains("positive")) {
+                categoryNode.style.backgroundColorCode = '#DFF0D8' // Light green for positive aspects
+            } else if (lowerCategory.contains("drawback") || 
+                       lowerCategory.contains("disadvantage") || 
+                       lowerCategory.contains("weakness") || 
+                       lowerCategory.contains("con") || 
+                       lowerCategory.contains("negative") || 
+                       lowerCategory.contains("limitation")) {
+                categoryNode.style.backgroundColorCode = '#F8D7DA' // Light red for negative aspects
+            } else {
+                categoryNode.style.backgroundColorCode = '#F0F0F0' // Default light gray
+            }
 
             // Add each point as a child of the category node
             points.each { point ->

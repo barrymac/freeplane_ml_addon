@@ -3,15 +3,20 @@ Analyze **Idea 1** relative to **Idea 2** using the dimension '$comparativeDimen
 Idea 1: $nodeContent
 Idea 2: $otherNodeContent
 
-**Instructions (Follow Strictly):**
-1.  Focus exclusively on **Idea 1**.
-2.  Determine if **Idea 1** primarily represents '$pole1' or '$pole2' when compared to **Idea 2**.
-3.  Your response MUST contain ONLY ONE heading: the name of the single most relevant pole for Idea 1.
-4.  Provide ONLY points describing **Idea 1** under that single heading.
-5.  Start points directly with concise comparative statements about **Idea 1**. Do NOT mention Idea 2 in the points.
+**Instructions:**
+1. Evaluate both '$pole1' AND '$pole2' aspects
+2. Provide points for BOTH poles
+3. Keep points focused on Idea 1's characteristics
+4. Use exact pole names as headings
+5. Be concise and objective
 
-**Example (Dimension: 'Lower Cost vs Higher Price', Analyzing Idea 1: 'fiat Uno' relative to Idea 2: 'ferrari testarossa'):**
-Lower Cost:
-- Is significantly more affordable to purchase.
-- Has lower running costs (fuel, maintenance, insurance).
-- Represents a budget-friendly transportation option.
+**Example (Dimension: 'Practical vs Luxurious'):**
+Practical:
+- Offers greater cargo capacity
+- Has lower maintenance costs
+- Provides better fuel efficiency
+
+Luxurious: 
+- Features more premium materials
+- Includes advanced comfort features
+- Boasts higher brand prestige
