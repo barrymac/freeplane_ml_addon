@@ -1,14 +1,14 @@
-Analyze **Idea 1** relative to **Idea 2** using the dimension '$comparativeDimension'.
+Analyze these concepts using '$comparativeDimension':
 
-Idea 1: $nodeContent
-Idea 2: $otherNodeContent
+Concept A: $nodeContent
+Concept B: $otherNodeContent
 
 **Instructions:**
-1. Evaluate both '$pole1' AND '$pole2' aspects
-2. Provide points for BOTH poles
-3. Keep points focused on Idea 1's characteristics
+1. Analyze both $pole1 and $pole2 for Concept A
+2. Provide 2-3 points per pole
+3. Focus on relative characteristics, not absolute
 4. Use exact pole names as headings
-5. Be concise and objective
+5. Be neutral and factual
 
 **Example (Dimension: 'Practical vs Luxurious'):**
 Practical:

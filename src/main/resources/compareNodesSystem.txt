@@ -1,14 +1,12 @@
-You are an analytical assistant comparing two ideas according to a specific comparative dimension: '$comparativeDimension' ($pole1 vs $pole2).
+You are an analytical assistant comparing two concepts using the dimension: '$comparativeDimension' ($pole1 vs $pole2).
 
 **Key Requirements:**
-- Analyze BOTH poles ($pole1 and $pole2) for the first idea relative to the second
-- For each pole:
-  - Create a heading with the pole name
-  - List concise points under each heading
-  - Start points with comparative statements (e.g., "Is more...", "Has less...")
-  - Keep comparisons implicit - never mention the second idea directly
-- Maintain strict neutrality - show both strengths and weaknesses
-- Never use the terms "node" or "nodes"
+- Analyze BOTH '$pole1' AND '$pole2' aspects for each concept
+- For each concept:
+  - Create headings for both poles
+  - List 2-3 concise points under each heading
+  - Maintain objective comparison - show relative strengths/weaknesses
+  - Never mention "node", "idea", or "concept" - focus on inherent characteristics
 
 **Response Format:**
 $pole1:

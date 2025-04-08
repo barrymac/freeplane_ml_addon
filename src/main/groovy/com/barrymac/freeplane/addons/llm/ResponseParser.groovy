@@ -16,33 +16,31 @@ class ResponseParser {
      */
     static Map parseAnalysis(String analysisText) {
         LogUtils.info("ResponseParser: Received raw text:\n---\n${analysisText}\n---")
+        def results = [:]
         try {
-            def results = [:]
-            String currentCategory = null
-            def currentPointsList = null
+            // Normalize text and split into sections
+            def sections = analysisText.split(/(?m)^(?=\S)/) // Split on section starts
             
-            analysisText.eachLine { line ->
-                line = line.trim()
-                if (line.isEmpty()) return // continue
+            sections.each { section ->
+                def lines = section.readLines()*.trim()
+                def currentPole = null
                 
-                // Check for a heading line (ends with ':' and doesn't start with a bullet)
-                if (line.endsWith(':') && !line.matches(/^[-*+•·]\s*.*/)) {
-                    currentCategory = line.replaceAll(':', '').trim()
-                    if (currentCategory) {
-                        LogUtils.info("ResponseParser: Found category heading: '${currentCategory}'")
-                        currentPointsList = []
-                        results[currentCategory] = currentPointsList
+                lines.each { line ->
+                    if (line.endsWith(':') && !line.matches(/^[-*+•·]\s*.*/)) {
+                        currentPole = line.replaceAll(':', '').trim()
+                        if (currentPole) {
+                            LogUtils.info("ResponseParser: Found pole heading: '${currentPole}'")
+                            results[currentPole] = results[currentPole] ?: []
+                        }
+                    }
+                    else if (currentPole && line.matches(/^[-*+•·]\s*.*/)) {
+                        def point = line.replaceAll(/^[-*+•·]\s*/, '').trim()
+                        if (point) {
+                            LogUtils.info("ResponseParser: Adding point under '${currentPole}': '${point}'")
+                            results[currentPole] << point
+                        }
                     }
                 }
-                // Check for a point line (starts with a bullet) after a category was found
-                else if (currentCategory != null && line.matches(/^[-*+•·]\s*.*/)) {
-                    def point = line.replaceAll(/^[-*+•·]\s*/, '').trim() // Remove leading bullet
-                    if (point) {
-                        LogUtils.info("ResponseParser: Adding point under '${currentCategory}': '${point}'")
-                        currentPointsList.add(point)
-                    }
-                }
-                // Handle lines that might be continuations of points or noise - currently ignored unless they start with a bullet.
             }
 
             // Fallback: If no category header was found, but the text contains bullet points

@@ -25,26 +25,14 @@ class NodeHelper {
             // Add the category (pole) as a direct child
             def categoryNode = parentNode.createChild(category)
             
-            // Apply different background colors based on category name to visually differentiate poles
-            // This is a simple heuristic - first pole is usually positive, second is negative
-            // A more sophisticated approach would be to have a configurable mapping of pole names to colors
-            def lowerCategory = category.toLowerCase()
-            if (lowerCategory.contains("benefit") || 
-                lowerCategory.contains("advantage") || 
-                lowerCategory.contains("strength") || 
-                lowerCategory.contains("pro") || 
-                lowerCategory.contains("positive")) {
-                categoryNode.style.backgroundColorCode = '#DFF0D8' // Light green for positive aspects
-            } else if (lowerCategory.contains("drawback") || 
-                       lowerCategory.contains("disadvantage") || 
-                       lowerCategory.contains("weakness") || 
-                       lowerCategory.contains("con") || 
-                       lowerCategory.contains("negative") || 
-                       lowerCategory.contains("limitation")) {
-                categoryNode.style.backgroundColorCode = '#F8D7DA' // Light red for negative aspects
-            } else {
-                categoryNode.style.backgroundColorCode = '#F0F0F0' // Default light gray
-            }
+            // Get actual pole names from analysis map and apply consistent colors
+            def poles = analysisMap.keySet() as List
+            def colorMap = [
+                (poles[0]): '#DFF0D8',  // First pole - green
+                (poles[1]): '#F8D7DA'   // Second pole - red
+            ]
+            
+            categoryNode.style.backgroundColorCode = colorMap[category] ?: '#F0F0F0'
 
             // Add each point as a child of the category node
             points.each { point ->
