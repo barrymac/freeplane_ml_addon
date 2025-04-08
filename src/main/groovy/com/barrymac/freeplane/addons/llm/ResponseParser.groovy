@@ -15,6 +15,11 @@ class ResponseParser {
             def jsonSlurper = new JsonSlurper()
             def raw = jsonSlurper.parseText(extractJsonPayload(jsonResponse))
             
+            // Validate root structure
+            if (!raw.comparison?.dimension) {
+                throw new Exception("Missing comparison dimension in response")
+            }
+            
             def results = [
                 dimension: [
                     pole1: raw.comparison.dimension.pole1,
@@ -23,11 +28,17 @@ class ResponseParser {
                 concepts: [:]
             ]
             
-            raw.comparison.concepts.each { conceptKey, conceptData ->
-                results.concepts[conceptKey] = [:]
-                [pole1, pole2].each { pole ->
-                    results.concepts[conceptKey][pole] = conceptData[pole] ?: []
+            // Process concepts with pole validation
+            ['concept_a', 'concept_b'].each { conceptKey ->
+                def conceptData = raw.comparison.concepts[conceptKey]
+                if (!conceptData) {
+                    throw new Exception("Missing concept '$conceptKey' in response")
                 }
+                
+                results.concepts[conceptKey] = [
+                    (pole1): conceptData[pole1] ?: [],
+                    (pole2): conceptData[pole2] ?: []
+                ]
             }
             
             return results

@@ -1,22 +1,31 @@
-Analyze these concepts using '$comparativeDimension':
+Analyze these concepts using '$comparativeDimension' ($pole1 vs $pole2):
 
 Concept A: $nodeContent
 Concept B: $otherNodeContent
 
-**Instructions:**
-1. Analyze both $pole1 and $pole2 for Concept A
-2. Provide 2-3 points per pole
-3. Focus on relative characteristics, not absolute
-4. Use exact pole names as headings
-5. Be neutral and factual
+**Strict Requirements:**
+1. JSON output MUST contain both $pole1 and $pole2 for each concept
+2. 2-3 bullet points per pole
+3. Use exact pole names as JSON keys
+4. Maintain neutral, factual comparisons
+5. No markdown - only valid JSON
 
-**Example (Dimension: 'Practical vs Luxurious'):**
-Practical:
-- Offers greater cargo capacity
-- Has lower maintenance costs
-- Provides better fuel efficiency
-
-Luxurious: 
-- Features more premium materials
-- Includes advanced comfort features
-- Boasts higher brand prestige
+**Example for 'Practical vs Luxurious':**
+{
+  "comparison": {
+    "dimension": {
+      "pole1": "Practical",
+      "pole2": "Luxurious"
+    },
+    "concepts": {
+      "concept_a": {
+        "Practical": ["High cargo capacity", "Low maintenance costs"],
+        "Luxurious": ["Premium materials", "Advanced comfort features"]
+      },
+      "concept_b": {
+        "Practical": ["Fuel efficiency", "Affordable parts"],
+        "Luxurious": ["Brand prestige", "Cutting-edge tech"]
+      }
+    }
+  }
+}

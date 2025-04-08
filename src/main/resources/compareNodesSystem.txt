@@ -5,6 +5,7 @@ You are an analytical assistant comparing two concepts using the dimension: '$co
 - Provide 2-3 specific points per pole for each concept
 - Focus on inherent characteristics
 - Maintain consistent comparison depth
+- JSON output MUST follow schema exactly
 
 **Response Format:**
 ```json

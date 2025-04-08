@@ -253,11 +253,23 @@ try {
             logger.info("CompareConnectedNodes: Parsing source response...")
             def (pole1, pole2) = comparativeDimension.split(' vs ')
             def sourceAnalysis = ResponseParser.parseJsonAnalysis(sourceResponseContent, pole1, pole2)
+            if (sourceAnalysis.error) {
+                throw new Exception("Source analysis error: ${sourceAnalysis.error}")
+            }
             logger.info("CompareConnectedNodes: Parsed Source Analysis Map: ${sourceAnalysis}")
 
             logger.info("CompareConnectedNodes: Parsing target response...")
             def targetAnalysis = ResponseParser.parseJsonAnalysis(targetResponseContent, pole1, pole2)
+            if (targetAnalysis.error) {
+                throw new Exception("Target analysis error: ${targetAnalysis.error}")
+            }
             logger.info("CompareConnectedNodes: Parsed Target Analysis Map: ${targetAnalysis}")
+
+            // Add validation for pole consistency
+            if (sourceAnalysis.dimension.pole1 != targetAnalysis.dimension.pole1 ||
+                sourceAnalysis.dimension.pole2 != targetAnalysis.dimension.pole2) {
+                throw new Exception("Mismatched comparison dimensions between concepts")
+            }
 
             // --- Update Map on EDT ---
             SwingUtilities.invokeLater {

@@ -15,19 +15,21 @@ class NodeHelper {
      */
     static void addJsonComparison(parentNode, Map jsonData, String conceptName) {
         if (!jsonData?.concepts?.containsKey(conceptName)) {
-            LogUtils.warn("addJsonComparison: No data found for concept: ${conceptName}")
             parentNode.createChild("Invalid analysis format for ${conceptName}")
             return
         }
 
         def conceptNode = parentNode.createChild(conceptName)
+        def dimension = jsonData.dimension
         
-        jsonData.concepts[conceptName].each { pole, points ->
+        [dimension.pole1, dimension.pole2].each { pole ->
+            def points = jsonData.concepts[conceptName][pole] ?: []
             def poleNode = conceptNode.createChild(pole)
-            poleNode.style.backgroundColorCode = getPoleColor(pole, jsonData.dimension)
+            poleNode.style.backgroundColorCode = getPoleColor(pole, dimension)
             
-            points.each { point ->
-                poleNode.createChild(point)
+            points.eachWithIndex { point, i ->
+                def pointNode = poleNode.createChild("${i + 1}. ${point}")
+                pointNode.style.backgroundColorCode = '#FFFFFF'
             }
         }
     }
