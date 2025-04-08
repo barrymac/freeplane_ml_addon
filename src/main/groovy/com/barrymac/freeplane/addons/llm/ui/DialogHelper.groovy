@@ -11,6 +11,9 @@ import com.barrymac.freeplane.addons.llm.utils.JsonUtils
 import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
+import org.freeplane.core.ui.components.UITools // Added import
+import org.freeplane.plugin.script.proxy.ControllerProxy // Added import
+import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Added import
 
 import javax.swing.*
 import java.awt.*
@@ -41,7 +44,7 @@ class DialogHelper {
      * @param configKey The config key to store custom types
      * @return The selected comparison type or null if cancelled
      */
-    static String showComparisonDialog(ui, config, contextNode, String message,
+    static String showComparisonDialog(UITools ui, ConfigProperties config, contextNode, String message,
                                        java.util.List<String> defaultTypes,
                                        String configKey = "promptLlmAddOn.comparisonTypes") {
         try {
@@ -129,7 +132,7 @@ class DialogHelper {
      * @param message The message to display
      * @return The created dialog (not yet visible)
      */
-    static JDialog createProgressDialog(ui, String title, String message) {
+    static JDialog createProgressDialog(UITools ui, String title, String message) {
         try {
             LogUtils.info("Creating progress dialog: ${title}")
             def swingBuilder = new SwingBuilder()
@@ -270,9 +273,9 @@ class DialogHelper {
      * Handles UI creation, event handling, API calls, and configuration saving.
      */
     static void showAskGptDialog(
-            Object ui,
-            Object config,
-            Object c, // Controller for selected node access (c.selected)
+            UITools ui,
+            ConfigProperties config,
+            ControllerProxy c, // Controller for selected node access (c.selected)
             ApiConfig apiConfig,
             List systemMessages,
             List userMessages,
