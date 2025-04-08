@@ -1,38 +1,36 @@
 package com.barrymac.freeplane.addons.llm
 
-import groovy.text.SimpleTemplateEngine
 import org.freeplane.core.util.LogUtils
+import groovy.text.SimpleTemplateEngine
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 class PromptBuilder {
     static String buildComparisonPrompt(
-            NodeProxy node,
-            NodeProxy otherNode,
-            String template,
-            String dimension,
+            NodeProxy sourceNode,
+            NodeProxy targetNode,
+            String templateText,
+            String comparativeDimension,
             String pole1,
             String pole2) {
+        
+        def binding = [
+            nodeContent: sourceNode.text,
+            otherNodeContent: targetNode.text,
+            comparativeDimension: comparativeDimension,
+            pole1: pole1,
+            pole2: pole2
+        ]
+
+        LogUtils.info("Building comparison prompt with binding: ${binding}")
+        
         try {
-            def binding = MessageExpander.getBindingMap(node, otherNode) + [
-                comparativeDimension: dimension,
-                pole1: pole1,
-                pole2: pole2
-            ]
-            
-            LogUtils.info("Building comparison prompt for node: ${node.text}")
-            LogUtils.info("Binding map contains dimension? ${binding.containsKey('comparativeDimension')}")
-            
-            def prompt = new SimpleTemplateEngine()
-                .createTemplate(template)
-                .make(binding)
-                .toString()
-                
-            LogUtils.info("Generated prompt for ${node.text}:\n${prompt}")
-            return prompt
-            
+            def engine = new SimpleTemplateEngine()
+            def result = engine.createTemplate(templateText).make(binding).toString()
+            LogUtils.info("Generated prompt:\n${result}")
+            return result
         } catch (Exception e) {
             LogUtils.severe("Failed to build comparison prompt: ${e.message}")
-            throw e
+            throw new Exception("Failed to build comparison prompt: ${e.message}")
         }
     }
 }
