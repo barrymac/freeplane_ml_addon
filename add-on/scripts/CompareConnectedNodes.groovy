@@ -8,7 +8,7 @@ import javax.swing.*
 import java.awt.*
 
 // Helper function to parse generated dimension from LLM response
-def parseGeneratedDimension(String response) {
+List<String> parseGeneratedDimension(String response) throws LlmAddonException {
     // More flexible regex pattern
     def pattern = ~/(?i)(Pole\s*1:\s*([^;]+?)\s*;\s*Pole\s*2:\s*([^\n]+?))\s*$/
     def matcher = pattern.matcher(response)
@@ -42,12 +42,12 @@ def parseGeneratedDimension(String response) {
 
 // Load all dependencies
 // Call static method directly
-def deps = DependencyLoader.loadDependencies(config, null, ui)
+Map<String, Object> deps = DependencyLoader.loadDependencies(config, null, ui)
 
 // Extract needed functions/classes from deps
 def ConfigManager = deps.configManager
-def make_api_call = deps.apiCaller.make_api_call
-def getBindingMap = deps.messageExpander.getBindingMap
+def make_api_call = deps.apiCaller.make_api_call as Closure
+Map<String, String> Function getBindingMap = deps.messageExpander.getBindingMap
 def parseAnalysis = deps.responseParser.&parseAnalysis
 def DialogHelper = deps.dialogHelper
 def NodeHelper = deps.nodeHelperUtils // Get the NodeHelperClass directly
@@ -56,7 +56,7 @@ def MessageLoader = deps.messageLoader
 def addModelTagRecursively = deps.nodeTagger
 
 // Load configuration using ConfigManager
-def apiConfig = ConfigManager.loadBaseConfig(config)
+Map<String, Object> apiConfig = ConfigManager.loadBaseConfig(config)
 
 // Load comparison messages using MessageLoader from deps
 def messages = MessageLoader.loadComparisonMessages(config)
@@ -83,9 +83,11 @@ try {
     }
 
     // 2. Get Selected Nodes and Validate (Use NodeHelper class from deps)
-    def selectedNodes = c.selecteds
+    List<NodeProxy> selectedNodes = (List<NodeProxy>) c.selecteds
     // Use the static method directly via the class obtained from deps
-    def (sourceNode, targetNode) = NodeHelper.validateSelectedNodes(selectedNodes) // This might throw ValidationException
+    NodeProxy[] nodes = NodeHelper.validateSelectedNodes(selectedNodes) // This might throw ValidationException
+    NodeProxy sourceNode = nodes[0]
+    NodeProxy targetNode = nodes[1]
 
     logger.info("Selected nodes for comparison: ${sourceNode.text} and ${targetNode.text}")
 
@@ -168,7 +170,7 @@ try {
             logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
             
             // --- Prepare source node prompt ---
-            def sourceBinding = getBindingMap(sourceNode, targetNode) // Pass both nodes
+            Map<String, String> sourceBinding = (Map<String, String>) getBindingMap(sourceNode, targetNode) // Pass both nodes
             // Remove incorrect assignment - comparisonType should be user input, not the generated dimension
             sourceBinding['comparativeDimension'] = comparativeDimension
             // Use existing poles from dimension generation
@@ -198,14 +200,14 @@ try {
             }
 
             // --- Call API for Source Node ---
-            def sourcePayloadMap = [
-                'model': apiConfig.model,
+            Map<String, Object> sourcePayloadMap = [
+                'model': apiConfig.model as String,
                 'messages': [
-                    [role: 'system', content: systemMessageTemplate],
-                    [role: 'user', content: sourceUserPrompt]
-                ],
-                'temperature': apiConfig.temperature,
-                'max_tokens': apiConfig.maxTokens
+                    [role: 'system' as String, content: systemMessageTemplate as String],
+                    [role: 'user' as String, content: sourceUserPrompt as String]
+                ] as List<Map<String,String>>,
+                'temperature': apiConfig.temperature as Number,
+                'max_tokens': apiConfig.maxTokens as Integer
             ]
             logger.info("Requesting analysis for source node: ${sourceNode.text}")
             // Use the unified API call function from deps
@@ -236,8 +238,9 @@ try {
             // --- Process Responses ---
             def jsonSlurper = new JsonSlurper()
 
-            def sourceJsonResponse = jsonSlurper.parseText(sourceApiResponse)
-            def sourceResponseContent = sourceJsonResponse?.choices[0]?.message?.content
+            Map<String, Object> sourceJsonResponse = (Map<String, Object>) jsonSlurper.parseText(sourceApiResponse)
+            String sourceResponseContent = ((Map<String, Object>) ((List<Object>) sourceJsonResponse.getOrDefault('choices', []))
+                .getOrDefault(0, [:])?.message)?.content ?: ''
             // Add logging for raw source response
             logger.info("CompareConnectedNodes: Raw Source Response Content:\n---\n${sourceResponseContent}\n---")
             if (!sourceResponseContent?.trim()) throw new Exception("Empty content in source response. Model may have hit token limit.")
