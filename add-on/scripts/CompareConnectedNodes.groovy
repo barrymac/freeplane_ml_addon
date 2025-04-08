@@ -2,6 +2,7 @@ import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import com.barrymac.freeplane.addons.llm.DependencyLoader
+import com.barrymac.freeplane.addons.llm.ResponseParser
 
 import javax.swing.*
 import java.awt.*
