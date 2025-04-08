@@ -1,5 +1,6 @@
 package com.barrymac.freeplane.addons.llm
 
+import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
 import org.freeplane.api.NodeRO
 import spock.lang.Ignore
 

@@ -1,5 +1,7 @@
 package com.barrymac.freeplane.addons.llm
 
+import com.barrymac.freeplane.addons.llm.maps.BranchGeneratorFactory
+import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 import spock.lang.Specification
 import spock.lang.Unroll
 

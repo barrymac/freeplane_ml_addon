@@ -1,11 +1,13 @@
 package com.barrymac.freeplane.addons.llm.services
 
-import com.barrymac.freeplane.addons.llm.*
-import com.barrymac.freeplane.addons.llm.builders.ApiPayloadBuilder
-import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
-import com.barrymac.freeplane.addons.llm.models.ApiRequest
-import org.freeplane.plugin.script.proxy.NodeProxy
+
+import com.barrymac.freeplane.addons.llm.Dependencies
+import com.barrymac.freeplane.addons.llm.ResponseProcessor
+import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder
+import com.barrymac.freeplane.addons.llm.prompts.DimensionGenerator
+import com.barrymac.freeplane.addons.llm.prompts.PromptBuilder
 import org.freeplane.core.util.LogUtils
+import org.freeplane.plugin.script.proxy.NodeProxy
 
 class ComparisonService {
     private final Dependencies deps
@@ -78,8 +80,8 @@ class ComparisonService {
         // 7. Return Results
         return [
                 dimension     : comparativeDimension,
-                pole1        : pole1,
-                pole2        : pole2,
+                pole1         : pole1,
+                pole2         : pole2,
                 sourceAnalysis: sourceAnalysis,
                 targetAnalysis: targetAnalysis
         ]

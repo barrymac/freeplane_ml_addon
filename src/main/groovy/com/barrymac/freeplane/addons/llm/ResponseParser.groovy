@@ -1,7 +1,7 @@
 package com.barrymac.freeplane.addons.llm
 
-import org.freeplane.core.util.LogUtils
 import groovy.json.JsonSlurper
+import org.freeplane.core.util.LogUtils
 
 /**
  * Utility class for parsing LLM responses into structured formats
@@ -14,35 +14,35 @@ class ResponseParser {
         try {
             def jsonSlurper = new JsonSlurper()
             def raw = jsonSlurper.parseText(extractJsonPayload(jsonResponse))
-            
+
             // Validate root structure
             if (!raw.comparison?.dimension) {
                 throw new Exception("Missing comparison dimension in response")
             }
-            
+
             def results = [
-                dimension: [
-                    pole1: raw.comparison.dimension.pole1,
-                    pole2: raw.comparison.dimension.pole2
-                ],
-                concepts: [:]
+                    dimension: [
+                            pole1: raw.comparison.dimension.pole1,
+                            pole2: raw.comparison.dimension.pole2
+                    ],
+                    concepts : [:]
             ]
-            
+
             // Process concepts with pole validation
             ['concept_a', 'concept_b'].each { conceptKey ->
                 def conceptData = raw.comparison.concepts[conceptKey]
                 if (!conceptData) {
                     throw new Exception("Missing concept '$conceptKey' in response")
                 }
-                
+
                 results.concepts[conceptKey] = [
-                    (pole1): conceptData[pole1] ?: [],
-                    (pole2): conceptData[pole2] ?: []
+                        (pole1): conceptData[pole1] ?: [],
+                        (pole2): conceptData[pole2] ?: []
                 ]
             }
-            
+
             return results
-            
+
         } catch (Exception e) {
             LogUtils.warn("JSON parsing failed: ${e.message}")
             return [error: "Invalid JSON structure: ${e.message}"]
@@ -70,11 +70,11 @@ class ResponseParser {
         try {
             // Normalize text and split into sections
             def sections = analysisText.split(/(?m)^(?=\S)/) // Split on section starts
-            
+
             sections.each { section ->
                 def lines = section.readLines()*.trim()
                 def currentPole = null
-                
+
                 lines.each { line ->
                     if (line.endsWith(':') && !line.matches(/^[-*+•·]\s*.*/)) {
                         currentPole = line.replaceAll(':', '').trim()
@@ -82,8 +82,7 @@ class ResponseParser {
                             LogUtils.info("ResponseParser: Found pole heading: '${currentPole}'")
                             results[currentPole] = results[currentPole] ?: []
                         }
-                    }
-                    else if (currentPole && line.matches(/^[-*+•·]\s*.*/)) {
+                    } else if (currentPole && line.matches(/^[-*+•·]\s*.*/)) {
                         def point = line.replaceAll(/^[-*+•·]\s*/, '').trim()
                         if (point) {
                             LogUtils.info("ResponseParser: Adding point under '${currentPole}': '${point}'")

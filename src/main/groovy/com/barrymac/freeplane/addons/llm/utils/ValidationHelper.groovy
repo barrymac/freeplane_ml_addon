@@ -8,7 +8,7 @@ class ValidationHelper {
             throw new LlmAddonException("Empty response for ${nodeName}")
         }
     }
-    
+
     static void validateDimensions(sourceDim, targetDim) {
         if (sourceDim != targetDim) {
             throw new LlmAddonException("Dimension mismatch: ${sourceDim} vs ${targetDim}")

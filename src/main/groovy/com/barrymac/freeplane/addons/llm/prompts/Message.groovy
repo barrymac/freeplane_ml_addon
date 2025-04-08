@@ -1,4 +1,4 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.prompts
 
 import groovy.transform.Canonical
 

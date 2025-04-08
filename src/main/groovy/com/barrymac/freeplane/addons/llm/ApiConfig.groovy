@@ -14,15 +14,15 @@ class ApiConfig {
     double temperature
 
     List<String> availableModels
-    
+
     Map<String, Object> toMap() {
         [
-            provider       : provider,
-            apiKey        : apiKey,
-            model         : model,
-            maxTokens     : maxTokens,
-            temperature   : temperature,
-            availableModels: availableModels
+                provider       : provider,
+                apiKey         : apiKey,
+                model          : model,
+                maxTokens      : maxTokens,
+                temperature    : temperature,
+                availableModels: availableModels
         ]
     }
 }

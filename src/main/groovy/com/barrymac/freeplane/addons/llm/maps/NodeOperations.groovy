@@ -1,4 +1,4 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.maps
 
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.core.util.LogUtils
@@ -27,14 +27,14 @@ class NodeOperations {
      * @param tagger Function to handle node tagging
      * @param comparisonType Optional type for map formatting
      */
-    static void addAnalysisBranch(def parentNode, Map analysisMap = null, 
-                                 String content = null,
-                                 String model, 
-                                 Closure tagger,
-                                 String comparisonType = null) {
+    static void addAnalysisBranch(def parentNode, Map analysisMap = null,
+                                  String content = null,
+                                  String model,
+                                  Closure tagger,
+                                  String comparisonType = null) {
         try {
             LogUtils.info("Adding analysis branch to node: ${parentNode.text}")
-            
+
             // Format map if provided
             String formattedContent = content
             if (analysisMap != null && content == null) {
@@ -80,14 +80,14 @@ class NodeOperations {
     private static String formatAnalysisMap(Map analysisMap, String comparisonType) {
         def builder = new StringBuilder()
         builder.append("${comparisonType}\n")
-        
+
         analysisMap.each { category, points ->
             builder.append("    ${category}\n")
             points.each { point ->
                 builder.append("        - ${point}\n")
             }
         }
-        
+
         return builder.toString().trim()
     }
 

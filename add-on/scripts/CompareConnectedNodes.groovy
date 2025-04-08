@@ -72,9 +72,6 @@ try {
         String errorMessage = null
 
         try {
-            // Get provider from config
-            def provider = apiConfig.provider
-            
             // --- Generate Comparative Dimension with Validation ---
             def dimensionData = DimensionGenerator.generateDimension(
                 make_api_call.curry(apiConfig.provider, apiKey),

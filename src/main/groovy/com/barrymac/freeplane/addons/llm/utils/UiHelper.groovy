@@ -1,6 +1,6 @@
 package com.barrymac.freeplane.addons.llm.utils
 
-import javax.swing.SwingUtilities
+import javax.swing.*
 
 class UiHelper {
     static void safeEdt(Closure action) {

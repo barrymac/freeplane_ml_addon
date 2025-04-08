@@ -1,7 +1,7 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.prompts
+
 
 import org.freeplane.core.util.LogUtils
-import groovy.text.SimpleTemplateEngine
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 class PromptBuilder {
@@ -12,17 +12,17 @@ class PromptBuilder {
             String comparativeDimension,
             String pole1,
             String pole2) {
-        
+
         def binding = [
-            nodeContent: sourceNode.text,
-            otherNodeContent: targetNode.text,
-            comparativeDimension: comparativeDimension,
-            pole1: pole1,
-            pole2: pole2
+                nodeContent         : sourceNode.text,
+                otherNodeContent    : targetNode.text,
+                comparativeDimension: comparativeDimension,
+                pole1               : pole1,
+                pole2               : pole2
         ]
 
         LogUtils.info("Building comparison prompt with binding: ${binding}")
-        
+
         try {
             def result = MessageExpander.expandTemplate(templateText, binding)
             LogUtils.info("Generated prompt:\n${result}")

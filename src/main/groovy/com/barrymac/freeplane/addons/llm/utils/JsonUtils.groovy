@@ -11,13 +11,13 @@ class JsonUtils {
         try {
             def json = new JsonSlurper().parseText(rawApiResponse)
             def content = json?.choices[0]?.message?.content
-            
+
             if (!content?.trim()) {
                 throw new Exception("Empty content in response")
             }
-            
+
             return content
-            
+
         } catch (Exception e) {
             LogUtils.severe("Failed to extract LLM content: ${e.message}")
             throw e

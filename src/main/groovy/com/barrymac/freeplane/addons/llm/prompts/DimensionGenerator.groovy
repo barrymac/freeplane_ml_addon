@@ -1,8 +1,8 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.prompts
 
-import org.freeplane.core.util.LogUtils
-import groovy.json.JsonSlurper
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
+import groovy.json.JsonSlurper
+import org.freeplane.core.util.LogUtils
 
 class DimensionGenerator {
     static class DimensionData {
@@ -12,21 +12,21 @@ class DimensionGenerator {
 
     static DimensionData generateDimension(Closure apiCall, String model, String systemTemplate, String comparisonType) {
         def dimensionPayload = [
-            'model': model,
-            'messages': [
-                [role: 'system', content: systemTemplate],
-                [role: 'user', content: "Create a focused comparative dimension for analyzing: ${comparisonType}"]
-            ],
-            'temperature': 0.2,
-            'max_tokens': 100
+                'model'      : model,
+                'messages'   : [
+                        [role: 'system', content: systemTemplate],
+                        [role: 'user', content: "Create a focused comparative dimension for analyzing: ${comparisonType}"]
+                ],
+                'temperature': 0.2,
+                'max_tokens' : 100
         ]
-        
+
         LogUtils.info("Generating comparative dimension for: ${comparisonType}")
-        
+
         def maxRetries = 2
         def attempts = 0
         def dimensionContent = null
-        
+
         while (attempts <= maxRetries) {
             try {
                 def dimensionResponse = apiCall(dimensionPayload)
@@ -36,7 +36,7 @@ class DimensionGenerator {
             } catch (Exception e) {
                 attempts++
                 if (attempts > maxRetries) throw e
-                
+
                 dimensionPayload.messages.add([role: 'assistant', content: dimensionContent])
                 dimensionPayload.messages.add([role: 'user', content: """
                     Format was incorrect. Please STRICTLY follow:
@@ -59,9 +59,9 @@ class DimensionGenerator {
         }
 
         def altPatterns = [
-            ~/([A-Z][\w\s]+?)\s*\/\/\s*([A-Z][\w\s]+)/,
-            ~/(.+)\s+vs\s+(.+)/,
-            ~/^([^;]+);([^;]+)$/
+                ~/([A-Z][\w\s]+?)\s*\/\/\s*([A-Z][\w\s]+)/,
+                ~/(.+)\s+vs\s+(.+)/,
+                ~/^([^;]+);([^;]+)$/
         ]
 
         for (p in altPatterns) {

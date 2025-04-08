@@ -5,6 +5,7 @@ import com.barrymac.freeplane.addons.llm.mock.ConfigTest
 import com.barrymac.freeplane.addons.llm.mock.UITest
 // Keep existing imports
 import com.barrymac.freeplane.addons.llm.mock.NodeModelTest
+import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
 import spock.lang.Specification

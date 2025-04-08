@@ -1,5 +1,7 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.maps
 
+import com.barrymac.freeplane.addons.llm.Dependencies
+import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 import groovy.json.JsonSlurper
 import org.freeplane.core.util.LogUtils
 

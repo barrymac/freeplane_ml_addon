@@ -1,8 +1,7 @@
-package com.barrymac.freeplane.addons.llm.api.client
+package com.barrymac.freeplane.addons.llm.api
 
 import com.barrymac.freeplane.addons.llm.exceptions.ApiException
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
-import com.barrymac.freeplane.addons.llm.models.ApiRequest
 import groovy.json.JsonBuilder
 import org.freeplane.core.util.LogUtils
 

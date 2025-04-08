@@ -1,4 +1,4 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.maps
 
 import org.freeplane.core.util.LogUtils
 import org.freeplane.plugin.script.proxy.NodeProxy
@@ -11,7 +11,7 @@ class NodeTagger {
 
         try {
             node.tags.add(tagName)
-            node.children.each { child -> 
+            node.children.each { child ->
                 tagWithModel(child, modelName)
             }
         } catch (Exception e) {

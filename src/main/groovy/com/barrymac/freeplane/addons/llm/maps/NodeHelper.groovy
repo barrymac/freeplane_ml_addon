@@ -1,4 +1,4 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.maps
 
 import org.freeplane.core.util.LogUtils
 
@@ -21,12 +21,12 @@ class NodeHelper {
 
         def conceptNode = parentNode.createChild(conceptName)
         def dimension = jsonData.dimension
-        
+
         [dimension.pole1, dimension.pole2].each { pole ->
             def points = jsonData.concepts[conceptName][pole] ?: []
             def poleNode = conceptNode.createChild(pole)
             poleNode.style.backgroundColorCode = getPoleColor(pole, dimension)
-            
+
             points.eachWithIndex { point, i ->
                 def pointNode = poleNode.createChild("${i + 1}. ${point}")
                 pointNode.style.backgroundColorCode = '#FFFFFF'
@@ -72,9 +72,9 @@ class NodeHelper {
      * @param addModelTagRecursivelyFunc Optional function to tag nodes with model info
      * @param otherNode Optional reference to the other node being compared
      */
-    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, 
-                                         String model, addModelTagRecursivelyFunc = null, 
-                                         otherNode = null) {
+    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType,
+                                          String model, addModelTagRecursivelyFunc = null,
+                                          otherNode = null) {
         LogUtils.info("Attempting to add analysis to node: ${nodeProxy.text}")
         if (analysisMap.isEmpty()) {
             LogUtils.warn("No analysis data to add for node: ${nodeProxy.text}")
@@ -82,12 +82,12 @@ class NodeHelper {
         }
 
         NodeOperations.addAnalysisBranch(
-            nodeProxy,
-            analysisMap,
-            null, // No pre-formatted content
-            model,
-            addModelTagRecursivelyFunc,
-            comparisonType
+                nodeProxy,
+                analysisMap,
+                null, // No pre-formatted content
+                model,
+                addModelTagRecursivelyFunc,
+                comparisonType
         )
     }
 }
