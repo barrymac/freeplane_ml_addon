@@ -100,7 +100,7 @@ try {
         try {
             // --- Generate Comparative Dimension with Validation ---
             def dimensionData = DimensionGenerator.generateDimension(
-                make_api_call.curry(apiConfig.provider, apiKey),
+                make_api_call.curry(apiConfig.provider, apiConfig.apiKey),
                 apiConfig.model,
                 messages.dimensionSystemTemplate, 
                 comparisonType
