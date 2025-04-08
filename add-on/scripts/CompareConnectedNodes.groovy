@@ -45,14 +45,14 @@ List<String> parseGeneratedDimension(String response) throws LlmAddonException {
 
 // --- Initialize Core Components ---
 // Create instances of required classes
-def apiCaller = new ApiCaller()
-def nodeTagger = new NodeTagger()
+ApiCaller apiCaller = new ApiCaller()
+NodeTagger nodeTagger = new NodeTagger()
 
 // Get method references for commonly used functions
-def make_api_call = apiCaller.&make_api_call
-def getBindingMap = MessageExpander.&getBindingMap
-def parseAnalysis = ResponseParser.&parseAnalysis
-def addModelTagRecursively = nodeTagger.&addModelTagRecursively
+Closure make_api_call = apiCaller.&make_api_call
+Closure getBindingMap = MessageExpander.&getBindingMap
+Closure parseAnalysis = ResponseParser.&parseAnalysis
+Closure addModelTagRecursively = nodeTagger.&addModelTagRecursively
 
 // Load configuration and messages
 Map<String, Object> apiConfig = ConfigManager.loadBaseConfig(config)
