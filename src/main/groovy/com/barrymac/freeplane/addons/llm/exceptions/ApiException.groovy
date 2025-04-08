@@ -7,12 +7,14 @@ class ApiException extends LlmAddonException {
     final int statusCode
 
     ApiException(String message, int statusCode) {
-        super("API Error ($statusCode): $message")
+        // Pass only the message to the super constructor
+        super(message)
         this.statusCode = statusCode
     }
 
     ApiException(String message, int statusCode, Throwable cause) {
-        super("API Error ($statusCode): $message", cause)
+        // Pass only the message and cause to the super constructor
+        super(message, cause)
         this.statusCode = statusCode
     }
 }
