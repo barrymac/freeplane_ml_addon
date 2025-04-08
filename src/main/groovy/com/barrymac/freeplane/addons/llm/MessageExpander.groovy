@@ -4,59 +4,45 @@ import groovy.text.SimpleTemplateEngine
 import org.freeplane.core.util.LogUtils
 
 class MessageExpander {
-    // Function to expand message templates with node context
-    static def expandMessage(String message, def node) {
+    static Map createBinding(NodeProxy node, NodeProxy otherNode, 
+                           String dimension, String pole1, String pole2) {
         try {
             def pathToRoot = node.pathToRoot
             def rootText = node.mindMap.root.text
             pathToRoot = pathToRoot.take(pathToRoot.size() - 1)
-            String ancestorContents = pathToRoot*.plainText.join('\n')
-            String siblingContents = node.isRoot() ? '' : node.parent.children.findAll { it != node }*.plainText.join('\n')
-
-            def binding = [
-                    rootText        : rootText,
-                    nodeContent     : node.plainText,
-                    ancestorContents: ancestorContents,
-                    siblingContents : siblingContents
+            
+            [
+                rootText: rootText,
+                nodeContent: node.plainText,
+                otherNodeContent: otherNode?.plainText ?: "",
+                ancestorContents: pathToRoot*.plainText.join('\n'),
+                siblingContents: node.isRoot() ? '' : 
+                    node.parent.children.findAll { it != node }*.plainText.join('\n'),
+                comparativeDimension: dimension,
+                pole1: pole1,
+                pole2: pole2
             ]
-
-            def engine = new SimpleTemplateEngine()
-            def template = engine.createTemplate(message).make(binding)
-            return template.toString()
-        } catch (Exception e) {
-            LogUtils.severe("Error expanding message template: ${e.message}")
-            return message // Return original message on error
-        }
-    }
-
-    // Add this function inside the file, alongside the existing expandMessage function
-    static def getBindingMap(def node, def otherNode = null) {
-        try {
-            def pathToRoot = node.pathToRoot
-            def rootText = node.mindMap.root.text
-            pathToRoot = pathToRoot.take(pathToRoot.size() - 1) // Exclude the node itself
-            String ancestorContents = pathToRoot*.plainText.join('\n')
-            String siblingContents = node.isRoot() ? '' : node.parent.children.findAll { it != node }*.plainText.join('\n')
-
-            def result = [
-                    rootText        : rootText,
-                    nodeContent     : node.plainText,
-                    ancestorContents: ancestorContents,
-                    siblingContents : siblingContents
-            ]
-
-            // Add other node content if provided
-            if (otherNode) {
-                result.otherNodeContent = otherNode.plainText
-            }
-
-            return result
         } catch (Exception e) {
             LogUtils.severe("Error creating binding map: ${e.message}")
             return [
-                    nodeContent     : node?.plainText ?: "",
-                    otherNodeContent: otherNode?.plainText ?: ""
-            ] // Return minimal binding on error
+                nodeContent: node?.plainText ?: "",
+                otherNodeContent: otherNode?.plainText ?: "",
+                comparativeDimension: dimension,
+                pole1: pole1,
+                pole2: pole2
+            ]
+        }
+    }
+    
+    static String expandTemplate(String template, Map binding) {
+        try {
+            new SimpleTemplateEngine()
+                .createTemplate(template)
+                .make(binding)
+                .toString()
+        } catch (Exception e) {
+            LogUtils.severe("Error expanding template: ${e.message}")
+            return template
         }
     }
 }
