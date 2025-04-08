@@ -4,18 +4,23 @@ import groovy.swing.SwingBuilder
 import javax.swing.*
 import java.awt.*
 
-// ADD these imports
+import com.barrymac.freeplane.addons.llm.exceptions.*
+import groovy.swing.SwingBuilder
+import javax.swing.*
+import java.awt.*
+
+// Core LLM Addon Classes
 import com.barrymac.freeplane.addons.llm.ApiCallerFactory
-import com.barrymac.freeplane.addons.llm.BranchGeneratorFactory
 import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.Dependencies
 import com.barrymac.freeplane.addons.llm.MessageExpander
 import com.barrymac.freeplane.addons.llm.MessageFileHandler
 import com.barrymac.freeplane.addons.llm.MessageLoader
-import com.barrymac.freeplane.addons.llm.NodeTagger
-import com.barrymac.freeplane.addons.llm.ApiConfig // Ensure ApiConfig is imported
-import com.barrymac.freeplane.addons.llm.Message // Ensure Message is imported
-import org.freeplane.core.util.LogUtils // Ensure LogUtils is imported
+import com.barrymac.freeplane.addons.llm.maps.NodeTagger
+import com.barrymac.freeplane.addons.llm.ApiConfig
+import com.barrymac.freeplane.addons.llm.utils.JsonUtils
+import com.barrymac.freeplane.addons.llm.maps.NodeOperations
+import com.barrymac.freeplane.addons.llm.utils.UiHelper
+import org.freeplane.core.util.LogUtils
 
 // --- Initialize Core Components ---
 LogUtils.info("QuickPrompt script started.")
@@ -200,23 +205,73 @@ swingBuilder.edt { // edt method makes sure the GUI is built on the Event Dispat
             swingBuilder.panel(constraints: constraints) {
                 def c = new GridBagConstraints() // Define constraints for buttons
                 def askGptButton = swingBuilder.button(constraints: c, action: swingBuilder.action(name: 'Prompt LLM') {
-                    // REPLACE deps.messageExpander call with MessageExpander static call
-                    // Assuming c.selected is the node context
-                    def expandedUserMessage = MessageExpander.expandTemplate(
-                        userMessageArea.textArea.text,
-                        MessageExpander.createBinding(c.selected, null, null, null, null) // Use createBinding for context
-                    )
+                    try {
+                        // 1. Get current values from GUI
+                        def currentApiKey = String.valueOf(apiKeyField.password)
+                        def currentSystemMessage = systemMessageArea.textArea.text
+                        def currentUserMessageTemplate = userMessageArea.textArea.text
+                        def currentModel = gptModelBox.selectedItem
+                        def currentMaxTokens = responseLengthField.value
+                        def currentTemperature = temperatureSlider.value / 100.0
+                        def currentProvider = apiProviderBox.selectedItem
 
-                    // Call the generateBranches closure obtained earlier
-                    generateBranches(
-                            String.valueOf(apiKeyField.password),
-                            systemMessageArea.textArea.text, // System message text
-                            expandedUserMessage,             // Expanded user message text
-                            gptModelBox.selectedItem,
-                            responseLengthField.value,
-                            temperatureSlider.value / 100.0,
-                            apiProviderBox.selectedItem
-                    )
+                        // 2. Get selected node
+                        def node = c.selected
+                        if (node == null) {
+                            UiHelper.showInformationMessage(ui, "Please select a node first.")
+                            return
+                        }
+
+                        // 3. Expand user message template
+                        def expandedUserMessage = MessageExpander.expandTemplate(
+                            currentUserMessageTemplate,
+                            MessageExpander.createBinding(node, null, null, null, null)
+                        )
+
+                        // 4. Prepare API Payload Map
+                        def messagesList = [
+                            [role: 'system', content: currentSystemMessage],
+                            [role: 'user', content: expandedUserMessage]
+                        ]
+                        Map<String, Object> payload = [
+                            'model'      : currentModel,
+                            'messages'   : messagesList,
+                            'temperature': currentTemperature,
+                            'max_tokens' : currentMaxTokens,
+                            'response_format': (currentProvider == 'openai' && currentModel.contains("gpt")) ? [type: "text"] : null
+                        ].findAll { key, value -> value != null }
+
+                        LogUtils.info("AskGpt: Sending payload: ${payload}")
+
+                        // 5. Call API
+                        UiHelper.showInformationMessage(ui, "Sending prompt to ${currentModel}...")
+
+                        def rawApiResponse = make_api_call(currentProvider, currentApiKey, payload)
+
+                        if (rawApiResponse == null || rawApiResponse.isEmpty()) {
+                            throw new Exception("Received empty or null response from API.")
+                        }
+
+                        // 6. Process Response
+                        def responseContent = JsonUtils.extractLlmContent(rawApiResponse)
+                        LogUtils.info("AskGpt: Received response content:\n${responseContent}")
+
+                        // 7. Update Map
+                        NodeOperations.addAnalysisBranch(
+                                node,                   // Parent node
+                                null,                   // No analysis map
+                                responseContent,        // The raw text content
+                                currentModel,           // Model used
+                                tagWithModel,           // Tagger function
+                                "LLM Prompt Result"     // Optional type string
+                        )
+
+                        UiHelper.showInformationMessage(ui, "Response added as a new branch.")
+
+                    } catch (Exception ex) {
+                        LogUtils.severe("Error during 'Prompt LLM' action: ${ex.message}", ex)
+                        UiHelper.showErrorMessage(ui, "Prompt LLM Error: ${ex.message.split('\n').head()}")
+                    }
                 })
                 askGptButton.rootPane.defaultButton = askGptButton
                 swingBuilder.button(constraints: c, action: swingBuilder.action(name: 'Save Changes') {

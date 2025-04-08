@@ -28,14 +28,6 @@ def userMessageIndex = ConfigManager.getUserMessageIndex(config)
 def apiCaller = ApiCallerFactory.createApiCaller([ui: ui, logger: (binding.variables.containsKey('logger') ? logger : null)])
 def nodeTagger = NodeTagger.&tagWithModel // Get method reference
 
-// REPLACE deps.branchGeneratorFactory call:
-// 1. Call BranchGeneratorFactory.createGenerateBranches directly
-// 2. Pass required dependencies (apiCaller, nodeTagger) in a Dependencies object
-def generateBranches = BranchGeneratorFactory.createGenerateBranches(
-        [c: c, ui: ui], // Pass context needed by the *generated* closure
-        // Pass only the required dependencies for the factory
-        new Dependencies(apiCaller: apiCaller, nodeTagger: nodeTagger)
-)
     // Load messages using MessageFileHandler and MessageLoader
     def systemMessages = MessageFileHandler.loadMessagesFromFile(
             systemMessagesFilePath,
