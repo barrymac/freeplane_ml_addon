@@ -1,10 +1,11 @@
 package com.barrymac.freeplane.addons.llm
 
+// Add this import:
+import com.barrymac.freeplane.addons.llm.mock.ConfigTest
+// Keep existing imports
 import org.freeplane.core.util.LogUtils
 import spock.lang.Specification
 import spock.lang.Unroll
-
-// Interface to mock Freeplane's config object
 
 class ConfigManagerSpec extends Specification {
 
