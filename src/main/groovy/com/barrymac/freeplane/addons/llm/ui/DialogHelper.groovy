@@ -270,12 +270,12 @@ class DialogHelper {
      * Handles UI creation, event handling, API calls, and configuration saving.
      */
     static void showAskGptDialog(
-            def ui,
-            def config,
-            def c, // Controller for selected node access (c.selected)
+            Object ui,
+            Object config,
+            Object c, // Controller for selected node access (c.selected)
             ApiConfig apiConfig,
-            List<String> systemMessages,
-            List<String> userMessages,
+            List systemMessages,
+            List userMessages,
             int initialSystemIndex,
             int initialUserIndex,
             String systemMessagesFilePath,

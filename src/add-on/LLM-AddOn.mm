@@ -1,6 +1,6 @@
 <map version="freeplane 1.12.1">
 <!--To view this file, download free mind mapping software Freeplane from https://www.freeplane.org -->
-<node TEXT="Prompt-LLM-AddOn" FOLDED="false" ID="ID_696401721" CREATED="1685111823904" MODIFIED="1744083994470" LINK="https://github.com/barrymac/freeplane_openai_addon" BACKGROUND_COLOR="#97c7dc" STYLE="oval" MAX_WIDTH="20 cm">
+<node TEXT="Prompt-LLM-AddOn" FOLDED="false" ID="ID_696401721" CREATED="1685111823904" MODIFIED="1744144756093" LINK="https://github.com/barrymac/freeplane_openai_addon" BACKGROUND_COLOR="#97c7dc" STYLE="oval" MAX_WIDTH="20 cm">
 <font SIZE="16" BOLD="true" ITALIC="true"/>
 <hook NAME="MapStyle">
     <properties show_icon_for_attributes="true" edgeColorConfiguration="#808080ff,#ff0000ff,#0000ffff,#00ff00ff,#ff00ffff,#00ffffff,#7c0000ff,#00007cff,#007c00ff,#7c007cff,#007c7cff,#7c7c00ff" mapUsesOwnSaveOptions="true" save_modification_times="false" show_tags="UNDER_NODES" save_last_visited_node="default" show_note_icons="true" associatedTemplateLocation="template:/standard-1.6.mm" save_folding="save_folding_if_map_is_changed" fit_to_viewport="false" show_icons="BESIDE_NODES"/>
@@ -79,7 +79,7 @@
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>
-<attribute NAME="homepage" VALUE="github.com/barrymac/freeplane_openai_addon"/>
+<attribute NAME="homepage" VALUE="github.com/barrymac/freeplane_ml_addon"/>
 <attribute NAME="downloadUrl" VALUE="https://${homepage}/releases/download/${version}/LLM-AddOn-${version}.addon.mm"/>
 <attribute NAME="changelogUrl" VALUE="https://${homepage}/commits/main"/>
 <attribute NAME="addonsMenu" VALUE="/menu_bar/LLM"/>
@@ -250,7 +250,7 @@
 <attribute NAME="addons.${name}.compareConnectedNodes" VALUE="Compare Connected Nodes"/>
 </node>
 </node>
-<node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1743857685913">
+<node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1744143852417">
 <edge COLOR="#00007c"/>
 <richcontent TYPE="NOTE">
 <html>
@@ -265,16 +265,14 @@
 </html></richcontent>
 <attribute_layout NAME_WIDTH="37.5 pt" VALUE_WIDTH="268.49999 pt"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}.script.xml"/>
-<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskGPT.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/images/${name}.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/images/${name}-icon.svg"/>
-<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskGpt.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskLm.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/QuickPrompt.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/CompareConnectedNodes.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn-icon.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/Exceptions.groovy"/>
-<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/llm.jar"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/llm.jar"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib"/>
 </node>
@@ -396,7 +394,7 @@
     </p>
   </body>
 </html></richcontent>
-<node TEXT="AskGpt.groovy" ID="ID_231711959" CREATED="1685111823978" MODIFIED="1742830474533">
+<node TEXT="AskLm.groovy" ID="ID_231711959" CREATED="1685111823978" MODIFIED="1742830474533">
 <attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
 <attribute NAME="menuTitleKey" VALUE="addons.${name}.askGPT"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>

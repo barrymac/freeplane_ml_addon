@@ -8,15 +8,19 @@ import org.freeplane.core.util.LogUtils
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ApiConfig
 import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.prompts.MessageExpander // Still needed for binding
-import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException // Still needed for potential errors
+
+// Still needed for binding
+
+// Still needed for potential errors
 
 // Utility imports
-import com.barrymac.freeplane.addons.llm.utils.JsonUtils // Still needed for response parsing
+
+// Still needed for response parsing
 import com.barrymac.freeplane.addons.llm.utils.UiHelper // Still needed for error/info messages
 
 // Map operation imports
-import com.barrymac.freeplane.addons.llm.maps.NodeOperations // Still needed for adding branch
+
+// Still needed for adding branch
 import com.barrymac.freeplane.addons.llm.maps.NodeTagger // Still needed for tagging
 
 // Message handling imports

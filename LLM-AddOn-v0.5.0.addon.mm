@@ -265,10 +265,10 @@
 </html></richcontent>
 <attribute_layout NAME_WIDTH="37.5 pt" VALUE_WIDTH="268.49999 pt"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}.script.xml"/>
-<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskGPT.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskLm.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/images/${name}.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/images/${name}-icon.svg"/>
-<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskGpt.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskLm.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/QuickPrompt.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/CompareConnectedNodes.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn.svg"/>
@@ -396,7 +396,7 @@
     </p>
   </body>
 </html></richcontent>
-<node TEXT="AskGpt.groovy" FOLDED="true" ID="ID_231711959" CREATED="1685111823978" MODIFIED="1742830474533">
+<node TEXT="AskLm.groovy" FOLDED="true" ID="ID_231711959" CREATED="1685111823978" MODIFIED="1742830474533">
 <attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
 <attribute NAME="menuTitleKey" VALUE="addons.${name}.askGPT"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
