@@ -1,48 +1,65 @@
 import groovy.swing.SwingBuilder
 import javax.swing.JOptionPane
 
-// Import the compiled DependencyLoader and other classes
-import com.barrymac.freeplane.addons.llm.*
+// Import the compiled classes directly
 import com.barrymac.freeplane.addons.llm.exceptions.*
+// ADD these imports
+import com.barrymac.freeplane.addons.llm.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.BranchGeneratorFactory
+import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.Dependencies
+import com.barrymac.freeplane.addons.llm.MessageExpander
+import com.barrymac.freeplane.addons.llm.MessageFileHandler
+import com.barrymac.freeplane.addons.llm.MessageLoader
+import com.barrymac.freeplane.addons.llm.NodeTagger
+import com.barrymac.freeplane.addons.llm.ApiConfig // Ensure ApiConfig is imported
+import com.barrymac.freeplane.addons.llm.Message // Ensure Message is imported
+import com.barrymac.freeplane.addons.llm.ApiRequest // Ensure ApiRequest is imported
+import org.freeplane.core.util.LogUtils // Ensure LogUtils is imported
 
-// Load all dependencies
-// Call static method directly
-def deps = DependencyLoader.loadDependencies(config, null, ui)
 
-// Extract needed functions/classes from deps
-def ConfigManager = deps.configManager
-def expandMessage = deps.messageExpander.expandMessage // Get static method reference
-def loadMessagesFromFile = deps.messageFileHandler.loadMessagesFromFile
-def loadDefaultMessages = deps.messageLoader.loadDefaultMessages // Get the new loader function
-def createBranchGenerator = deps.branchGeneratorFactory // Get factory method
-
-// Load configuration using ConfigManager
+// REPLACE deps.configManager calls with ConfigManager static calls
 def apiConfig = ConfigManager.loadBaseConfig(config)
 def systemMessageIndex = ConfigManager.getSystemMessageIndex(config)
 def userMessageIndex = ConfigManager.getUserMessageIndex(config)
 
-// Initialize the branch generator with necessary dependencies
-def generateBranches = createBranchGenerator([ // Call the factory method
-        c      : c,
-        ui     : ui,
-        logger : logger,
-        config : config
-], deps) // Pass the loaded dependencies map
+// Instantiate ApiCaller and get NodeTagger reference
+// Pass logger if available, otherwise null
+def apiCaller = ApiCallerFactory.createApiCaller([ui: ui, logger: (binding.variables.containsKey('logger') ? logger : null)])
+def nodeTagger = NodeTagger.&tagWithModel // Get method reference
 
-// Load message templates
+// REPLACE deps.branchGeneratorFactory call:
+// 1. Call BranchGeneratorFactory.createGenerateBranches directly
+// 2. Pass required dependencies (apiCaller, nodeTagger) in a Dependencies object
+def generateBranches = BranchGeneratorFactory.createGenerateBranches(
+        [c: c, ui: ui], // Pass context needed by the *generated* closure
+        // Pass only the required dependencies for the factory
+        new Dependencies(apiCaller: apiCaller, nodeTagger: nodeTagger)
+)
+
+// Load message templates directly
 def systemMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptSystemMessages.txt"
 def userMessagesFilePath = "${config.freeplaneUserDirectory}/chatGptUserMessages.txt"
 
-// Load messages, using defaults from JAR via MessageLoader if user file doesn't exist
-def systemMessages = loadMessagesFromFile(systemMessagesFilePath, "/defaultSystemMessages.txt", loadDefaultMessages)
-def userMessages = loadMessagesFromFile(userMessagesFilePath, "/defaultUserMessages.txt", loadDefaultMessages)
+// REPLACE deps.messageFileHandler/deps.messageLoader calls
+// Pass MessageLoader.loadDefaultMessages directly as the closure argument
+def systemMessages = MessageFileHandler.loadMessagesFromFile(
+        systemMessagesFilePath,
+        "/defaultSystemMessages.txt",
+        MessageLoader.&loadDefaultMessages // Pass method reference
+)
+def userMessages = MessageFileHandler.loadMessagesFromFile(
+        userMessagesFilePath,
+        "/defaultUserMessages.txt",
+        MessageLoader.&loadDefaultMessages // Pass method reference
+)
 
-// Validate and fallback to defaults if needed
+// Validate and fallback to defaults if needed (using indices loaded via ConfigManager)
 def systemMessage = systemMessageIndex < systemMessages.size() ? systemMessages[systemMessageIndex] : systemMessages[0]
 def userMessageTemplate = userMessageIndex < userMessages.size() ? userMessages[userMessageIndex] : userMessages[0]
 
 if (!apiConfig.apiKey) {
-    JOptionPane.showMessageDialog(ui.currentFrame, 
+    JOptionPane.showMessageDialog(ui.currentFrame,
         "Please configure API settings first via the LLM menu",
         "Configuration Required",
         JOptionPane.WARNING_MESSAGE)
@@ -50,27 +67,42 @@ if (!apiConfig.apiKey) {
 }
 
 try {
-    def expandedUserMessage = expandMessage(userMessageTemplate, c.selected)
-    
-    // Create a proper Message object for system and user messages
+    // REPLACE deps.messageExpander call with MessageExpander static call
+    def expandedUserMessage = MessageExpander.expandTemplate(
+        userMessageTemplate,
+        MessageExpander.createBinding(c.selected, null, null, null, null) // Use createBinding for context
+    )
+
+    // Create Message and ApiRequest objects (this part remains the same)
     def systemMsg = new Message(role: 'system', content: systemMessage)
     def userMsg = new Message(role: 'user', content: expandedUserMessage)
-    
-    // Create an ApiRequest object
     def request = new ApiRequest(
         model: apiConfig.model,
         messages: [systemMsg, userMsg],
         temperature: apiConfig.temperature,
         maxTokens: apiConfig.maxTokens
     )
-    
-    // Call the API with the structured request
-    generateBranches(apiConfig.apiKey, systemMessage, expandedUserMessage, 
-                    apiConfig.model, apiConfig.maxTokens, apiConfig.temperature, apiConfig.provider)
+
+    // Call the generateBranches closure obtained earlier
+    // The arguments are already passed individually, so this call structure is correct
+    generateBranches(
+            apiConfig.apiKey,
+            systemMessage, // Pass the selected system message content
+            expandedUserMessage, // Pass the expanded user message content
+            apiConfig.model,
+            apiConfig.maxTokens,
+            apiConfig.temperature,
+            apiConfig.provider
+    )
 } catch (LlmAddonException e) {
-    logger.warn("Quick prompt failed: ${e.message}")
+    // Use logger if available, otherwise LogUtils
+    def log = binding.variables.containsKey('logger') ? logger : LogUtils
+    log.warn("Quick prompt failed: ${e.message}")
     ui.errorMessage(e.message)
 } catch (Exception e) {
-    logger.warn("Quick prompt failed", e)
+    def log = binding.variables.containsKey('logger') ? logger : LogUtils
+    log.warn("Quick prompt failed", e) // Log the exception object too
     ui.errorMessage("Quick prompt error: ${e.message}")
 }
+
+LogUtils.info("QuickPrompt script finished.") // Add logging if desired
