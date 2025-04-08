@@ -288,9 +288,17 @@ class DialogHelper {
             Closure tagWithModel
     ) {
         try {
+            // --- Add Null Check for Parent Frame ---
+            if (ui.currentFrame == null) {
+                LogUtils.severe("Cannot show AskGpt dialog: ui.currentFrame is null.")
+                UiHelper.showErrorMessage(ui, "Cannot show dialog: Parent window not found.")
+                return // Exit the method
+            }
+
             def swingBuilder = new SwingBuilder()
             swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
-                def dialog = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: ui.currentFrame, modal: true) { // Make modal
+                // --- Rename 'dialog' to 'askGptDialogWindow' ---
+                def askGptDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: ui.currentFrame, modal: true) { // Make modal
                     swingBuilder.panel(layout: new GridBagLayout()) {
                         def constraints = new GridBagConstraints()
                         constraints.fill = GridBagConstraints.BOTH
@@ -431,8 +439,8 @@ class DialogHelper {
                                     UiHelper.showErrorMessage(ui, "Prompt LLM Error: ${ex.message.split('\n').head()}")
                                 }
                             })
-                            // Set default button
-                            dialog.rootPane.defaultButton = askGptButton
+                            // Set default button - referencing renamed variable
+                            askGptDialogWindow.rootPane.defaultButton = askGptButton
 
                             // --- Save Changes Button ---
                             swingBuilder.button(action: swingBuilder.action(name: 'Save Changes') { actionEvent ->
@@ -464,16 +472,18 @@ class DialogHelper {
                             // --- Close Button ---
                             swingBuilder.button(text: 'Close', actionPerformed: { actionEvent ->
                                 // Get the button source, find its window (the dialog), and dispose it
+                                // This remains okay as it finds the ancestor window dynamically
                                 SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                             })
                         }
                     }
                 }
-                dialog.pack()
+                // --- Update references to the renamed variable ---
+                askGptDialogWindow.pack()
                 // Adjust minimum size if needed
-                dialog.minimumSize = new Dimension(600, 500) // Adjust as necessary
-                ui.setDialogLocationRelativeTo(dialog, ui.currentFrame)
-                dialog.visible = true // Show the modal dialog
+                askGptDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
+                ui.setDialogLocationRelativeTo(askGptDialogWindow, ui.currentFrame)
+                askGptDialogWindow.visible = true // Show the modal dialog
             }
         } catch (Exception e) {
             LogUtils.severe("Error showing AskGpt dialog: ${e.message}", e)
