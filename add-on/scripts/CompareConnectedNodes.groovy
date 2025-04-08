@@ -1,6 +1,31 @@
-import com.barrymac.freeplane.addons.llm.*
+// --- Imports ---
+// Core LLM Addon Classes
+import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.ResponseProcessor
+import com.barrymac.freeplane.addons.llm.ApiConfig // Needed for type hint
+
+// API related classes
+import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
+
+// Map related classes
+import com.barrymac.freeplane.addons.llm.maps.NodeTagger
+import com.barrymac.freeplane.addons.llm.maps.NodeHelper
+import com.barrymac.freeplane.addons.llm.maps.MapUpdater
+
+// Prompt related classes
+import com.barrymac.freeplane.addons.llm.prompts.MessageLoader
+import com.barrymac.freeplane.addons.llm.prompts.DimensionGenerator
+import com.barrymac.freeplane.addons.llm.prompts.PromptBuilder
+
+// UI related classes
+import com.barrymac.freeplane.addons.llm.ui.DialogHelper
+import com.barrymac.freeplane.addons.llm.utils.UiHelper
+
+// Freeplane specific classes
 import org.freeplane.plugin.script.proxy.NodeProxy
-import java.awt.*
+
+// Standard Java/Swing classes
+import javax.swing.JDialog // Explicitly needed by UiHelper methods used here
 
 // --- Initialize Core Components ---
 // Create instances of required classes
