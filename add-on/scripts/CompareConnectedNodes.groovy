@@ -304,9 +304,9 @@ try {
                              try {
                                  // Tag the central node
                                  addModelTagRecursively(centralNode, apiConfig.model)
-                                 LogUtils.info("CompareNodes: Tag 'LLM:${apiConfig.model.replace('/', '_')}' applied to central comparison node: ${centralNode.text}")
+                                 logger.info("CompareNodes: Tag 'LLM:${apiConfig.model.replace('/', '_')}' applied to central comparison node: ${centralNode.text}")
                              } catch (Exception e) {
-                                 LogUtils.warn("Failed to apply node tagger function to central node: ${e.message}")
+                                 logger.warn("Failed to apply node tagger function to central node: ${e.message}")
                              }
                         }
 
