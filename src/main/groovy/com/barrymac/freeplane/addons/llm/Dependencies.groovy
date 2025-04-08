@@ -21,4 +21,6 @@ class Dependencies {
     def comparisonService
     def validationHelper
     def uiHelper
+    def apiPayloadBuilder
+    def responseProcessor
 }

@@ -1,42 +1,87 @@
 package com.barrymac.freeplane.addons.llm.services
 
 import com.barrymac.freeplane.addons.llm.*
+import com.barrymac.freeplane.addons.llm.builders.ApiPayloadBuilder
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
+import com.barrymac.freeplane.addons.llm.models.ApiRequest
 import org.freeplane.plugin.script.proxy.NodeProxy
+import org.freeplane.core.util.LogUtils
 
 class ComparisonService {
     private final Dependencies deps
-    
+
     ComparisonService(Dependencies deps) {
         this.deps = deps
     }
 
-    def compareNodes(NodeProxy source, NodeProxy target, String comparisonType) {
-        def dimensionData = DimensionGenerator.generateDimension(
-            deps.apiCaller.make_api_call.curry(deps.configManager.provider, deps.configManager.apiKey),
-            deps.configManager.model,
-            deps.messageLoader.dimensionSystemTemplate,
-            comparisonType
-        )
-        
-        [
-            dimension: "${dimensionData.pole1} vs ${dimensionData.pole2}",
-            pole1: dimensionData.pole1,
-            pole2: dimensionData.pole2,
-            prompts: [
-                source: buildPrompt(source, target, dimensionData),
-                target: buildPrompt(target, source, dimensionData)
-            ]
-        ]
-    }
+    Map performFullComparison(NodeProxy source, NodeProxy target, String comparisonType) {
+        LogUtils.info("Starting full comparison for type: ${comparisonType}")
 
-    private String buildPrompt(NodeProxy subject, NodeProxy other, DimensionGenerator.DimensionData dimension) {
-        PromptBuilder.buildComparisonPrompt(
-            subject, other,
-            deps.messageLoader.compareNodesUserMessageTemplate,
-            "${dimension.pole1} vs ${dimension.pole2}",
-            dimension.pole1,
-            dimension.pole2
+        // 1. Generate Dimension
+        def dimensionData = DimensionGenerator.generateDimension(
+                deps.apiCaller.make_api_call.curry(deps.configManager.provider, deps.configManager.apiKey),
+                deps.configManager.model,
+                deps.messageLoader.dimensionSystemTemplate,
+                comparisonType
         )
+        def (pole1, pole2) = [dimensionData.pole1, dimensionData.pole2]
+        def comparativeDimension = "${pole1} vs ${pole2}"
+        LogUtils.info("Generated comparative dimension: ${comparativeDimension}")
+
+        // 2. Build Prompts
+        def sourceUserPrompt = PromptBuilder.buildComparisonPrompt(
+                source, target,
+                deps.messageLoader.compareNodesUserMessageTemplate,
+                comparativeDimension, pole1, pole2
+        )
+        LogUtils.info("Source User Prompt built.")
+
+        def targetUserPrompt = PromptBuilder.buildComparisonPrompt(
+                target, source,
+                deps.messageLoader.compareNodesUserMessageTemplate,
+                comparativeDimension, pole1, pole2
+        )
+        LogUtils.info("Target User Prompt built.")
+
+        // 3. Build API Payloads
+        def systemMessage = deps.messageLoader.systemTemplate
+        def sourcePayload = ApiPayloadBuilder.buildPayload(
+                deps.configManager.model, systemMessage, sourceUserPrompt, deps.configManager.toMap()
+        )
+        def targetPayload = ApiPayloadBuilder.buildPayload(
+                deps.configManager.model, systemMessage, targetUserPrompt, deps.configManager.toMap()
+        )
+        LogUtils.info("API Payloads built.")
+
+        // 4. Make API Calls
+        LogUtils.info("Requesting analysis for source node: ${source.text}")
+        def sourceApiResponse = deps.apiCaller.make_api_call(
+                deps.configManager.provider, deps.configManager.apiKey, sourcePayload
+        )
+        deps.validationHelper.validateApiResponse(sourceApiResponse, source.text)
+
+        LogUtils.info("Requesting analysis for target node: ${target.text}")
+        def targetApiResponse = deps.apiCaller.make_api_call(
+                deps.configManager.provider, deps.configManager.apiKey, targetPayload
+        )
+        deps.validationHelper.validateApiResponse(targetApiResponse, target.text)
+
+        // 5. Parse Responses
+        LogUtils.info("Parsing API responses.")
+        def sourceAnalysis = ResponseProcessor.parseApiResponse(sourceApiResponse, pole1, pole2)
+        def targetAnalysis = ResponseProcessor.parseApiResponse(targetApiResponse, pole1, pole2)
+
+        // 6. Validate Dimensions
+        deps.validationHelper.validateDimensions(sourceAnalysis.dimension, targetAnalysis.dimension)
+        LogUtils.info("Dimension consistency validated.")
+
+        // 7. Return Results
+        return [
+                dimension     : comparativeDimension,
+                pole1        : pole1,
+                pole2        : pole2,
+                sourceAnalysis: sourceAnalysis,
+                targetAnalysis: targetAnalysis
+        ]
     }
 }
