@@ -1,14 +1,5 @@
-import com.barrymac.freeplane.addons.llm.ApiCallerFactory
-import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.DialogHelper
-import com.barrymac.freeplane.addons.llm.MessageExpander
-import com.barrymac.freeplane.addons.llm.MessageLoader
-import com.barrymac.freeplane.addons.llm.NodeHelper
-import com.barrymac.freeplane.addons.llm.NodeTagger
-import com.barrymac.freeplane.addons.llm.ResponseParser
+import com.barrymac.freeplane.addons.llm.*
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
-import groovy.json.JsonSlurper
-import groovy.text.SimpleTemplateEngine
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 import javax.swing.*
@@ -90,73 +81,31 @@ try {
             def provider = apiConfig.provider
             
             // --- Generate Comparative Dimension with Validation ---
-            def dimensionPayload = [
-                'model': apiConfig.model,
-                'messages': [
-                    [role: 'system', content: messages.dimensionSystemTemplate],
-                    [role: 'user', content: "Create a focused comparative dimension for analyzing: ${comparisonType}"]
-                ],
-                'temperature': 0.2,
-                'max_tokens': 100
-            ]
-            
-            logger.info("Generating comparative dimension for: ${comparisonType}")
-            
-            def maxRetries = 2
-            def attempts = 0
-            def comparativeDimension = null
-            def dimensionContent = null
-            def pole1 = null
-            def pole2 = null
-            
-            while (attempts <= maxRetries) {
-                try {
-                    def dimensionResponse = make_api_call(dimensionPayload)
-                    dimensionContent = new JsonSlurper().parseText(dimensionResponse)?.choices[0]?.message?.content
-                    (pole1, pole2) = parseGeneratedDimension(dimensionContent)
-                    comparativeDimension = "${pole1} vs ${pole2}"
-                    logger.info("Generated comparative dimension: ${comparativeDimension}")
-                    break
-                } catch (Exception e) {
-                    attempts++
-                    if (attempts > maxRetries) throw e
-                    
-                    // Add correction attempt
-                    dimensionPayload.messages.add([role: 'assistant', content: dimensionContent])
-                    dimensionPayload.messages.add([role: 'user', content: """
-                        Format was incorrect. Please STRICTLY follow:
-                        Pole 1: [2-3 words]; Pole 2: [2-3 words]
-                        No other text. Just the poles in this format.
-                    """])
-                }
-            }
+            def dimensionData = DimensionGenerator.generateDimension(
+                make_api_call.curry(apiConfig.provider, apiKey),
+                apiConfig.model,
+                messages.dimensionSystemTemplate, 
+                comparisonType
+            )
+            def (pole1, pole2) = [dimensionData.pole1, dimensionData.pole2]
+            def comparativeDimension = "${pole1} vs ${pole2}"
+            logger.info("Generated comparative dimension: ${comparativeDimension}")
             
             // --- Prepare Prompts with Generated Dimension ---
             logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
             
-            // --- Prepare source node prompt ---
-            Map<String, String> sourceBinding = (Map<String, String>) getBindingMap(sourceNode, targetNode) // Pass both nodes
-            // Remove incorrect assignment - comparisonType should be user input, not the generated dimension
-            sourceBinding['comparativeDimension'] = comparativeDimension
-            // Use existing poles from dimension generation
-            sourceBinding['pole1'] = pole1
-            sourceBinding['pole2'] = pole2
-            logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
-            logger.info("CompareNodes: Source Binding Map contains comparativeDimension? ${sourceBinding.containsKey('comparativeDimension')}")
-            def sourceEngine = new SimpleTemplateEngine()
-            def sourceUserPrompt = sourceEngine.createTemplate(compareNodesUserMessageTemplate).make(sourceBinding).toString()
+            def sourceUserPrompt = PromptBuilder.buildComparisonPrompt(
+                sourceNode, targetNode, 
+                compareNodesUserMessageTemplate,
+                comparativeDimension, pole1, pole2
+            )
             logger.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
             
-            // --- Prepare target node prompt ---
-            def targetBinding = getBindingMap(targetNode, sourceNode) // Pass both nodes
-            // Use existing poles from dimension generation
-            targetBinding['comparativeDimension'] = comparativeDimension
-            targetBinding['pole1'] = pole1
-            targetBinding['pole2'] = pole2
-            logger.info("CompareNodes: Target Binding Map: ${targetBinding}")
-            logger.info("CompareNodes: Target Binding Map contains comparativeDimension? ${targetBinding.containsKey('comparativeDimension')}")
-            def targetEngine = new SimpleTemplateEngine()
-            def targetUserPrompt = targetEngine.createTemplate(compareNodesUserMessageTemplate).make(targetBinding).toString()
+            def targetUserPrompt = PromptBuilder.buildComparisonPrompt(
+                targetNode, sourceNode,
+                compareNodesUserMessageTemplate,
+                comparativeDimension, pole1, pole2 
+            )
             logger.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
             
             // Update progress dialog
@@ -203,37 +152,11 @@ try {
             // --- Process Responses ---
             def jsonSlurper = new JsonSlurper()
 
-            Map<String, Object> sourceJsonResponse = (Map<String, Object>) jsonSlurper.parseText(sourceApiResponse)
-            String sourceResponseContent = ((Map<String, Object>) ((List<Object>) sourceJsonResponse.getOrDefault('choices', []))
-                .getOrDefault(0, [:])?.message)?.content ?: ''
-            // Add logging for raw source response
-            logger.info("CompareConnectedNodes: Raw Source Response Content:\n---\n${sourceResponseContent}\n---")
-            if (!sourceResponseContent?.trim()) throw new Exception("Empty content in source response. Model may have hit token limit.")
-
-            def targetJsonResponse = jsonSlurper.parseText(targetApiResponse)
-            def targetResponseContent = targetJsonResponse?.choices[0]?.message?.content
-            // Add logging for raw target response
-            logger.info("CompareConnectedNodes: Raw Target Response Content:\n---\n${targetResponseContent}\n---")
-            if (!targetResponseContent?.trim()) throw new Exception("Empty content in target response. Model may have hit token limit.")
-
-            logger.info("Source Node Analysis received, length: ${sourceResponseContent?.length() ?: 0}")
-            logger.info("Target Node Analysis received, length: ${targetResponseContent?.length() ?: 0}")
-
-            // Parse responses
-            logger.info("CompareConnectedNodes: Parsing source response...")
-            (pole1, pole2) = comparativeDimension.split(' vs ') // Remove 'def' keyword
-            def sourceAnalysis = ResponseParser.parseJsonAnalysis(sourceResponseContent, pole1, pole2)
-            if (sourceAnalysis.error) {
-                throw new Exception("Source analysis error: ${sourceAnalysis.error}")
-            }
-            logger.info("CompareConnectedNodes: Parsed Source Analysis Map: ${sourceAnalysis}")
-
-            logger.info("CompareConnectedNodes: Parsing target response...")
-            def targetAnalysis = ResponseParser.parseJsonAnalysis(targetResponseContent, pole1, pole2)
-            if (targetAnalysis.error) {
-                throw new Exception("Target analysis error: ${targetAnalysis.error}")
-            }
-            logger.info("CompareConnectedNodes: Parsed Target Analysis Map: ${targetAnalysis}")
+            def sourceAnalysis = ResponseProcessor.parseApiResponse(sourceApiResponse, pole1, pole2)
+            logger.info("Source Node Analysis received and parsed")
+            
+            def targetAnalysis = ResponseProcessor.parseApiResponse(targetApiResponse, pole1, pole2)
+            logger.info("Target Node Analysis received and parsed")
 
             // Add validation for pole consistency
             if (sourceAnalysis.dimension.pole1 != targetAnalysis.dimension.pole1 ||
@@ -248,51 +171,15 @@ try {
                     ui.informationMessage("The LLM analysis did not yield structured results for either node.")
                 } else {
                     try {
-                        // --- NEW LOGIC: Create Central Comparison Node ---
-
-                        // 1. Create the central node (position it logically, e.g., near the source node)
-                        //    The map structure doesn't guarantee positioning, but creating it as a child
-                        //    of the mind map root or near one of the nodes is common.
-                        //    Let's create it as a sibling of the source node for simplicity.
-                        def parentNode = sourceNode.parent // Or c.root if sourceNode is root
-                        def centralNode = parentNode.createChild()
-                        centralNode.text = "Comparison: ${comparativeDimension}" // Set concise title
-                        centralNode.style.backgroundColorCode = '#E8E8FF' // Optional: Style central node
-
-                        // 2. Create child nodes for each original idea under the central node
-                        def centralSourceChild = centralNode.createChild(sourceNode.text)
-                        def centralTargetChild = centralNode.createChild(targetNode.text)
-
-                        // 3. Add the parsed analysis under the corresponding child using the new helper
-                        if (!sourceAnalysis.isEmpty()) {
-                            // Use the new helper function from NodeHelper class
-                            NodeHelper.addJsonComparison(centralSourceChild, sourceAnalysis, 'concept_a')
-                        } else {
-                            centralSourceChild.createChild("(No analysis generated)")
-                        }
-
-                        if (!targetAnalysis.isEmpty()) {
-                            // Use the new helper function from NodeHelper class
-                            NodeHelper.addJsonComparison(centralTargetChild, targetAnalysis, 'concept_b')
-                        } else {
-                            centralTargetChild.createChild("(No analysis generated)")
-                        }
-
-                        // 4. Create visual links from central node to original ideas
-                        centralNode.addConnectorTo(sourceNode)
-                        centralNode.addConnectorTo(targetNode)
-                        logger.info("Created connectors from comparison node to original ideas")
-
-                        // 5. Apply LLM tag to the central node
-                        if (addModelTagRecursively != null) {
-                             try {
-                                 // Tag the central node
-                                 addModelTagRecursively(centralNode, apiConfig.model)
-                                 logger.info("CompareNodes: Tag 'LLM:${apiConfig.model.replace('/', '_')}' applied to central comparison node: ${centralNode.text}")
-                             } catch (Exception e) {
-                                 logger.warn("Failed to apply node tagger function to central node: ${e.message}")
-                             }
-                        }
+                        MapUpdater.createComparisonStructure(
+                            sourceNode,
+                            targetNode,
+                            sourceAnalysis,
+                            targetAnalysis,
+                            comparativeDimension,
+                            apiConfig.model,
+                            addModelTagRecursively
+                        )
 
                         ui.informationMessage("Central comparison node using '${comparativeDimension}' created.")
 
@@ -324,32 +211,3 @@ try {
     logger.warn("Error in CompareConnectedNodes", e)
 }
 
-// Helper function to parse generated dimension from LLM response
-List<String> parseGeneratedDimension(String response) throws LlmAddonException {
-    // More flexible regex pattern
-    def pattern = ~/(?i)(Pole\s*1:\s*([^;]+?)\s*;\s*Pole\s*2:\s*([^\n]+?))\s*$/
-    def matcher = pattern.matcher(response)
-
-    if (matcher.find()) {
-        def pole1 = matcher[0][2].trim().replaceAll(/["']/, '')
-        def pole2 = matcher[0][3].trim().replaceAll(/["']/, '')
-        return [pole1, pole2]
-    }
-
-    // Try alternative patterns if initial fails
-    def altPatterns = [
-            ~/([A-Z][\w\s]+?)\s*\/\/\s*([A-Z][\w\s]+)/,
-            ~/(.+)\s+vs\s+(.+)/,
-            ~/^([^;]+);([^;]+)$/
-    ]
-
-    for (p in altPatterns) {
-        matcher = p.matcher(response)
-        if (matcher.find() && matcher.groupCount() >= 2) {
-            return [matcher[0][1].trim(), matcher[0][2].trim()]
-        }
-    }
-
-    throw new LlmAddonException("""Invalid dimension format. Received: '$response'
-        Expected format: 'Pole 1: [concept]; Pole 2: [concept]'""")
-}
