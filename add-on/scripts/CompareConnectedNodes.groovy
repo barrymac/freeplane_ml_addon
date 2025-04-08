@@ -1,4 +1,13 @@
-import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.ResponseProcessor
+import com.barrymac.freeplane.addons.llm.maps.MapUpdater
+import com.barrymac.freeplane.addons.llm.maps.NodeHelper
+import com.barrymac.freeplane.addons.llm.maps.NodeTagger
+import com.barrymac.freeplane.addons.llm.prompts.DimensionGenerator
+import com.barrymac.freeplane.addons.llm.prompts.MessageLoader
+import com.barrymac.freeplane.addons.llm.prompts.PromptBuilder
+import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import org.freeplane.plugin.script.proxy.NodeProxy
 
@@ -7,9 +16,8 @@ import java.awt.*
 
 // --- Initialize Core Components ---
 // Create instances of required classes
-def provider = apiConfig.provider
 def apiKey = apiConfig.apiKey
-def apiCaller = ApiCallerFactory.createApiCaller(provider, apiKey)
+def apiCaller = ApiCallerFactory.createApiCaller(apiConfig.provider, apiKey)
 if (!apiCaller) {
     throw new Exception("Failed to create API caller for provider: ${provider}")
 }
