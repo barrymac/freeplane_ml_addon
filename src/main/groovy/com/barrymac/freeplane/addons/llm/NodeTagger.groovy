@@ -3,20 +3,17 @@ package com.barrymac.freeplane.addons.llm
 import org.freeplane.core.util.LogUtils
 
 class NodeTagger {
-    // Helper function to recursively add a dynamic tag (e.g., "LLM:model-name") to a node and its children
-    static def addModelTagRecursively(node, modelName) {
-        if (node == null || modelName == null || modelName.trim().isEmpty()) return
+    static void tagWithModel(NodeProxy node, String modelName) {
+        if (!node || !modelName?.trim()) return
 
-        // Sanitize model name slightly for tag (replace slashes, common in OpenRouter models)
-        def sanitizedModelName = modelName.replace('/', '_')
-        def tagName = "LLM:${sanitizedModelName}"
+        def tagName = "LLM:${modelName.replace('/', '_')}"
 
         try {
             node.tags.add(tagName)
-            node.children.each { child -> addModelTagRecursively(child, modelName) }
-            // Pass original modelName recursively
+            node.children.each { child -> 
+                tagWithModel(child, modelName)
+            }
         } catch (Exception e) {
-            // Log error if tagging fails for any reason
             LogUtils.warn("Failed to add tag '${tagName}' to node ${node.text}: ${e.message}")
         }
     }
