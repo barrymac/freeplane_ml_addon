@@ -34,10 +34,10 @@ class NodeHelper {
         }
     }
     /**
-     * Validates that exactly two connected nodes are selected
+     * Validates that exactly two nodes are selected
      *
      * @param selectedNodes The list of selected nodes
-     * @return A tuple containing [sourceNode, targetNode] if valid
+     * @return A tuple containing [node1, node2] if valid
      * @throws Exception if validation fails
      */
     static def validateAndGetConnectedNodes(selectedNodes) {
@@ -49,20 +49,7 @@ class NodeHelper {
             def node1 = selectedNodes[0]
             def node2 = selectedNodes[1]
 
-            // Find connectors between node1 and node2 (in either direction)
-            def connectorsOut = node1.connectorsOut.findAll { it.target == node2 }
-            def connectorsIn = node1.connectorsIn.findAll { it.source == node2 }
-            def allConnectorsBetween = connectorsOut + connectorsIn
-
-            if (allConnectorsBetween.size() == 0) {
-                throw new Exception("The two selected nodes are not connected. Please add a connector between them.")
-            }
-
-            if (allConnectorsBetween.size() > 1) {
-                throw new Exception("There are multiple connectors between the selected nodes. Please ensure there is only one.")
-            }
-
-            LogUtils.info("Found valid connection between nodes: '${node1.text}' and '${node2.text}'")
+            LogUtils.info("Valid selection: Comparing nodes '${node1.text}' and '${node2.text}'")
             // Return the nodes in selection order
             return [node1, node2]
         } catch (Exception e) {

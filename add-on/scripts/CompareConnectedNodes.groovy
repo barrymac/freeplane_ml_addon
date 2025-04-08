@@ -86,10 +86,10 @@ try {
     // Use the static method directly via the class obtained from deps
     def (sourceNode, targetNode) = NodeHelper.validateAndGetConnectedNodes(selectedNodes) // This might throw ValidationException
 
-    logger.info("Found connector between selected nodes: ${sourceNode.text} and ${targetNode.text}")
+    logger.info("Selected nodes for comparison: ${sourceNode.text} and ${targetNode.text}")
 
     // 3. Get Comparison Type from User
-    def dialogMessage = "Nodes '${sourceNode.text}' and '${targetNode.text}' are connected.\nEnter the type of comparison (e.g., 'Pros and Cons', 'Compare and Contrast', 'Strengths vs Weaknesses'):"
+    def dialogMessage = "Comparing nodes '${sourceNode.text}' and '${targetNode.text}'.\nEnter the type of comparison (e.g., 'Pros and Cons', 'Compare and Contrast', 'Strengths vs Weaknesses'):"
     def defaultComparisonTypes = ["Pros and Cons", "Compare and Contrast", "Strengths vs Weaknesses", "Advantages and Disadvantages"]
     def comparisonTypesConfigKey = "promptLlmAddOn.comparisonTypes"
 
