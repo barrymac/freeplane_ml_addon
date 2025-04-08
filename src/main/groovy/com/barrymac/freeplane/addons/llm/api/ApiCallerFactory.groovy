@@ -44,7 +44,7 @@ class ApiCallerFactory {
      */
     static Map createApiCaller(Map closures) {
         def ui = closures.ui
-        def logger = closures.logger // Use provided logger if available
+        // We no longer need to treat the logger specially here
 
         def make_api_call = { String providerStr, String apiKey, Object requestObj ->
             // Convert request object to map if it's an ApiRequest
@@ -91,7 +91,7 @@ class ApiCallerFactory {
      * @return The response text
      */
     private static String handleApiCall(ApiProvider provider, String apiKey,
-                                        Map<String, Object> payloadMap, def ui, def logger) {
+                                        Map<String, Object> payloadMap, def ui) {
         def responseText = ""
         String apiUrl = provider.endpoint
         Map<String, String> headers = [
@@ -105,16 +105,6 @@ class ApiCallerFactory {
             headers["X-Title"] = "Freeplane GPT AddOn"
         }
 
-        // Determine if the logger seems usable for SLF4J-style logging
-        // Basic check: not null and responds to 'warn(String, Object, Object)'
-        boolean useSlf4jLogger = logger != null && logger.metaClass.respondsTo(logger, 'warn', String.class, Object.class, Object.class)
-
-        // Log which logger type is being used
-        if (useSlf4jLogger) {
-            logger.debug("Using provided SLF4J logger for API call logging.")
-        } else {
-            LogUtils.info("Falling back to LogUtils for API call logging. Provided logger: ${logger?.getClass()?.name}")
-        }
 
         try {
             def post = new URL(apiUrl).openConnection() as HttpURLConnection
@@ -129,24 +119,12 @@ class ApiCallerFactory {
             post.getOutputStream().write(payload.getBytes("UTF-8"))
 
             def postRC = post.getResponseCode()
-            // Use parameterized logging if logger exists and seems valid
-            if (useSlf4jLogger) {
-                logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
-            } else {
-                // Format string for LogUtils
-                LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
-            }
+            LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
 
             if (postRC == 200) {
                 responseText = post.getInputStream().getText("UTF-8")
-                // Use parameterized logging if logger exists and seems valid
                 def truncatedResponse = responseText.take(200)
-                if (useSlf4jLogger) {
-                    logger.info("{} response: {}...", provider.name().toLowerCase(), truncatedResponse)
-                } else {
-                    // Format string for LogUtils
-                    LogUtils.info("${provider.name().toLowerCase()} response: ${truncatedResponse}...")
-                }
+                LogUtils.info("${provider.name().toLowerCase()} response: ${truncatedResponse}...")
                 // Log truncated response
             } else {
                 // Handle common error codes centrally
@@ -184,13 +162,7 @@ class ApiCallerFactory {
                     def errorStream = post.getErrorStream()
                     if (errorStream) {
                         def errorBody = errorStream.getText('UTF-8')
-                        // Use parameterized logging if logger exists and seems valid
-                        if (useSlf4jLogger) {
-                            logger.warn("Error response body: {}", errorBody)
-                        } else {
-                            // Format string for LogUtils
-                            LogUtils.warn("Error response body: ${errorBody}")
-                        }
+                        LogUtils.warn("Error response body: ${errorBody}")
                     }
                 } catch (Exception ignored) {
                     // Ignore errors reading the error stream
@@ -204,13 +176,7 @@ class ApiCallerFactory {
             // Re-throw API exceptions
             throw e
         } catch (Exception e) {
-            // Use parameterized logging if logger exists and seems valid
-            if (useSlf4jLogger) {
-                logger.warn("Exception during API call to {}: {}", provider.name().toLowerCase(), e.message)
-            } else {
-                // Format string for LogUtils using GString interpolation
-                LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
-            }
+            LogUtils.warn("Exception during API call to ${provider.name().toLowerCase()}: ${e.message}")
             ui.errorMessage("Network or processing error during API call: ${e.message}")
             // Wrap the original exception in LlmAddonException for consistent handling upstream
             throw new LlmAddonException("API call failed: ${e.message}", e)
