@@ -179,7 +179,7 @@ try {
             
             // --- Prepare target node prompt ---
             def targetBinding = getBindingMap(targetNode, sourceNode) // Pass both nodes
-            // Remove incorrect assignment - comparisonType should be user input, not the generated dimension
+            // Use existing poles from dimension generation
             targetBinding['comparativeDimension'] = comparativeDimension
             targetBinding['pole1'] = pole1
             targetBinding['pole2'] = pole2
