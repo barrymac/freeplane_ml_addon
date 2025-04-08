@@ -1,10 +1,7 @@
-import com.barrymac.freeplane.addons.llm.*
-import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 import javax.swing.*
 import java.awt.*
-
 
 // --- Initialize Core Components ---
 // Create instances of required classes
@@ -18,8 +15,6 @@ NodeTagger nodeTagger = new NodeTagger()
 
 // Get method references for commonly used functions
 Closure make_api_call = apiCaller.&make_api_call
-Closure getBindingMap = MessageExpander.&getBindingMap
-Closure parseAnalysis = ResponseParser.&parseAnalysis
 Closure addModelTagRecursively = nodeTagger.&addModelTagRecursively
 
 // Load configuration and messages
@@ -150,8 +145,6 @@ try {
             }
 
             // --- Process Responses ---
-            def jsonSlurper = new JsonSlurper()
-
             def sourceAnalysis = ResponseProcessor.parseApiResponse(sourceApiResponse, pole1, pole2)
             logger.info("Source Node Analysis received and parsed")
             

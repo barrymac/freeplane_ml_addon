@@ -1,6 +1,6 @@
 package com.barrymac.freeplane.addons.llm.builders
 
-import com.barrymac.freeplane.addons.llm.ApiRequest
+import com.barrymac.freeplane.addons.llm.models.ApiRequest
 import com.barrymac.freeplane.addons.llm.Message
 
 class ApiPayloadBuilder {

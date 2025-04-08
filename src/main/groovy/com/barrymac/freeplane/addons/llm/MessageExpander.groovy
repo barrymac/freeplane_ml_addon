@@ -2,10 +2,11 @@ package com.barrymac.freeplane.addons.llm
 
 import groovy.text.SimpleTemplateEngine
 import org.freeplane.core.util.LogUtils
+import org.freeplane.plugin.script.proxy.NodeProxy
 
 class MessageExpander {
-    static Map createBinding(NodeProxy node, NodeProxy otherNode, 
-                           String dimension, String pole1, String pole2) {
+    static Map createBinding(NodeProxy node, NodeProxy otherNode,
+                             String dimension, String pole1, String pole2) {
         try {
             def pathToRoot = node.pathToRoot
             def rootText = node.mindMap.root.text

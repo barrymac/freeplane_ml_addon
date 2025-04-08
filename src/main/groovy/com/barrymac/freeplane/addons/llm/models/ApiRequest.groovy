@@ -1,5 +1,6 @@
-package com.barrymac.freeplane.addons.llm
+package com.barrymac.freeplane.addons.llm.models
 
+import com.barrymac.freeplane.addons.llm.Message
 import groovy.transform.Canonical
 
 /**
