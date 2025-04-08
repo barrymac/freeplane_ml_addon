@@ -24,8 +24,7 @@ class PromptBuilder {
         LogUtils.info("Building comparison prompt with binding: ${binding}")
         
         try {
-            def engine = new SimpleTemplateEngine()
-            def result = engine.createTemplate(templateText).make(binding).toString()
+            def result = MessageExpander.expandTemplate(templateText, binding)
             LogUtils.info("Generated prompt:\n${result}")
             return result
         } catch (Exception e) {

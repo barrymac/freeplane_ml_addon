@@ -6,14 +6,8 @@ import org.freeplane.core.util.LogUtils
 class ResponseProcessor {
     static Map parseApiResponse(String response, String pole1, String pole2) {
         try {
-            def json = new JsonSlurper().parseText(response)
-            def content = json?.choices[0]?.message?.content
-            
+            def content = JsonUtils.extractLlmContent(response)
             LogUtils.info("Raw API response content:\n---\n${content}\n---")
-            
-            if (!content?.trim()) {
-                throw new Exception("Empty content in response. Model may have hit token limit.")
-            }
             
             def analysis = ResponseParser.parseJsonAnalysis(content, pole1, pole2)
             if (analysis.error) {

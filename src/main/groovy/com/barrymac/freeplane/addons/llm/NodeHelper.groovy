@@ -72,56 +72,22 @@ class NodeHelper {
      * @param addModelTagRecursivelyFunc Optional function to tag nodes with model info
      * @param otherNode Optional reference to the other node being compared
      */
-    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, String model, addModelTagRecursivelyFunc = null, otherNode = null) {
+    static void addAnalysisToNodeAsBranch(nodeProxy, Map analysisMap, String comparisonType, 
+                                         String model, addModelTagRecursivelyFunc = null, 
+                                         otherNode = null) {
         LogUtils.info("Attempting to add analysis to node: ${nodeProxy.text}")
         if (analysisMap.isEmpty()) {
             LogUtils.warn("No analysis data to add for node: ${nodeProxy.text}")
             return
         }
 
-        // Format the map into an indented string
-        def builder = new StringBuilder()
-
-        // Concise title for the analysis branch
-        builder.append("${comparisonType}\n")
-
-        analysisMap.each { category, points ->
-            builder.append("    ${category}\n") // Indent level 1 for category
-            points.each { point ->
-                builder.append("        - ${point}\n") // Indent level 2 for points, using standard '-'
-            }
-        }
-        def formattedAnalysis = builder.toString().trim()
-        LogUtils.info("Formatted analysis string for node ${nodeProxy.text}:\n---\n${formattedAnalysis}\n---")
-
-        // Add the formatted string as a new branch
-        try {
-            // Get the set of children *before* adding
-            def childrenBeforeSet = nodeProxy.children.toSet()
-            nodeProxy.appendTextOutlineAsBranch(formattedAnalysis) // Call method on the NodeProxy
-            // Get the set of children *after* adding
-            def childrenAfterSet = nodeProxy.children.toSet()
-            // Find the newly added root node (difference between the sets)
-            def addedBranchRoot = (childrenAfterSet - childrenBeforeSet).find { true } // Get the single added node
-
-            LogUtils.info("Successfully called appendTextOutlineAsBranch for node: ${nodeProxy.text}")
-
-            // Use the passed-in tagging function
-            if (addedBranchRoot && addModelTagRecursivelyFunc != null) {
-                try {
-                    // Use the passed function reference
-                    addModelTagRecursivelyFunc(addedBranchRoot, model)
-                    LogUtils.info("CompareNodes: Tag 'LLM:${model.replace('/', '_')}' applied to comparison branch starting with node: ${addedBranchRoot.text}")
-                } catch (Exception e) {
-                    LogUtils.warn("Failed to apply node tagger function: ${e.message}")
-                }
-            } else if (addModelTagRecursivelyFunc == null) {
-                LogUtils.warn("CompareNodes: Node tagging function was not provided for node: ${nodeProxy.text}")
-            } else {
-                LogUtils.warn("CompareNodes: Could not identify newly added comparison branch root for tagging on node: ${nodeProxy.text}")
-            }
-        } catch (Exception e) {
-            LogUtils.warn("Error calling appendTextOutlineAsBranch or tagging for node ${nodeProxy.text}: ${e.message}")
-        }
+        NodeOperations.addAnalysisBranch(
+            nodeProxy,
+            analysisMap,
+            null, // No pre-formatted content
+            model,
+            addModelTagRecursivelyFunc,
+            comparisonType
+        )
     }
 }

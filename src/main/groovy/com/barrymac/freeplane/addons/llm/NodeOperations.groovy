@@ -17,16 +17,37 @@ class NodeOperations {
      * @param tagger Function to handle node tagging
      * @throws LlmAddonException if the operation fails
      */
-    static void addAnalysisBranch(def parentNode, String content,
-                                  String model, Closure tagger) {
+    /**
+     * Adds analysis content as a branch to a node with proper tagging
+     *
+     * @param parentNode The node to add the branch to
+     * @param analysisMap Optional map to format into content
+     * @param content Optional pre-formatted content string
+     * @param model The LLM model used
+     * @param tagger Function to handle node tagging
+     * @param comparisonType Optional type for map formatting
+     */
+    static void addAnalysisBranch(def parentNode, Map analysisMap = null, 
+                                 String content = null,
+                                 String model, 
+                                 Closure tagger,
+                                 String comparisonType = null) {
         try {
             LogUtils.info("Adding analysis branch to node: ${parentNode.text}")
+            
+            // Format map if provided
+            String formattedContent = content
+            if (analysisMap != null && content == null) {
+                formattedContent = formatAnalysisMap(analysisMap, comparisonType)
+            } else if (content == null) {
+                throw new LlmAddonException("Either analysisMap or content must be provided")
+            }
 
             // Track existing children before adding
             def childrenBefore = parentNode.children.toSet()
 
             // Add the content as a new branch
-            parentNode.appendTextOutlineAsBranch(content)
+            parentNode.appendTextOutlineAsBranch(formattedContent)
 
             // Find newly added nodes
             def newNodes = parentNode.children.toSet() - childrenBefore
@@ -51,6 +72,23 @@ class NodeOperations {
             LogUtils.severe("${errorMsg}: ${e.message}")
             throw new LlmAddonException(errorMsg, e)
         }
+    }
+
+    /**
+     * Formats analysis map into a structured string
+     */
+    private static String formatAnalysisMap(Map analysisMap, String comparisonType) {
+        def builder = new StringBuilder()
+        builder.append("${comparisonType}\n")
+        
+        analysisMap.each { category, points ->
+            builder.append("    ${category}\n")
+            points.each { point ->
+                builder.append("        - ${point}\n")
+            }
+        }
+        
+        return builder.toString().trim()
     }
 
     /**
