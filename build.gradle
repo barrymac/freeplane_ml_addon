@@ -50,7 +50,7 @@ def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty
 
 freeplane {
     freeplaneDirectory = freeplaneBasePath
-    addonSourceDirectory = 'add-on'
+    addonSourceDirectory = 'src/add-on'
 }
 
 jar {

@@ -25,57 +25,8 @@ import com.barrymac.freeplane.addons.llm.maps.NodeTagger
 import com.barrymac.freeplane.addons.llm.prompts.MessageFileHandler
 import com.barrymac.freeplane.addons.llm.prompts.MessageLoader
 
-// --- Moved Class and Method Definitions ---
-class MessageItem {
-    String value
-
-    MessageItem(String value) {
-        this.value = value.replaceAll(/\s+/, ' ').take(120)
-    }
-
-    @Override
-    boolean equals(Object o) {
-        // Use identity comparison for unique items in ComboBox
-        return this.is(o)
-    }
-
-    @Override
-    int hashCode() {
-        return System.identityHashCode(this)
-    }
-
-    @Override
-    String toString() {
-        return value
-    }
-}
-
-
-class MessageArea {
-    JTextArea textArea
-    JComboBox comboBox
-
-    void updateSelectedItemFromTextArea() {
-        int selectedIndex = comboBox.selectedIndex
-        if (selectedIndex == -1) return // Nothing selected
-
-        def text = textArea.text
-        def currentItem = comboBox.getItemAt(selectedIndex)
-
-        // Only update if the text actually changed
-        if (currentItem instanceof MessageItem && currentItem.value != text) {
-            // Create a new MessageItem to reflect the change
-            def newItem = new MessageItem(text)
-            // Update the model directly
-            def model = comboBox.getModel()
-            if (model instanceof DefaultComboBoxModel) {
-                model.removeElementAt(selectedIndex)
-                model.insertElementAt(newItem, selectedIndex)
-                comboBox.setSelectedIndex(selectedIndex) // Re-select the updated item
-            }
-        }
-    }
-}
+import com.barrymac.freeplane.addons.llm.models.MessageItem
+import com.barrymac.freeplane.addons.llm.models.MessageArea
 
 MessageArea createMessageSection(def swingBuilder, def messages, def title, int initialIndex, def constraints, def weighty) {
     def comboBoxModel = new DefaultComboBoxModel()

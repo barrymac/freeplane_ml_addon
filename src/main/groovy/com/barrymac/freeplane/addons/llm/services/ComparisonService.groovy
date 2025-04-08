@@ -1,13 +1,11 @@
 package com.barrymac.freeplane.addons.llm.services
 
-
 import com.barrymac.freeplane.addons.llm.Dependencies
 import com.barrymac.freeplane.addons.llm.ResponseProcessor
 import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder
 import com.barrymac.freeplane.addons.llm.prompts.DimensionGenerator
 import com.barrymac.freeplane.addons.llm.prompts.PromptBuilder
 import org.freeplane.core.util.LogUtils
-import org.freeplane.plugin.script.proxy.NodeProxy
 
 class ComparisonService {
     private final Dependencies deps
