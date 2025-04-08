@@ -1,14 +1,14 @@
+import com.barrymac.freeplane.addons.llm.ApiCaller
+import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.DialogHelper
+import com.barrymac.freeplane.addons.llm.MessageExpander
+import com.barrymac.freeplane.addons.llm.MessageLoader
+import com.barrymac.freeplane.addons.llm.NodeHelper
+import com.barrymac.freeplane.addons.llm.NodeTagger
 import com.barrymac.freeplane.addons.llm.ResponseParser
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonSlurper
 import groovy.text.SimpleTemplateEngine
-import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.MessageLoader
-import com.barrymac.freeplane.addons.llm.NodeHelper
-import com.barrymac.freeplane.addons.llm.DialogHelper
-import com.barrymac.freeplane.addons.llm.ApiCaller
-import com.barrymac.freeplane.addons.llm.MessageExpander
-import com.barrymac.freeplane.addons.llm.NodeTagger
 
 import javax.swing.*
 import java.awt.*
@@ -43,28 +43,19 @@ List<String> parseGeneratedDimension(String response) throws LlmAddonException {
         Expected format: 'Pole 1: [concept]; Pole 2: [concept]'""")
 }
 
-// --- Load Core Dependencies ---
-// Import the compiled DependencyLoader
+// --- Initialize Core Components ---
+// Create instances of required classes
+def apiCaller = new ApiCaller()
+def nodeTagger = new NodeTagger()
 
-// Load all dependencies
-// Call static method directly
-Map<String, Object> deps = DependencyLoader.loadDependencies(config, null, ui)
+// Get method references for commonly used functions
+def make_api_call = apiCaller.&make_api_call
+def getBindingMap = MessageExpander.&getBindingMap
+def parseAnalysis = ResponseParser.&parseAnalysis
+def addModelTagRecursively = nodeTagger.&addModelTagRecursively
 
-// Extract needed functions/classes from deps
-def ConfigManager = deps.configManager
-def make_api_call = deps.apiCaller.make_api_call as Closure
-Map<String, String> Function getBindingMap = deps.messageExpander.getBindingMap
-def parseAnalysis = deps.responseParser.&parseAnalysis
-def DialogHelper = deps.dialogHelper
-def NodeHelper = deps.nodeHelperUtils // Get the NodeHelperClass directly
-def addAnalysisToNodeAsBranch = NodeHelper.&addAnalysisToNodeAsBranch // Get method reference from the class
-def MessageLoader = deps.messageLoader
-def addModelTagRecursively = deps.nodeTagger
-
-// Load configuration using ConfigManager
+// Load configuration and messages
 Map<String, Object> apiConfig = ConfigManager.loadBaseConfig(config)
-
-// Load comparison messages using MessageLoader from deps
 def messages = MessageLoader.loadComparisonMessages(config)
 def systemMessageTemplate = messages.systemTemplate
 def compareNodesUserMessageTemplate = messages.userTemplate
@@ -356,8 +347,6 @@ try {
             }
         }
     })
-    // Use the classloader of a known compiled class from the JAR
-    workerThread.setContextClassLoader(DependencyLoader.class.classLoader)
     workerThread.start()
 
 } catch (Exception e) {
