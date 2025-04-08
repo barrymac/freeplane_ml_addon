@@ -32,8 +32,8 @@ import javax.swing.JDialog // Explicitly needed by UiHelper methods used here
 ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
 
 // Create instances of required classes using the loaded config
-// Pass ui and logger in a map to createApiCaller
-def apiCallerClosures = ApiCallerFactory.createApiCaller([ui: ui, logger: logger])
+// Pass only 'ui' to createApiCaller, as logger is no longer needed by the factory
+def apiCallerClosures = ApiCallerFactory.createApiCaller([ui: ui])
 if (!apiCallerClosures) {
     throw new Exception("Failed to create API caller closures.")
 }
