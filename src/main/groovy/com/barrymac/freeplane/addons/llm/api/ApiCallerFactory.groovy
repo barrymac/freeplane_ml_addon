@@ -54,7 +54,7 @@ class ApiCallerFactory {
             try {
                 // Convert string provider to enum
                 def provider = ApiProvider.fromString(providerStr)
-                return handleApiCall(provider, apiKey, payloadMap, ui, logger)
+                return handleApiCall(provider, apiKey, payloadMap, ui)
             } catch (ApiException e) {
                 // Pass the exception message directly as it should contain necessary context
                 ui.errorMessage(e.message)
