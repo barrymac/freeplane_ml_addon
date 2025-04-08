@@ -2,6 +2,7 @@ package com.barrymac.freeplane.addons.llm
 
 import groovy.text.SimpleTemplateEngine
 import org.freeplane.core.util.LogUtils
+import org.freeplane.plugin.script.proxy.NodeProxy
 
 class PromptBuilder {
     static String buildComparisonPrompt(
