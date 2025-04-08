@@ -29,6 +29,9 @@ import org.freeplane.core.util.LogUtils // Ensure LogUtils is imported
 // Standard Java/Swing classes
 import javax.swing.JDialog // Explicitly needed by UiHelper methods used here
 
+// Ensure LogUtils is imported
+import org.freeplane.core.util.LogUtils
+
 // --- Initialize Core Components ---
 // Load configuration FIRST
 ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
@@ -68,7 +71,7 @@ try {
     def sourceNode = nodes[0]
     def targetNode = nodes[1]
 
-    logger.info("Selected nodes for comparison: ${sourceNode.text} and ${targetNode.text}")
+    LogUtils.info("Selected nodes for comparison: ${sourceNode.text} and ${targetNode.text}")
 
     // 3. Get Comparison Type from User
     def dialogMessage = "Comparing selected nodes:\n'${sourceNode.text}'\nand\n'${targetNode.text}'\nEnter comparison type:"
@@ -85,7 +88,7 @@ try {
     )
 
     if (comparisonType == null || comparisonType.trim().isEmpty()) {
-        logger.info("User cancelled comparison input.")
+        LogUtils.info("User cancelled comparison input.")
         return
     }
     comparisonType = comparisonType.trim()
@@ -109,24 +112,24 @@ try {
             )
             def (pole1, pole2) = [dimensionData.pole1, dimensionData.pole2]
             def comparativeDimension = "${pole1} vs ${pole2}"
-            logger.info("Generated comparative dimension: ${comparativeDimension}")
+            LogUtils.info("Generated comparative dimension: ${comparativeDimension}")
             
             // --- Prepare Prompts with Generated Dimension ---
-            logger.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
+            LogUtils.info("CompareNodes: Final userMessageTemplate for expansion:\n---\n${compareNodesUserMessageTemplate}\n---")
             
             def sourceUserPrompt = PromptBuilder.buildComparisonPrompt(
                 sourceNode, targetNode, 
                 compareNodesUserMessageTemplate,
                 comparativeDimension, pole1, pole2
             )
-            logger.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
+            LogUtils.info("CompareNodes: Source User Prompt:\n${sourceUserPrompt}")
             
             def targetUserPrompt = PromptBuilder.buildComparisonPrompt(
                 targetNode, sourceNode,
                 compareNodesUserMessageTemplate,
                 comparativeDimension, pole1, pole2 
             )
-            logger.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
+            LogUtils.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
             
             // Update progress dialog
             UiHelper.updateDialogMessage(dialog, "Analyzing '${sourceNode.text}' and '${targetNode.text}' using '${comparativeDimension}' framework...")
@@ -141,7 +144,7 @@ try {
                 'temperature': apiConfig.temperature,
                 'max_tokens': apiConfig.maxTokens
             ]
-            logger.info("Requesting analysis for source node: ${sourceNode.text}")
+            LogUtils.info("Requesting analysis for source node: ${sourceNode.text}")
             // Use the unified API call function from deps
             def sourceApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, sourcePayloadMap)
 
@@ -159,7 +162,7 @@ try {
                 'temperature': apiConfig.temperature,
                 'max_tokens': apiConfig.maxTokens
             ]
-            logger.info("Requesting analysis for target node: ${targetNode.text}")
+            LogUtils.info("Requesting analysis for target node: ${targetNode.text}")
             // Use the unified API call function from deps
             def targetApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, targetPayloadMap)
 
@@ -169,10 +172,10 @@ try {
 
             // --- Process Responses ---
             def sourceAnalysis = ResponseProcessor.parseApiResponse(sourceApiResponse, pole1, pole2)
-            logger.info("Source Node Analysis received and parsed")
+            LogUtils.info("Source Node Analysis received and parsed")
             
             def targetAnalysis = ResponseProcessor.parseApiResponse(targetApiResponse, pole1, pole2)
-            logger.info("Target Node Analysis received and parsed")
+            LogUtils.info("Target Node Analysis received and parsed")
 
             // Add validation for pole consistency
             if (sourceAnalysis.dimension.pole1 != targetAnalysis.dimension.pole1 ||
@@ -199,13 +202,13 @@ try {
                     UiHelper.showInformationMessage(ui, "Central comparison node using '${comparativeDimension}' created.")
 
                 } catch (Exception e) {
-                    logger.warn("Error creating central comparison node structure on EDT", e)
+                    LogUtils.warn("Error creating central comparison node structure on EDT: ${e.message}", e)
                     UiHelper.showErrorMessage(ui, "Failed to add central comparison node to the map. Check logs. Error: ${e.message}")
                 }
             }
 
         } catch (Exception e) {
-            logger.warn("LLM Comparison failed", e)
+            LogUtils.warn("LLM Comparison failed: ${e.message}", e)
             errorMessage = "Comparison Error: ${e.message.split('\n').head()}"
             // Ensure dialog is closed and error shown on EDT
             UiHelper.disposeDialog(dialog)
@@ -217,7 +220,8 @@ try {
 } catch (Exception e) {
     // Handle all errors with a simple message
     UiHelper.showErrorMessage(ui, e.message)
-    // Use SLF4J logging
-    logger.warn("Error in CompareConnectedNodes", e)
+    LogUtils.warn("Error in CompareConnectedNodes: ${e.message}", e)
 }
+
+LogUtils.info("CompareConnectedNodes script finished.")
 
