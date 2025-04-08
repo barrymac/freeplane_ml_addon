@@ -1,3 +1,4 @@
+import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import org.freeplane.plugin.script.proxy.NodeProxy
 
 import javax.swing.*
@@ -101,9 +102,7 @@ try {
             logger.info("CompareNodes: Target User Prompt:\n${targetUserPrompt}")
             
             // Update progress dialog
-            SwingUtilities.invokeLater {
-                dialog.setMessage("Analyzing '${sourceNode.text}' and '${targetNode.text}' using '${comparativeDimension}' framework...")
-            }
+            UiHelper.updateDialogMessage(dialog, "Analyzing '${sourceNode.text}' and '${targetNode.text}' using '${comparativeDimension}' framework...")
 
             // --- Call API for Source Node ---
             Map<String, Object> sourcePayloadMap = [
@@ -186,17 +185,15 @@ try {
             logger.warn("LLM Comparison failed", e)
             errorMessage = "Comparison Error: ${e.message.split('\n').head()}"
             // Ensure dialog is closed and error shown on EDT
-            SwingUtilities.invokeLater {
-                dialog.dispose()
-                ui.errorMessage(errorMessage)
-            }
+            UiHelper.disposeDialog(dialog)
+            UiHelper.showErrorMessage(ui, errorMessage)
         }
     })
     workerThread.start()
 
 } catch (Exception e) {
     // Handle all errors with a simple message
-    ui.errorMessage(e.message)
+    UiHelper.showErrorMessage(ui, e.message)
     // Use SLF4J logging
     logger.warn("Error in CompareConnectedNodes", e)
 }
