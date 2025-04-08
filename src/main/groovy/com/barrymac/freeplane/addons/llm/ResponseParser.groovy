@@ -66,9 +66,37 @@ class ResponseParser {
     /**
      * Extracts JSON payload from markdown-formatted response
      */
+    /**
+     * Extracts JSON payload from a potentially noisy response.
+     * Handles markdown code fences (```json ... ```) and attempts to find
+     * the first '{' if no code fence is present, ignoring leading text.
+     */
     private static String extractJsonPayload(String rawResponse) {
-        def matcher = rawResponse =~ /```json\n([\s\S]*?)\n```/
-        matcher.find() ? matcher[0][1] : rawResponse
+        if (rawResponse == null || rawResponse.trim().isEmpty()) {
+            return "" // Return empty if input is null or empty
+        }
+        // First, try to find markdown code fence
+        def matcher = rawResponse =~ /(?s)```json\s*(\{.*?\})\s*```/
+        if (matcher.find()) {
+            LogUtils.info("ResponseParser: Extracted JSON from markdown code fence.")
+            return matcher[0][1] // Return content within the braces
+        }
+
+        // If no code fence, find the first opening brace '{'
+        int firstBrace = rawResponse.indexOf('{')
+        if (firstBrace != -1) {
+            // Find the matching closing brace '}' - simple heuristic, might fail on nested structures if there's trailing text
+            // A more robust approach might involve counting braces, but let's start simple.
+            int lastBrace = rawResponse.lastIndexOf('}')
+            if (lastBrace > firstBrace) {
+                LogUtils.info("ResponseParser: Extracted JSON by finding first '{' and last '}'. Ignored leading text.")
+                return rawResponse.substring(firstBrace, lastBrace + 1)
+            }
+        }
+
+        // If neither worked, return the original response (parser will likely fail, triggering retry)
+        LogUtils.warn("ResponseParser: Could not reliably extract JSON payload. Returning raw response.")
+        return rawResponse
     }
     /**
      * Parses LLM response text, expecting a single category heading (the relevant pole)

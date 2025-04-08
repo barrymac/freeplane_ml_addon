@@ -151,7 +151,96 @@ try {
             )
             LogUtils.info("CompareNodes: Target System Prompt:\n${targetSystemPrompt}")
 
-            // --- Call API for Source Node ---
+            // --- Define Helper Closure for API Call with Retry ---
+            def callApiAndParseWithRetry = { String nodeName, Map initialPayload, String pole1, String pole2 ->
+                Map analysisResult = [error: "Initial error state"] // Default error state
+                String lastRawApiResponse = "" // Store last raw response for retry message
+                final int MAX_RETRIES = 2 // Allow up to 2 retries (3 attempts total)
+
+                for (int attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
+                    LogUtils.info("Attempt ${attempt}/${MAX_RETRIES + 1} for node '${nodeName}'")
+                    def currentPayload = initialPayload // Use initial payload for first attempt
+
+                    // --- Prepare Payload for Retry Attempts ---
+                    if (attempt > 1) {
+                        // Update dialog for retry
+                        UiHelper.updateDialogMessageThreadSafe(dialog, "Attempt ${attempt}: LLM response format incorrect for '${nodeName}'. Retrying...")
+
+                        // Construct retry message specifically asking for ONLY JSON
+                        def retryUserMessage = """
+                        Your previous response was not valid JSON or contained extra text.
+                        Please strictly adhere to the requested JSON format.
+                        DO NOT include any text before or after the JSON structure (like 'Here is the JSON...' or explanations).
+                        Provide ONLY the JSON object starting with '{' and ending with '}'.
+
+                        Previous invalid response snippet (first 200 chars):
+                        ${lastRawApiResponse.take(200)}...
+
+                        Please try again, providing only the valid JSON for the original request:
+                        '$comparativeDimension' ($pole1 vs $pole2) for '$nodeContent' and '$otherNodeContent'.
+                        """.stripIndent().trim() // Use trim()
+
+                        // Modify the payload for retry: Add previous assistant response and new user instruction
+                        def retryMessages = new ArrayList<>(initialPayload.messages)
+                        // Add the *entire* previous raw response as the assistant's turn
+                        retryMessages.add([role: 'assistant', content: lastRawApiResponse])
+                        retryMessages.add([role: 'user', content: retryUserMessage])
+
+                        // Create a new payload map for the retry call
+                        currentPayload = new HashMap<>(initialPayload) // Create a copy
+                        currentPayload.messages = retryMessages
+                        // Ensure response_format is still set if applicable
+                        currentPayload['response_format'] = initialPayload['response_format']
+                        currentPayload = currentPayload.findAll { key, value -> value != null } // Clean nulls again
+
+                        LogUtils.info("Retry attempt ${attempt} for '${nodeName}'. Sending correction request.")
+                    }
+
+                    // --- Make API Call ---
+                    def apiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, currentPayload)
+                    if (apiResponse == null || apiResponse.isEmpty()) {
+                        analysisResult = [error: "Received empty or null response (Attempt ${attempt})"]
+                        lastRawApiResponse = "" // Reset raw response
+                        if (attempt > MAX_RETRIES) break // Exit loop if max retries reached
+                        Thread.sleep(500) // Small delay before retry
+                        continue // Go to next retry attempt
+                    }
+                    lastRawApiResponse = apiResponse // Store for potential next retry
+
+                    // --- Process Response ---
+                    try {
+                        // Try parsing the response - ResponseProcessor calls ResponseParser internally
+                        analysisResult = ResponseProcessor.parseApiResponse(apiResponse, pole1, pole2)
+                        // Check if the *parsed* result contains an error key (set by ResponseParser on failure)
+                        if (!analysisResult.error) {
+                            LogUtils.info("Successfully parsed response for '${nodeName}' on attempt ${attempt}")
+                            return analysisResult // Success! Exit the retry loop and return result.
+                        } else {
+                            // Parsing failed, error message is in analysisResult.error
+                            LogUtils.warn("Parsing failed on attempt ${attempt} for '${nodeName}': ${analysisResult.error}")
+                            // Loop will continue if retries remain
+                        }
+                    } catch (Exception parseEx) {
+                        // Catch unexpected errors during parsing itself
+                        LogUtils.warn("Unexpected processing/parsing exception on attempt ${attempt} for '${nodeName}': ${parseEx.message}")
+                        analysisResult = [error: "Unexpected processing error: ${parseEx.message} (Attempt ${attempt})"]
+                        // Loop will continue if retries remain
+                    }
+
+                    // If we reach here and it's the last attempt, the loop will terminate
+                    if (attempt > MAX_RETRIES) {
+                         LogUtils.warn("Max retries reached for '${nodeName}'. Final error: ${analysisResult.error ?: 'Unknown parsing failure'}")
+                    }
+                    Thread.sleep(500) // Small delay before retry
+                }
+                // If loop finishes without success, return the last error state
+                return analysisResult
+            }
+
+            // --- Prepare Initial Payloads ---
+            // Use response_format for OpenAI JSON mode where possible
+            def responseFormat = (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "json_object"] : null
+
             Map<String, Object> sourcePayloadMap = [
                 'model': apiConfig.model,
                 'messages': [
@@ -159,17 +248,10 @@ try {
                     [role: 'user', content: sourceUserPrompt]
                 ],
                 'temperature': apiConfig.temperature,
-                'max_tokens': apiConfig.maxTokens
-            ]
-            LogUtils.info("Requesting analysis for source node: ${sourceNode.text}")
-            // Use the unified API call function from deps
-            def sourceApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, sourcePayloadMap)
+                'max_tokens': apiConfig.maxTokens,
+                'response_format': responseFormat
+            ].findAll { key, value -> value != null }
 
-            if (sourceApiResponse == null || sourceApiResponse.isEmpty()) {
-                throw new Exception("Received empty or null response for source node.")
-            }
-
-            // --- Call API for Target Node ---
             Map<String, Object> targetPayloadMap = [
                 'model': apiConfig.model,
                 'messages': [
@@ -177,22 +259,24 @@ try {
                     [role: 'user', content: targetUserPrompt]
                 ],
                 'temperature': apiConfig.temperature,
-                'max_tokens': apiConfig.maxTokens
-            ]
-            LogUtils.info("Requesting analysis for target node: ${targetNode.text}")
-            // Use the unified API call function from deps
-            def targetApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, targetPayloadMap)
+                'max_tokens': apiConfig.maxTokens,
+                'response_format': responseFormat
+            ].findAll { key, value -> value != null }
 
-            if (targetApiResponse == null || targetApiResponse.isEmpty()) {
-                throw new Exception("Received empty or null response for target node.")
+            // --- Call APIs using the Retry Helper ---
+            UiHelper.updateDialogMessageThreadSafe(dialog, "Requesting analysis for '${sourceNode.text}'...")
+            def sourceAnalysis = callApiAndParseWithRetry(sourceNode.text, sourcePayloadMap, pole1, pole2)
+            if (sourceAnalysis.error) {
+                throw new Exception("Failed to get valid analysis for '${sourceNode.text}' after multiple attempts: ${sourceAnalysis.error}")
             }
+            LogUtils.info("Source Node Analysis received and parsed successfully.")
 
-            // --- Process Responses ---
-            def sourceAnalysis = ResponseProcessor.parseApiResponse(sourceApiResponse, pole1, pole2)
-            LogUtils.info("Source Node Analysis received and parsed")
-            
-            def targetAnalysis = ResponseProcessor.parseApiResponse(targetApiResponse, pole1, pole2)
-            LogUtils.info("Target Node Analysis received and parsed")
+            UiHelper.updateDialogMessageThreadSafe(dialog, "Requesting analysis for '${targetNode.text}'...")
+            def targetAnalysis = callApiAndParseWithRetry(targetNode.text, targetPayloadMap, pole1, pole2)
+            if (targetAnalysis.error) {
+                throw new Exception("Failed to get valid analysis for '${targetNode.text}' after multiple attempts: ${targetAnalysis.error}")
+            }
+            LogUtils.info("Target Node Analysis received and parsed successfully.")
 
             // Add validation for pole consistency (using the poles from the parsed results)
             // Check if dimension exists before accessing poles
