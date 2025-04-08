@@ -13,29 +13,37 @@ class NodeHelper {
      * @param parentNode The node under which to add the analysis structure.
      * @param analysisMap A map containing one category key and a list of points.
      */
-    static void addJsonComparison(parentNode, Map jsonData, String conceptName) {
-        if (!jsonData?.concepts?.containsKey(conceptName)) {
-            parentNode.createChild("Invalid analysis format for ${conceptName}")
+    static void addJsonComparison(parentNode, Map analysisData, String conceptName, String pole1, String pole2) {
+        def conceptSpecificAnalysis = analysisData?.concepts?.get(conceptName)
+
+        if (!conceptSpecificAnalysis) {
+            LogUtils.warn("No analysis data found for concept '${conceptName}' in provided map.")
+            parentNode.createChild("Invalid or missing analysis format for ${conceptName}")
             return
         }
 
-        def conceptNode = parentNode.createChild(conceptName)
-        def dimension = jsonData.dimension
+        [pole1, pole2].each { pole ->
+            def points = conceptSpecificAnalysis[pole] ?: []
+            if (points.isEmpty()) {
+                LogUtils.info("No points found for pole '${pole}' for concept '${conceptName}'")
+                return
+            }
 
-        [dimension.pole1, dimension.pole2].each { pole ->
-            def points = jsonData.concepts[conceptName][pole] ?: []
-            def poleNode = conceptNode.createChild(pole)
-            poleNode.style.backgroundColorCode = getPoleColor(pole, dimension)
+            def poleNode = parentNode.createChild(pole)
+            poleNode.style.backgroundColorCode = getPoleColor(pole, pole1)
 
             points.eachWithIndex { point, i ->
-                def pointNode = poleNode.createChild("${i + 1}. ${point}")
-                pointNode.style.backgroundColorCode = '#FFFFFF'
+                def cleanPoint = point.toString().trim()
+                if (cleanPoint) {
+                    def pointNode = poleNode.createChild("${i + 1}. ${cleanPoint}")
+                    pointNode.style.backgroundColorCode = '#FFFFFF'
+                }
             }
         }
     }
 
-    private static String getPoleColor(String pole, Map dimension) {
-        pole == dimension.pole1 ? '#DFF0D8' : '#F8D7DA'
+    private static String getPoleColor(String currentPole, String firstPole) {
+        currentPole == firstPole ? '#DFF0D8' : '#F8D7DA'
     }
     /**
      * Validates that exactly two nodes are selected

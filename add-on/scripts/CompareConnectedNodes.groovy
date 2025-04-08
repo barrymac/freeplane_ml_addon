@@ -195,6 +195,8 @@ try {
                         sourceAnalysis,
                         targetAnalysis,
                         comparativeDimension,
+                        pole1,
+                        pole2,
                         apiConfig.model,
                         addModelTagRecursively
                     )

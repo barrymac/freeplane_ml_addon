@@ -10,6 +10,8 @@ class MapUpdater {
             Map sourceAnalysis,
             Map targetAnalysis,
             String dimension,
+            String pole1,
+            String pole2,
             String model,
             Closure addModelTag) {
         try {
@@ -20,18 +22,20 @@ class MapUpdater {
 
             // Create and populate source concept node
             def sourceChild = centralNode.createChild(sourceNode.text)
-            if (!sourceAnalysis.isEmpty()) {
-                NodeHelper.addJsonComparison(sourceChild, sourceAnalysis, 'concept_a')
+            if (sourceAnalysis?.concepts?.containsKey(sourceNode.text)) {
+                NodeHelper.addJsonComparison(sourceChild, sourceAnalysis, sourceNode.text, pole1, pole2)
             } else {
-                sourceChild.createChild("(No analysis generated)")
+                sourceChild.createChild("(No analysis generated for ${sourceNode.text})")
+                LogUtils.warn("Source analysis map did not contain key: ${sourceNode.text}. Keys found: ${sourceAnalysis?.concepts?.keySet()}")
             }
 
             // Create and populate target concept node
             def targetChild = centralNode.createChild(targetNode.text)
-            if (!targetAnalysis.isEmpty()) {
-                NodeHelper.addJsonComparison(targetChild, targetAnalysis, 'concept_b')
+            if (targetAnalysis?.concepts?.containsKey(targetNode.text)) {
+                NodeHelper.addJsonComparison(targetChild, targetAnalysis, targetNode.text, pole1, pole2)
             } else {
-                targetChild.createChild("(No analysis generated)")
+                targetChild.createChild("(No analysis generated for ${targetNode.text})")
+                LogUtils.warn("Target analysis map did not contain key: ${targetNode.text}. Keys found: ${targetAnalysis?.concepts?.keySet()}")
             }
 
             // Add connectors

@@ -19,20 +19,34 @@ class ResponseParser {
             if (!raw.comparison?.dimension) {
                 throw new Exception("Missing comparison dimension in response")
             }
+            if (!raw.comparison?.concepts || raw.comparison.concepts.isEmpty()) {
+                throw new Exception("Missing or empty 'concepts' object in response")
+            }
+
+            def conceptsData = raw.comparison.concepts
+            def conceptKeys = conceptsData.keySet()
+
+            if (conceptKeys.size() != 2) {
+                throw new Exception("Expected exactly 2 concepts in response, found ${conceptKeys.size()}. Keys: ${conceptKeys}")
+            }
+
+            // Extract the two concept keys found in the JSON
+            def foundKey1 = conceptKeys.toList()[0]
+            def foundKey2 = conceptKeys.toList()[1]
 
             def results = [
                     dimension: [
-                            pole1: raw.comparison.dimension.pole1,
-                            pole2: raw.comparison.dimension.pole2
+                            pole1: pole1,
+                            pole2: pole2
                     ],
-                    concepts : [:]
+                    concepts : [:] // Initialize empty concepts map
             ]
 
-            // Process concepts with pole validation
-            ['concept_a', 'concept_b'].each { conceptKey ->
-                def conceptData = raw.comparison.concepts[conceptKey]
+            // Process concepts using the keys found in the JSON
+            [foundKey1, foundKey2].each { conceptKey ->
+                def conceptData = conceptsData[conceptKey]
                 if (!conceptData) {
-                    throw new Exception("Missing concept '$conceptKey' in response")
+                    throw new Exception("Missing data for concept key '$conceptKey' in response")
                 }
 
                 results.concepts[conceptKey] = [
