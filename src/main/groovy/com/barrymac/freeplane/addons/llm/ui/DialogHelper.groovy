@@ -18,6 +18,7 @@ import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // 
 import javax.swing.*
 import java.awt.*
 import java.util.Hashtable
+import java.util.List // Added explicit import
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JTextArea
 import javax.swing.JComboBox
@@ -277,8 +278,8 @@ class DialogHelper {
             ConfigProperties config,
             ControllerProxy c, // Controller for selected node access (c.selected)
             ApiConfig apiConfig,
-            List systemMessages,
-            List userMessages,
+            java.util.List systemMessages, // Explicitly java.util.List
+            java.util.List userMessages,   // Explicitly java.util.List
             int initialSystemIndex,
             int initialUserIndex,
             String systemMessagesFilePath,
