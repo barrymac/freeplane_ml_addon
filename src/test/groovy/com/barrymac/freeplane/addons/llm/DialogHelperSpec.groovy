@@ -1,5 +1,9 @@
 package com.barrymac.freeplane.addons.llm
 
+// Add these imports:
+import com.barrymac.freeplane.addons.llm.mock.ConfigTest
+import com.barrymac.freeplane.addons.llm.mock.UITest
+// Keep existing imports
 import com.barrymac.freeplane.addons.llm.mock.NodeModelTest
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
@@ -8,8 +12,6 @@ import spock.lang.Unroll
 
 import javax.swing.*
 import java.awt.*
-
-// Simple marker interface for node context
 
 class DialogHelperSpec extends Specification {
 
