@@ -7,10 +7,10 @@ import javax.swing.*
 import java.awt.*
 
 // Core LLM Add-on imports
-import com.barrymac.freeplane.addons.llm.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ApiConfig
 import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.MessageExpander
+import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 
 // Utility imports
