@@ -122,6 +122,7 @@ class ApiCallerFactory {
             if (logger) {
                 logger.info("API Call to {} ({}) - Response Code: {}", provider.name().toLowerCase(), apiUrl, postRC)
             } else {
+                // Format string for LogUtils
                 LogUtils.info("API Call to ${provider.name().toLowerCase()} (${apiUrl}) - Response Code: ${postRC}")
             }
 
@@ -132,6 +133,7 @@ class ApiCallerFactory {
                 if (logger) {
                     logger.info("{} response: {}...", provider.name().toLowerCase(), truncatedResponse)
                 } else {
+                    // Format string for LogUtils
                     LogUtils.info("${provider.name().toLowerCase()} response: ${truncatedResponse}...")
                 }
                 // Log truncated response
