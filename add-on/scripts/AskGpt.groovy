@@ -258,8 +258,8 @@ try {
                 }
                 constraints.gridy++
                 swingBuilder.panel(constraints: constraints) {
-                    def c = new GridBagConstraints() // Define constraints for buttons
-                    def askGptButton = swingBuilder.button(constraints: c, action: swingBuilder.action(name: 'Prompt LLM') {
+                    def gbc = new GridBagConstraints() // Define constraints for buttons
+                    def askGptButton = swingBuilder.button(constraints: gbc, action: swingBuilder.action(name: 'Prompt LLM') {
                         try {
                             // 1. Get current values from GUI
                             def currentApiKey = String.valueOf(apiKeyField.password)
@@ -329,7 +329,7 @@ try {
                         }
                     })
                     askGptButton.rootPane.defaultButton = askGptButton
-                    swingBuilder.button(constraints: c, action: swingBuilder.action(name: 'Save Changes') {
+                    swingBuilder.button(constraints: gbc, action: swingBuilder.action(name: 'Save Changes') {
                         // Ensure the current text area content is saved to the list before saving files/config
                         if (systemMessageArea.comboBox.selectedIndex != -1) {
                             systemMessages[systemMessageArea.comboBox.selectedIndex] = systemMessageArea.textArea.text
