@@ -152,7 +152,7 @@ try {
             LogUtils.info("CompareNodes: Target System Prompt:\n${targetSystemPrompt}")
 
             // --- Define Helper Closure for API Call with Retry ---
-            def callApiAndParseWithRetry = { String nodeName, Map initialPayload, String pole1, String pole2 ->
+            def callApiAndParseWithRetry = { String nodeName, Map initialPayload ->
                 Map analysisResult = [error: "Initial error state"] // Default error state
                 String lastRawApiResponse = "" // Store last raw response for retry message
                 final int MAX_RETRIES = 2 // Allow up to 2 retries (3 attempts total)
@@ -265,14 +265,14 @@ try {
 
             // --- Call APIs using the Retry Helper ---
             UiHelper.updateDialogMessageThreadSafe(dialog, "Requesting analysis for '${sourceNode.text}'...")
-            def sourceAnalysis = callApiAndParseWithRetry(sourceNode.text, sourcePayloadMap, pole1, pole2)
+            def sourceAnalysis = callApiAndParseWithRetry(sourceNode.text, sourcePayloadMap)
             if (sourceAnalysis.error) {
                 throw new Exception("Failed to get valid analysis for '${sourceNode.text}' after multiple attempts: ${sourceAnalysis.error}")
             }
             LogUtils.info("Source Node Analysis received and parsed successfully.")
 
             UiHelper.updateDialogMessageThreadSafe(dialog, "Requesting analysis for '${targetNode.text}'...")
-            def targetAnalysis = callApiAndParseWithRetry(targetNode.text, targetPayloadMap, pole1, pole2)
+            def targetAnalysis = callApiAndParseWithRetry(targetNode.text, targetPayloadMap)
             if (targetAnalysis.error) {
                 throw new Exception("Failed to get valid analysis for '${targetNode.text}' after multiple attempts: ${targetAnalysis.error}")
             }
