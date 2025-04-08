@@ -245,7 +245,7 @@
 <node TEXT="en" ID="ID_1097454652" CREATED="1685111823977" MODIFIED="1742847796035">
 <attribute_layout NAME_WIDTH="159 pt" VALUE_WIDTH="102 pt"/>
 <attribute NAME="addons.${name}" VALUE="LLM AddOn"/>
-<attribute NAME="addons.${name}.askGPT" VALUE="Configure Prompts and Model"/>
+<attribute NAME="addons.${name}.AskLm" VALUE="Configure Prompts and Model"/>
 <attribute NAME="addons.${name}.quickPrompt" VALUE="Quick Prompt (Ctrl+Alt+G)"/>
 <attribute NAME="addons.${name}.compareConnectedNodes" VALUE="Compare Connected Nodes"/>
 </node>
@@ -396,7 +396,7 @@
 </html></richcontent>
 <node TEXT="AskLm.groovy" ID="ID_231711959" CREATED="1685111823978" MODIFIED="1742830474533">
 <attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
-<attribute NAME="menuTitleKey" VALUE="addons.${name}.askGPT"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.AskLm"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
 <attribute NAME="keyboardShortcut" VALUE=""/>

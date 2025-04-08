@@ -270,10 +270,10 @@ class DialogHelper {
 
 
     /**
-     * Shows the main dialog for interacting with the LLM via AskGpt.
+     * Shows the main dialog for interacting with the LLM via AskLm.
      * Handles UI creation, event handling, API calls, and configuration saving.
      */
-    static void showAskGptDialog(
+    static void showaskLmDialog(
             UITools ui,
             ConfigProperties config,
             ControllerProxy c, // Controller for selected node access (c.selected)
@@ -290,15 +290,15 @@ class DialogHelper {
         try {
             // --- Add Null Check for Parent Frame ---
             if (ui.currentFrame == null) {
-                LogUtils.severe("Cannot show AskGpt dialog: ui.currentFrame is null.")
+                LogUtils.severe("Cannot show askLm dialog: ui.currentFrame is null.")
                 UiHelper.showErrorMessage(ui, "Cannot show dialog: Parent window not found.")
                 return // Exit the method
             }
 
             def swingBuilder = new SwingBuilder()
             swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
-                // --- Rename 'dialog' to 'askGptDialogWindow' ---
-                def askGptDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: ui.currentFrame, modal: true) { // Make modal
+                // --- Rename 'dialog' to 'askLmDialogWindow' ---
+                def askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: ui.currentFrame, modal: true) { // Make modal
                     swingBuilder.panel(layout: new GridBagLayout()) {
                         def constraints = new GridBagConstraints()
                         constraints.fill = GridBagConstraints.BOTH
@@ -361,7 +361,7 @@ class DialogHelper {
                         constraints.anchor = GridBagConstraints.EAST // Align buttons to the right
                         swingBuilder.panel(constraints: constraints, layout: new FlowLayout(FlowLayout.RIGHT)) {
                             // --- Prompt LLM Button ---
-                            def askGptButton = swingBuilder.button(action: swingBuilder.action(name: 'Prompt LLM') { actionEvent ->
+                            def askLmButton = swingBuilder.button(action: swingBuilder.action(name: 'Prompt LLM') { actionEvent ->
                                 try {
                                     // 1. Get current values from GUI
                                     def currentApiKey = String.valueOf(apiKeyField.password)
@@ -398,7 +398,7 @@ class DialogHelper {
                                             'response_format': (currentProvider == 'openai' && currentModel.contains("gpt")) ? [type: "text"] : null
                                     ].findAll { key, value -> value != null }
 
-                                    LogUtils.info("AskGpt Dialog: Sending payload: ${payload}")
+                                    LogUtils.info("askLm Dialog: Sending payload: ${payload}")
 
                                     // 5. Call API (using passed closure)
                                     // Consider showing a progress indicator here
@@ -418,7 +418,7 @@ class DialogHelper {
 
                                     // 6. Process Response
                                     def responseContent = JsonUtils.extractLlmContent(rawApiResponse)
-                                    LogUtils.info("AskGpt Dialog: Received response content:\n${responseContent}")
+                                    LogUtils.info("askLm Dialog: Received response content:\n${responseContent}")
 
                                     // 7. Update Map (using NodeOperations and passed tagger)
                                     NodeOperations.addAnalysisBranch(
@@ -440,7 +440,7 @@ class DialogHelper {
                                 }
                             })
                             // Set default button - referencing renamed variable
-                            askGptDialogWindow.rootPane.defaultButton = askGptButton
+                            askLmDialogWindow.rootPane.defaultButton = askLmButton
 
                             // --- Save Changes Button ---
                             swingBuilder.button(action: swingBuilder.action(name: 'Save Changes') { actionEvent ->
@@ -479,14 +479,14 @@ class DialogHelper {
                     }
                 }
                 // --- Update references to the renamed variable ---
-                askGptDialogWindow.pack()
+                askLmDialogWindow.pack()
                 // Adjust minimum size if needed
-                askGptDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
-                ui.setDialogLocationRelativeTo(askGptDialogWindow, ui.currentFrame)
-                askGptDialogWindow.visible = true // Show the modal dialog
+                askLmDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
+                ui.setDialogLocationRelativeTo(askLmDialogWindow, ui.currentFrame)
+                askLmDialogWindow.visible = true // Show the modal dialog
             }
         } catch (Exception e) {
-            LogUtils.severe("Error showing AskGpt dialog: ${e.message}", e)
+            LogUtils.severe("Error showing askLm dialog: ${e.message}", e)
             UiHelper.showErrorMessage(ui, "Dialog Error: ${e.message.split('\n').head()}")
         }
     }

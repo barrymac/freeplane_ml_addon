@@ -33,7 +33,7 @@ import com.barrymac.freeplane.addons.llm.prompts.MessageLoader
 import com.barrymac.freeplane.addons.llm.ui.DialogHelper // Import the refactored helper
 
 // --- Initialize Core Components ---
-LogUtils.info("AskGpt script started.")
+LogUtils.info("AskLm script started.")
 try {
     // Load configuration FIRST
     ApiConfig apiConfig = ConfigManager.loadBaseConfig(config)
@@ -70,7 +70,7 @@ try {
     // --- UI Building and Interaction is now handled by DialogHelper ---
 
     // Show the main dialog using DialogHelper
-    DialogHelper.showAskGptDialog(
+    DialogHelper.showAskLmDialog(
             ui,                     // Freeplane UI
             config,                 // Freeplane Config
             c,                      // Controller (for c.selected)
@@ -86,9 +86,9 @@ try {
     )
 
 } catch (Exception e) {
-    LogUtils.severe("Error initializing AskGpt script: ${e.message}", e)
+    LogUtils.severe("Error initializing AskLm script: ${e.message}", e)
     // Use UiHelper for user-facing errors
     UiHelper.showErrorMessage(ui, "Initialization Error: ${e.message.split('\n').head()}")
 } finally {
-    LogUtils.info("AskGpt script finished.")
+    LogUtils.info("AskLm script finished.")
 }
