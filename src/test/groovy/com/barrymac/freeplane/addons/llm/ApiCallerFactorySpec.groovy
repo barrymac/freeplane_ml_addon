@@ -1,25 +1,14 @@
 package com.barrymac.freeplane.addons.llm
 
+import com.barrymac.freeplane.addons.llm.mock.MockHttpURLConnection
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.awt.*
 
 // Interface to properly mock the UI
-interface UITest {
-    void errorMessage(String message)
-    void setDialogLocationRelativeTo(Object dialog, Object frame)
-}
 
 // Interface to properly mock the Logger
-interface LoggerTest {
-    void info(String message)
-    void info(String format, Object... args)
-    void warn(String message)
-    void warn(String format, Object... args)
-    void severe(String message)
-    void severe(String format, Object... args)
-}
 
 class ApiCallerFactorySpec extends Specification {
     def mockLogger = Mock(LoggerTest)
@@ -102,54 +91,3 @@ class ApiCallerFactorySpec extends Specification {
 }
 
 // Groovy mock HTTP connection implementation
-class MockHttpURLConnection extends HttpURLConnection {
-    int responseCode = 200
-    String responseText = ""
-    String requestMethod
-    Map<String, String> requestProperties = [:]
-    String outputStreamContent = ""
-
-    MockHttpURLConnection() {
-        super(new URL("http://example.com"))
-    }
-
-    void setRequestMethod(String method) {
-        requestMethod = method
-    }
-
-    void setRequestProperty(String key, String value) {
-        requestProperties[key] = value
-    }
-
-    String getRequestProperty(String key) {
-        return requestProperties[key]
-    }
-
-    int getResponseCode() { responseCode }
-
-    InputStream getInputStream() {
-        new ByteArrayInputStream(responseText.getBytes("UTF-8"))
-    }
-
-    InputStream getErrorStream() {
-        new ByteArrayInputStream(responseText.getBytes("UTF-8"))
-    }
-
-    OutputStream getOutputStream() {
-        new ByteArrayOutputStream() {
-            void write(int b) {
-                outputStreamContent += (char) b
-            }
-
-            void write(byte[] b, int off, int len) {
-                outputStreamContent += new String(b, off, len, "UTF-8")
-            }
-        }
-    }
-
-    void connect() {}
-
-    void disconnect() {}
-
-    boolean usingProxy() { false }
-}
