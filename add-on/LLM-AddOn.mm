@@ -275,6 +275,7 @@
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn-icon.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/Exceptions.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/llm.jar"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/llm.jar"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib"/>
 </node>
 <node TEXT="scripts" POSITION="bottom_or_right" ID="ID_684917236" CREATED="1685111823977" MODIFIED="1742834859980">
@@ -469,7 +470,10 @@
     </p>
   </body>
 </html></richcontent>
-<node TEXT="llm.jar" ID="ID_943135829" CREATED="1743859158919" MODIFIED="1743859162350"/>
+<node TEXT="llm.jar" ID="ID_943135829" CREATED="1743859158919" MODIFIED="1743859162350">
+    <attribute NAME="downloadURL" VALUE="${homepage}/releases/download/${version}/llm.jar"/>
+    <attribute NAME="checksum" VALUE=""/>
+</node>
 </node>
 <node TEXT="resources" POSITION="bottom_or_right" ID="ID_RESOURCES" CREATED="1742836000000" MODIFIED="1742836000000">
 <edge COLOR="#7c7c00"/>
