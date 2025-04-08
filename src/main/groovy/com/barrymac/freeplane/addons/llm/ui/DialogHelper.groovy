@@ -11,14 +11,14 @@ import com.barrymac.freeplane.addons.llm.utils.JsonUtils
 import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
-import org.freeplane.core.ui.components.UITools // Added import
-import org.freeplane.plugin.script.proxy.ControllerProxy // Added import
-import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Added import
+import org.freeplane.core.ui.components.UITools // Still potentially useful, keeping import
+import org.freeplane.plugin.script.proxy.ControllerProxy // Still potentially useful, keeping import
+import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Still potentially useful, keeping import
 
 import javax.swing.*
 import java.awt.*
 import java.util.Hashtable
-import java.util.List // Added explicit import
+import java.util.List // Keep explicit import for showComparisonDialog
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JTextArea
 import javax.swing.JComboBox
@@ -273,13 +273,14 @@ class DialogHelper {
      * Shows the main dialog for interacting with the LLM via AskLm.
      * Handles UI creation, event handling, API calls, and configuration saving.
      */
-    static void showaskLmDialog(
-            UITools ui,
-            ConfigProperties config,
-            ControllerProxy c, // Controller for selected node access (c.selected)
+    // --- Updated Signature ---
+    static void showAskLmDialog(
+            Object ui,                     // Reverted to Object
+            Object config,                 // Reverted to Object
+            Object c,                      // Reverted to Object
             ApiConfig apiConfig,
-            java.util.List systemMessages, // Explicitly java.util.List
-            java.util.List userMessages,   // Explicitly java.util.List
+            List systemMessages,           // Reverted to List
+            List userMessages,             // Reverted to List
             int initialSystemIndex,
             int initialUserIndex,
             String systemMessagesFilePath,
@@ -287,18 +288,29 @@ class DialogHelper {
             Closure make_api_call,
             Closure tagWithModel
     ) {
-        try {
-            // --- Add Null Check for Parent Frame ---
-            if (ui.currentFrame == null) {
-                LogUtils.severe("Cannot show askLm dialog: ui.currentFrame is null.")
-                UiHelper.showErrorMessage(ui, "Cannot show dialog: Parent window not found.")
-                return // Exit the method
-            }
+        // --- Add Casts ---
+        // Cast ui to UITools for checks and subsequent calls
+        def uiTools = ui as UITools
+        // --- Add Null Check for Parent Frame ---
+        if (uiTools.currentFrame == null) {
+            LogUtils.severe("Cannot show askLm dialog: ui.currentFrame is null.")
+            // Use uiTools for error message
+            UiHelper.showErrorMessage(uiTools, "Cannot show dialog: Parent window not found.")
+            return // Exit the method
+        }
 
+        // Cast config to ConfigProperties where needed (e.g., setProperty)
+        def configProps = config as ConfigProperties
+
+        // Cast c to ControllerProxy where needed (e.g., c.selected)
+        def controller = c as ControllerProxy
+
+        try {
             def swingBuilder = new SwingBuilder()
             swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
                 // --- Rename 'dialog' to 'askLmDialogWindow' ---
-                def askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: ui.currentFrame, modal: true) { // Make modal
+                // Use uiTools here
+                def askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: uiTools.currentFrame, modal: true) { // Make modal
                     swingBuilder.panel(layout: new GridBagLayout()) {
                         def constraints = new GridBagConstraints()
                         constraints.fill = GridBagConstraints.BOTH
@@ -307,6 +319,7 @@ class DialogHelper {
                         constraints.gridy = -1  // Will be incremented
 
                         // Create message sections using the helper method
+                        // Pass the original List objects
                         MessageArea systemMessageArea = createMessageSection(swingBuilder, systemMessages, "System Message", initialSystemIndex, constraints, 4)
                         MessageArea userMessageArea = createMessageSection(swingBuilder, userMessages, "User Message", initialUserIndex, constraints, 1)
 
@@ -372,10 +385,11 @@ class DialogHelper {
                                     def currentTemperature = temperatureSlider.value / 100.0
                                     def currentProvider = apiProviderBox.selectedItem
 
-                                    // 2. Get selected node (using passed controller 'c')
-                                    def node = c.selected
+                                    // 2. Get selected node (using casted controller)
+                                    def node = controller.selected
                                     if (node == null) {
-                                        UiHelper.showInformationMessage(ui, "Please select a node first.")
+                                        // Use uiTools here
+                                        UiHelper.showInformationMessage(uiTools, "Please select a node first.")
                                         return
                                     }
 
@@ -401,8 +415,8 @@ class DialogHelper {
                                     LogUtils.info("askLm Dialog: Sending payload: ${payload}")
 
                                     // 5. Call API (using passed closure)
-                                    // Consider showing a progress indicator here
-                                    def progressDialog = DialogHelper.createProgressDialog(ui, "LLM Request", "Sending prompt to ${currentModel}...")
+                                    // Use uiTools here
+                                    def progressDialog = DialogHelper.createProgressDialog(uiTools, "LLM Request", "Sending prompt to ${currentModel}...")
                                     progressDialog.visible = true
                                     def rawApiResponse
                                     try {
@@ -430,13 +444,15 @@ class DialogHelper {
                                             "LLM Prompt Result"     // Optional type string
                                     )
 
-                                    UiHelper.showInformationMessage(ui, "Response added as a new branch.")
+                                    // Use uiTools here
+                                    UiHelper.showInformationMessage(uiTools, "Response added as a new branch.")
                                     // Optionally close dialog after successful prompt
                                     // SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
 
                                 } catch (Exception ex) {
                                     LogUtils.severe("Error during 'Prompt LLM' action: ${ex.message}", ex)
-                                    UiHelper.showErrorMessage(ui, "Prompt LLM Error: ${ex.message.split('\n').head()}")
+                                    // Use uiTools here
+                                    UiHelper.showErrorMessage(uiTools, "Prompt LLM Error: ${ex.message.split('\n').head()}")
                                 }
                             })
                             // Set default button - referencing renamed variable
@@ -449,23 +465,25 @@ class DialogHelper {
                                     systemMessageArea.updateSelectedItemFromTextArea() // Use helper method
                                     userMessageArea.updateSelectedItemFromTextArea()   // Use helper method
 
-                                    // Save messages to files (using passed paths)
+                                    // Save messages to files (using passed paths and original List objects)
                                     MessageFileHandler.saveMessagesToFile(systemMessagesFilePath, systemMessages)
                                     MessageFileHandler.saveMessagesToFile(userMessagesFilePath, userMessages)
 
-                                    // Save configuration properties (using passed config object)
-                                    config.setProperty('openai.key', String.valueOf(apiKeyField.password))
-                                    config.setProperty('openai.gpt_model', gptModelBox.selectedItem)
-                                    config.setProperty('openai.max_response_length', responseLengthField.value)
-                                    config.setProperty('openai.temperature', temperatureSlider.value / 100.0)
-                                    config.setProperty('openai.system_message_index', systemMessageArea.comboBox.selectedIndex)
-                                    config.setProperty('openai.user_message_index', userMessageArea.comboBox.selectedIndex)
-                                    config.setProperty('openai.api_provider', apiProviderBox.selectedItem)
+                                    // Save configuration properties (using casted configProps)
+                                    configProps.setProperty('openai.key', String.valueOf(apiKeyField.password))
+                                    configProps.setProperty('openai.gpt_model', gptModelBox.selectedItem)
+                                    configProps.setProperty('openai.max_response_length', responseLengthField.value)
+                                    configProps.setProperty('openai.temperature', temperatureSlider.value / 100.0)
+                                    configProps.setProperty('openai.system_message_index', systemMessageArea.comboBox.selectedIndex)
+                                    configProps.setProperty('openai.user_message_index', userMessageArea.comboBox.selectedIndex)
+                                    configProps.setProperty('openai.api_provider', apiProviderBox.selectedItem)
 
-                                    UiHelper.showInformationMessage(ui, "Changes saved.") // Provide feedback
+                                    // Use uiTools here
+                                    UiHelper.showInformationMessage(uiTools, "Changes saved.") // Provide feedback
                                 } catch (Exception ex) {
                                     LogUtils.severe("Error during 'Save Changes' action: ${ex.message}", ex)
-                                    UiHelper.showErrorMessage(ui, "Save Error: ${ex.message.split('\n').head()}")
+                                    // Use uiTools here
+                                    UiHelper.showErrorMessage(uiTools, "Save Error: ${ex.message.split('\n').head()}")
                                 }
                             })
 
@@ -482,12 +500,14 @@ class DialogHelper {
                 askLmDialogWindow.pack()
                 // Adjust minimum size if needed
                 askLmDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
-                ui.setDialogLocationRelativeTo(askLmDialogWindow, ui.currentFrame)
+                // Use uiTools here
+                uiTools.setDialogLocationRelativeTo(askLmDialogWindow, uiTools.currentFrame)
                 askLmDialogWindow.visible = true // Show the modal dialog
             }
         } catch (Exception e) {
             LogUtils.severe("Error showing askLm dialog: ${e.message}", e)
-            UiHelper.showErrorMessage(ui, "Dialog Error: ${e.message.split('\n').head()}")
+            // Use uiTools here
+            UiHelper.showErrorMessage(uiTools, "Dialog Error: ${e.message.split('\n').head()}")
         }
     }
 }
