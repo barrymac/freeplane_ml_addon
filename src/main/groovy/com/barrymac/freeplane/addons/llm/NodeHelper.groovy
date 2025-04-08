@@ -16,6 +16,7 @@ class NodeHelper {
     static void addJsonComparison(parentNode, Map jsonData, String conceptName) {
         if (!jsonData?.concepts?.containsKey(conceptName)) {
             LogUtils.warn("addJsonComparison: No data found for concept: ${conceptName}")
+            parentNode.createChild("Invalid analysis format for ${conceptName}")
             return
         }
 

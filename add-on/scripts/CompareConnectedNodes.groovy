@@ -251,11 +251,12 @@ try {
 
             // Parse responses
             logger.info("CompareConnectedNodes: Parsing source response...")
-            def sourceAnalysis = parseAnalysis(sourceResponseContent)
+            def (pole1, pole2) = comparativeDimension.split(' vs ')
+            def sourceAnalysis = ResponseParser.parseJsonAnalysis(sourceResponseContent, pole1, pole2)
             logger.info("CompareConnectedNodes: Parsed Source Analysis Map: ${sourceAnalysis}")
 
             logger.info("CompareConnectedNodes: Parsing target response...")
-            def targetAnalysis = parseAnalysis(targetResponseContent)
+            def targetAnalysis = ResponseParser.parseJsonAnalysis(targetResponseContent, pole1, pole2)
             logger.info("CompareConnectedNodes: Parsed Target Analysis Map: ${targetAnalysis}")
 
             // --- Update Map on EDT ---
@@ -283,14 +284,14 @@ try {
                         // 3. Add the parsed analysis under the corresponding child using the new helper
                         if (!sourceAnalysis.isEmpty()) {
                             // Use the new helper function from NodeHelper class
-                            NodeHelper.addAnalysisMapAsSubnodes(centralSourceChild, sourceAnalysis)
+                            NodeHelper.addJsonComparison(centralSourceChild, sourceAnalysis, 'concept_a')
                         } else {
                             centralSourceChild.createChild("(No analysis generated)")
                         }
 
                         if (!targetAnalysis.isEmpty()) {
                             // Use the new helper function from NodeHelper class
-                            NodeHelper.addAnalysisMapAsSubnodes(centralTargetChild, targetAnalysis)
+                            NodeHelper.addJsonComparison(centralTargetChild, targetAnalysis, 'concept_b')
                         } else {
                             centralTargetChild.createChild("(No analysis generated)")
                         }
