@@ -13,33 +13,26 @@ class NodeHelper {
      * @param parentNode The node under which to add the analysis structure.
      * @param analysisMap A map containing one category key and a list of points.
      */
-    static void addAnalysisMapAsSubnodes(parentNode, Map analysisMap) {
-        if (analysisMap.isEmpty()) {
-            LogUtils.warn("addAnalysisMapAsSubnodes: Received empty analysis map for node ${parentNode.text}. Skipping.")
+    static void addJsonComparison(parentNode, Map jsonData, String conceptName) {
+        if (!jsonData?.concepts?.containsKey(conceptName)) {
+            LogUtils.warn("addJsonComparison: No data found for concept: ${conceptName}")
             return
         }
 
-        // Process each category in the map (now can handle multiple poles)
-        analysisMap.each { category, points ->
-            LogUtils.info("addAnalysisMapAsSubnodes: Adding category '${category}' under node '${parentNode.text}'")
-            // Add the category (pole) as a direct child
-            def categoryNode = parentNode.createChild(category)
+        def conceptNode = parentNode.createChild(conceptName)
+        
+        jsonData.concepts[conceptName].each { pole, points ->
+            def poleNode = conceptNode.createChild(pole)
+            poleNode.style.backgroundColorCode = getPoleColor(pole, jsonData.dimension)
             
-            // Get actual pole names from analysis map and apply consistent colors
-            def poles = analysisMap.keySet() as List
-            def colorMap = [
-                (poles[0]): '#DFF0D8',  // First pole - green
-                (poles[1]): '#F8D7DA'   // Second pole - red
-            ]
-            
-            categoryNode.style.backgroundColorCode = colorMap[category] ?: '#F0F0F0'
-
-            // Add each point as a child of the category node
             points.each { point ->
-                LogUtils.info("addAnalysisMapAsSubnodes: Adding point '${point}' under category '${category}'")
-                categoryNode.createChild(point)
+                poleNode.createChild(point)
             }
         }
+    }
+
+    private static String getPoleColor(String pole, Map dimension) {
+        pole == dimension.pole1 ? '#DFF0D8' : '#F8D7DA'
     }
     /**
      * Validates that exactly two nodes are selected

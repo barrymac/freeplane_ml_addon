@@ -1,11 +1,50 @@
 package com.barrymac.freeplane.addons.llm
 
 import org.freeplane.core.util.LogUtils
+import groovy.json.JsonSlurper
 
 /**
  * Utility class for parsing LLM responses into structured formats
  */
 class ResponseParser {
+    /**
+     * Parses JSON response from LLM into structured map
+     */
+    static Map parseJsonAnalysis(String jsonResponse, String pole1, String pole2) {
+        try {
+            def jsonSlurper = new JsonSlurper()
+            def raw = jsonSlurper.parseText(extractJsonPayload(jsonResponse))
+            
+            def results = [
+                dimension: [
+                    pole1: raw.comparison.dimension.pole1,
+                    pole2: raw.comparison.dimension.pole2
+                ],
+                concepts: [:]
+            ]
+            
+            raw.comparison.concepts.each { conceptKey, conceptData ->
+                results.concepts[conceptKey] = [:]
+                [pole1, pole2].each { pole ->
+                    results.concepts[conceptKey][pole] = conceptData[pole] ?: []
+                }
+            }
+            
+            return results
+            
+        } catch (Exception e) {
+            LogUtils.warn("JSON parsing failed: ${e.message}")
+            return [error: "Invalid JSON structure: ${e.message}"]
+        }
+    }
+
+    /**
+     * Extracts JSON payload from markdown-formatted response
+     */
+    private static String extractJsonPayload(String rawResponse) {
+        def matcher = rawResponse =~ /```json\n([\s\S]*?)\n```/
+        matcher.find() ? matcher[0][1] : rawResponse
+    }
     /**
      * Parses LLM response text, expecting a single category heading (the relevant pole)
      * followed by bullet points describing the first idea relative to the second.
