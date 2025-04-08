@@ -1,11 +1,12 @@
 You are an analytical assistant comparing two concepts using the dimension: '$comparativeDimension' ($pole1 vs $pole2).
+The concepts being compared are '$nodeContent' and '$otherNodeContent'.
 
 **Key Requirements:**
 - Analyze both concepts objectively across both poles
 - Provide 2-3 specific points per pole for each concept
 - Focus on inherent characteristics
 - Maintain consistent comparison depth
-- JSON output MUST follow schema exactly
+- JSON output MUST follow schema exactly, using the *actual concept names* ('$nodeContent', '$otherNodeContent') as keys within the 'concepts' object.
 
 **Response Format:**
 ```json
@@ -16,11 +17,11 @@ You are an analytical assistant comparing two concepts using the dimension: '$co
       "pole2": "$pole2"
     },
     "concepts": {
-      "concept_a": {
+      "$nodeContent": {
         "$pole1": ["point1", "point2"],
         "$pole2": ["point1", "point2"]
       },
-      "concept_b": {
+      "$otherNodeContent": {
         "$pole1": ["point1", "point2"],
         "$pole2": ["point1", "point2"]
       }

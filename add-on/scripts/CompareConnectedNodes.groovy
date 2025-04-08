@@ -134,11 +134,28 @@ try {
             // Update progress dialog
             UiHelper.updateDialogMessage(dialog, "Analyzing '${sourceNode.text}' and '${targetNode.text}' using '${comparativeDimension}' framework...")
 
+            // --- Prepare System Prompts ---
+            LogUtils.info("CompareNodes: Final systemMessageTemplate for expansion:\n---\n${systemMessageTemplate}\n---")
+
+            def sourceSystemPrompt = PromptBuilder.buildSystemPrompt(
+                sourceNode, targetNode,
+                systemMessageTemplate,
+                comparativeDimension, pole1, pole2
+            )
+            LogUtils.info("CompareNodes: Source System Prompt:\n${sourceSystemPrompt}")
+
+            def targetSystemPrompt = PromptBuilder.buildSystemPrompt(
+                targetNode, sourceNode,
+                systemMessageTemplate,
+                comparativeDimension, pole1, pole2
+            )
+            LogUtils.info("CompareNodes: Target System Prompt:\n${targetSystemPrompt}")
+
             // --- Call API for Source Node ---
             Map<String, Object> sourcePayloadMap = [
                 'model': apiConfig.model,
                 'messages': [
-                    [role: 'system', content: systemMessageTemplate],
+                    [role: 'system', content: sourceSystemPrompt],
                     [role: 'user', content: sourceUserPrompt]
                 ],
                 'temperature': apiConfig.temperature,
@@ -156,7 +173,7 @@ try {
             Map<String, Object> targetPayloadMap = [
                 'model': apiConfig.model,
                 'messages': [
-                    [role: 'system', content: systemMessageTemplate],
+                    [role: 'system', content: targetSystemPrompt],
                     [role: 'user', content: targetUserPrompt]
                 ],
                 'temperature': apiConfig.temperature,
@@ -177,10 +194,16 @@ try {
             def targetAnalysis = ResponseProcessor.parseApiResponse(targetApiResponse, pole1, pole2)
             LogUtils.info("Target Node Analysis received and parsed")
 
-            // Add validation for pole consistency
-            if (sourceAnalysis.dimension.pole1 != targetAnalysis.dimension.pole1 ||
+            // Add validation for pole consistency (using the poles from the parsed results)
+            // Check if dimension exists before accessing poles
+            if (!sourceAnalysis?.dimension?.pole1 || !sourceAnalysis?.dimension?.pole2 ||
+                !targetAnalysis?.dimension?.pole1 || !targetAnalysis?.dimension?.pole2 ||
+                sourceAnalysis.dimension.pole1 != targetAnalysis.dimension.pole1 ||
                 sourceAnalysis.dimension.pole2 != targetAnalysis.dimension.pole2) {
-                throw new Exception("Mismatched comparison dimensions between concepts")
+                 // Log the actual dimensions found for debugging
+                 LogUtils.warn("Source dimension: ${sourceAnalysis?.dimension}")
+                 LogUtils.warn("Target dimension: ${targetAnalysis?.dimension}")
+                 throw new Exception("Mismatched or missing comparison dimensions between concepts. Check LLM response format.")
             }
 
             // --- Update Map on EDT ---
