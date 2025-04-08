@@ -154,30 +154,26 @@ try {
             }
 
             // --- Update Map on EDT ---
-            SwingUtilities.invokeLater {
-                dialog.dispose() // Close progress dialog first
-                if (sourceAnalysis.isEmpty() && targetAnalysis.isEmpty()) {
-                    ui.informationMessage("The LLM analysis did not yield structured results for either node.")
-                } else {
-                    try {
-                        MapUpdater.createComparisonStructure(
-                            sourceNode,
-                            targetNode,
-                            sourceAnalysis,
-                            targetAnalysis,
-                            comparativeDimension,
-                            apiConfig.model,
-                            addModelTagRecursively
-                        )
+            UiHelper.disposeDialog(dialog) // Close progress dialog first
+            if (sourceAnalysis.isEmpty() && targetAnalysis.isEmpty()) {
+                UiHelper.showInformationMessage(ui, "The LLM analysis did not yield structured results for either node.")
+            } else {
+                try {
+                    MapUpdater.createComparisonStructure(
+                        sourceNode,
+                        targetNode,
+                        sourceAnalysis,
+                        targetAnalysis,
+                        comparativeDimension,
+                        apiConfig.model,
+                        addModelTagRecursively
+                    )
 
-                        ui.informationMessage("Central comparison node using '${comparativeDimension}' created.")
+                    UiHelper.showInformationMessage(ui, "Central comparison node using '${comparativeDimension}' created.")
 
-                        // --- END NEW LOGIC ---
-
-                    } catch (Exception e) {
-                        logger.warn("Error creating central comparison node structure on EDT", e)
-                        ui.errorMessage("Failed to add central comparison node to the map. Check logs. Error: ${e.message}")
-                    }
+                } catch (Exception e) {
+                    logger.warn("Error creating central comparison node structure on EDT", e)
+                    UiHelper.showErrorMessage(ui, "Failed to add central comparison node to the map. Check logs. Error: ${e.message}")
                 }
             }
 
