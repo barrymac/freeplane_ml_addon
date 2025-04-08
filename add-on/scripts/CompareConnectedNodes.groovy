@@ -168,8 +168,7 @@ try {
             def sourceBinding = getBindingMap(sourceNode, targetNode) // Pass both nodes
             // Remove incorrect assignment - comparisonType should be user input, not the generated dimension
             sourceBinding['comparativeDimension'] = comparativeDimension
-            // Add pole1 and pole2 to the binding maps
-            def (pole1, pole2) = comparativeDimension.split(' vs ')
+            // Use existing poles from dimension generation
             sourceBinding['pole1'] = pole1
             sourceBinding['pole2'] = pole2
             logger.info("CompareNodes: Source Binding Map: ${sourceBinding}")
