@@ -138,12 +138,14 @@ try {
             def attempts = 0
             def comparativeDimension = null
             def dimensionContent = null
+            def pole1 = null
+            def pole2 = null
             
             while (attempts <= maxRetries) {
                 try {
                     def dimensionResponse = make_api_call(provider, apiConfig.apiKey, dimensionPayload)
                     dimensionContent = new JsonSlurper().parseText(dimensionResponse)?.choices[0]?.message?.content
-                    def (pole1, pole2) = parseGeneratedDimension(dimensionContent)
+                    (pole1, pole2) = parseGeneratedDimension(dimensionContent)
                     comparativeDimension = "${pole1} vs ${pole2}"
                     logger.info("Generated comparative dimension: ${comparativeDimension}")
                     break
