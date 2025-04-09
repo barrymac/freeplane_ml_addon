@@ -171,6 +171,11 @@ class NodeOperations {
         try {
             LogUtils.info("Attaching image to node: ${node.text}")
             
+            // Debug node capabilities
+            LogUtils.info("Node class: ${node.getClass().name}")
+            LogUtils.info("Node methods: ${node.metaClass.methods*.name.unique().sort()}")
+            LogUtils.info("Node properties: ${node.metaClass.properties*.name.sort()}")
+
             // 1. Create unique filename
             String safeName = baseName.replaceAll(/[^\w\-]/, '_')
             String timestamp = new Date().format('yyyyMMddHHmmss')
@@ -185,9 +190,42 @@ class NodeOperations {
             File imageFile = new File(mapFile.parentFile, fileName)
             imageFile.bytes = imageBytes
             
-            // 3. Attach to node using external object
+            // 3. Try different attachment approaches
             def uri = imageFile.toURI()
-            node.externalObject = uri.toString() // Direct assignment
+            LogUtils.info("Attempting to attach URI: ${uri}")
+            
+            // Approach 1: Set URI directly if possible
+            if (node.metaClass.hasProperty(node, 'externalObject')) {
+                node.externalObject = uri.toString()
+                LogUtils.info("Set externalObject property directly")
+            }
+            // Approach 2: Use node attributes
+            else if (node.metaClass.respondsTo(node, 'setAttribute', [String, String] as Class[])) {
+                node.setAttribute('externalObject', uri.toString())
+                LogUtils.info("Set externalObject attribute")
+            }
+            // Approach 3: Use Freeplane's core API
+            else {
+                LogUtils.info("Falling back to core API methods")
+                try {
+                    // Try to use NodeLinks API if available
+                    def nodeLinks = node.getExtension(org.freeplane.features.link.NodeLinks.class)
+                    if (nodeLinks) {
+                        nodeLinks.setHyperLink(uri)
+                        LogUtils.info("Set hyperlink via NodeLinks extension")
+                    } else {
+                        // Last resort - try to use controller to set link
+                        def linkController = org.freeplane.features.link.LinkController.getController()
+                        linkController.setLink(node, uri, org.freeplane.features.link.LinkController.LINK_ABSOLUTE)
+                        LogUtils.info("Set link via LinkController")
+                    }
+                } catch (Exception e) {
+                    LogUtils.warn("Core API approach failed: ${e.message}")
+                    // Try direct field access as last resort
+                    node.setObject(uri.toString())
+                    LogUtils.info("Set object directly")
+                }
+            }
             
             LogUtils.info("Image attached: ${fileName}")
         } catch (Exception e) {
