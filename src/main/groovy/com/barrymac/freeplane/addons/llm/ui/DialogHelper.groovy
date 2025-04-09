@@ -289,6 +289,7 @@ class DialogHelper {
 
         Map resultMap = null // Initialize result map
         def askLmDialogWindow // <<< DECLARED HERE
+        def askLmButton       // <<< DECLARED HERE
 
         try {
             def swingBuilder = new SwingBuilder()
@@ -359,7 +360,8 @@ class DialogHelper {
                         constraints.anchor = GridBagConstraints.EAST // Align buttons to the right
                         swingBuilder.panel(constraints: constraints, layout: new FlowLayout(FlowLayout.RIGHT)) {
                             // --- Prompt LLM Button ---
-                            def askLmButton = swingBuilder.button(action: swingBuilder.action(name: 'Prompt LLM') { actionEvent ->
+                            // Assign to outer variable (removed 'def')
+                            askLmButton = swingBuilder.button(action: swingBuilder.action(name: 'Prompt LLM') { actionEvent -> // <<< ASSIGN HERE
                                 try { // Add inner try-catch for safety during data collection
                                     // Ensure latest text area content is reflected in the underlying list before copying
                                     systemMessageArea.updateSelectedItemFromTextArea()
@@ -389,8 +391,7 @@ class DialogHelper {
                                      SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                                 }
                             })
-                            // Set default button
-                            askLmDialogWindow.rootPane.defaultButton = askLmButton
+                            // --- REMOVED default button assignment from here ---
 
                             // --- Save Changes Button ---
                             swingBuilder.button(action: swingBuilder.action(name: 'Save Changes') { actionEvent ->
@@ -431,13 +432,21 @@ class DialogHelper {
                             })
                         }
                     }
+                } // End dialog definition closure
+
+                // --- Set the default button AFTER the dialog is created ---
+                if (askLmDialogWindow != null && askLmButton != null) { // Add null checks for safety
+                    askLmDialogWindow.rootPane.defaultButton = askLmButton // <<< SET DEFAULT BUTTON HERE
+                } else {
+                    LogUtils.warn("Could not set default button: dialog or button was null.")
                 }
+
                 // Pack, set minimum size, and location (now using the correctly scoped variable)
                 askLmDialogWindow.pack()
                 askLmDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
                 uiTools.setDialogLocationRelativeTo(askLmDialogWindow, uiTools.currentFrame)
                 askLmDialogWindow.visible = true // Show the modal dialog (blocks until closed)
-            }
+            } // End edt block
         } catch (Exception e) {
             LogUtils.severe("Error showing askLm dialog: ${e.message}", e)
             // Cannot use UiHelper here reliably if uiTools caused the error
