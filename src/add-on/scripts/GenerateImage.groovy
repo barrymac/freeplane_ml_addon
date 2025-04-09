@@ -129,10 +129,10 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-        "images/ChatGptCommunicator.png",
-        "images/ChatGptCommunicator.png",
-        "images/ChatGptCommunicator.png",
-        "images/ChatGptCommunicator.png"
+        "/images/ChatGptCommunicator.png",
+        "/images/ChatGptCommunicator.png",
+        "/images/ChatGptCommunicator.png",
+        "/images/ChatGptCommunicator.png"
     ]
     if (imageUrls.isEmpty()) {
         UiHelper.showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
@@ -149,14 +149,17 @@ try {
     Closure downloader = { String imagePath ->
         try {
             LogUtils.info("Loading bundled image: ${imagePath}")
-            def imageStream = getClass().getResourceAsStream("/${imagePath}")
+            // Remove the leading slash to make path relative to classpath root
+            def imageStream = getClass().getResourceAsStream(imagePath)
             if (!imageStream) {
-                throw new FileNotFoundException("Bundled image not found: ${imagePath}")
+                throw new FileNotFoundException("Bundled image not found at: ${imagePath}")
             }
-            return imageStream.bytes
+            def bytes = imageStream.bytes
+            LogUtils.info("Successfully loaded ${bytes.length} bytes from ${imagePath}")
+            return bytes
         } catch (Exception e) {
             LogUtils.severe("Error loading image: ${e.message}")
-            UiHelper.showErrorMessage(ui, "Failed to load preview image")
+            UiHelper.showErrorMessage(ui, "Failed to load preview image: ${e.message}")
             return null
         }
     }
@@ -179,6 +182,12 @@ try {
             // TODO: Replace placeholder downloader call with actual download:
             // byte[] selectedImageBytes = ImageDownloader.downloadImageBytes(selectedUrl)
             byte[] selectedImageBytes = downloader(selectedUrl) // Use placeholder downloader
+            if (!selectedImageBytes) {
+                LogUtils.warn("No image bytes received for ${selectedUrl}")
+                UiHelper.showErrorMessage(ui, "Failed to load selected image")
+                return
+            }
+            // Only proceed if bytes are valid
             LogUtils.info("Downloaded ${selectedImageBytes.length} bytes for selected image (placeholder).")
 
             LogUtils.info("Determining filename and extension...")
