@@ -2,7 +2,7 @@
 import org.freeplane.core.util.LogUtils
 import org.freeplane.features.map.NodeModel
 
-import javax.swing.JDialog // For progress dialog type hint
+import javax.swing.*  // Imports all Swing classes including JDialog and JOptionPane
 
 // LLM Add-on specific
 
