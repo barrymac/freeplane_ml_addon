@@ -213,10 +213,10 @@ try {
                 // Create URI relative to map file
                 def uri = imageFile.toURI()
                 
-                // Use Freeplane's public Node API to set the URI
-                c.selected.object = uri.toString()
+                // Use NodeOperations to properly attach the image
+                NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
                 
-                LogUtils.info("Image attached via node.object API: ${fileName}")
+                LogUtils.info("Image attached via NodeOperations: ${fileName}")
             } catch (Exception e) {
                 LogUtils.severe("Failed to attach image: ${e.message}", e)
                 throw e // Re-throw to be caught by outer catch block

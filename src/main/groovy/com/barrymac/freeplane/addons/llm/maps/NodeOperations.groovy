@@ -186,14 +186,16 @@ class NodeOperations {
             File imageFile = new File(mapFile.parentFile, fileName)
             imageFile.bytes = imageBytes
             
-            // 3. Attach using Freeplane's ExternalObject extension
+            // 3. Attach using Freeplane's ExternalObject API
+            // This preserves the node text while adding the image as an attachment
             def uri = imageFile.toURI()
-            def externalObject = new MLinkController().setLink()
-            externalObject.uri = uri
-            externalObject.zoom = 1.0f  // 100% scale
-            node.putExtension(externalObject)
             
-            LogUtils.info("Image attached via ExternalObject: ${fileName}")
+            // Access the externalObject property which creates the hook if needed
+            node.externalObject.uri = uri
+            // Set zoom to 100%
+            node.externalObject.zoom = 1.0f
+            
+            LogUtils.info("Image attached via externalObject API: ${fileName}")
         } catch (Exception e) {
             String errorMsg = "Failed to attach image to node"
             LogUtils.severe("${errorMsg}: ${e.message}")
