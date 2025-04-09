@@ -129,10 +129,10 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-        "/images/ChatGptCommunicator.png",
-        "/images/ChatGptCommunicator.png",
-        "/images/ChatGptCommunicator.png",
-        "/images/ChatGptCommunicator.png"
+        "/ChatGptCommunicator.png",
+        "/ChatGptCommunicator.png",
+        "/ChatGptCommunicator.png",
+        "/ChatGptCommunicator.png"
     ]
     if (imageUrls.isEmpty()) {
         UiHelper.showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
@@ -149,7 +149,6 @@ try {
     Closure downloader = { String imagePath ->
         try {
             LogUtils.info("Loading bundled image: ${imagePath}")
-            // Remove the leading slash to make path relative to classpath root
             def imageStream = getClass().getResourceAsStream(imagePath)
             if (!imageStream) {
                 throw new FileNotFoundException("Bundled image not found at: ${imagePath}")

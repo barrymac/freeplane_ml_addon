@@ -38,13 +38,17 @@ dependencies {
     )
 }
 
-//sourceSets {
-//    main {
-//        groovy {
-//            srcDirs 'src/main/groovy', 'src/add-on/scripts'
-//        }
-//    }
-//}
+sourceSets {
+    main {
+        groovy {
+            srcDirs 'src/main/groovy', 'src/add-on/scripts'
+        }
+        resources {
+            srcDirs 'src/main/resources'
+            includes = ['**/*.png']  // Explicitly include PNG files
+        }
+    }
+}
 
 test {
     useJUnitPlatform()
@@ -63,4 +67,5 @@ freeplane {
 
 jar {
     archiveFileName = 'llm.jar'
+    from sourceSets.main.resources
 }
