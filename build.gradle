@@ -38,13 +38,13 @@ dependencies {
     )
 }
 
-sourceSets {
-    main {
-        groovy {
-            srcDirs 'src/main/groovy', 'src/add-on/scripts'
-        }
-    }
-}
+//sourceSets {
+//    main {
+//        groovy {
+//            srcDirs 'src/main/groovy', 'src/add-on/scripts'
+//        }
+//    }
+//}
 
 test {
     useJUnitPlatform()
