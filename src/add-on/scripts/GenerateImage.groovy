@@ -8,11 +8,11 @@ import javax.swing.JDialog // For progress dialog type hint
 import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.utils.UiHelper
 import com.barrymac.freeplane.addons.llm.ui.DialogHelper
-// import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // Keep commented for now
-// import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // Keep commented for now
-// import com.barrymac.freeplane.addons.llm.ResponseParser // Keep commented for now
-// import com.barrymac.freeplane.addons.llm.maps.NodeOperations // Keep commented for now
-// import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // Keep commented for now (assuming this will exist)
+// import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
+// import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
+// import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
+// import com.barrymac.freeplane.addons.llm.maps.NodeOperations // TODO: Uncomment when implemented
+// import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
 
 // === Script Entry Point ===
 LogUtils.info("GenerateImage script started.")
@@ -47,6 +47,10 @@ try {
         return
     }
     LogUtils.info("Using prompt from node ${node.id}: '${prompt.take(100)}...'")
+
+    LogUtils.info(">>> Skipping image generation steps (feature not fully implemented yet).")
+    UiHelper.showInformationMessage(ui, "Image generation feature is under development.") // Optional user feedback
+    return // Stop script execution here for now
 
     // 3. Build Payload
     LogUtils.info("Building Novita payload...")
