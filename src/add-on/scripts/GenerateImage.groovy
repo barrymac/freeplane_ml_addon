@@ -151,7 +151,8 @@ try {
             LogUtils.info("Loading image from: ${url}")
             // Handle bundled resources
             if (url.startsWith("/")) {
-                def imageStream = getClass().getResourceAsStream(url)
+                // Use a known class from the add-on JAR to ensure correct classloader context
+                def imageStream = ImageDialogueHelper.class.getResourceAsStream(url)
                 if (!imageStream) {
                     throw new FileNotFoundException("Bundled image not found at: ${url}")
                 }
