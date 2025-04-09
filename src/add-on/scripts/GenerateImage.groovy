@@ -195,7 +195,33 @@ try {
             if (!['png', 'jpg', 'jpeg', 'gif'].contains(extension)) extension = 'png'
 
             LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
-            NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
+            
+            try {
+                // Create unique filename
+                String timestamp = new Date().format('yyyyMMddHHmmss')
+                String fileName = "${baseName}_${timestamp}.${extension}"
+                
+                // Save image to map's directory
+                def mapFile = node.map.file
+                if (!mapFile) {
+                    throw new Exception("Map must be saved before adding images")
+                }
+                
+                File imageFile = new File(mapFile.parentFile, fileName)
+                imageFile.bytes = selectedImageBytes
+                
+                // Create URI relative to map file
+                def uri = imageFile.toURI()
+                
+                // Use Freeplane's public Node API to set external object
+                c.selected.externalObject = uri
+                
+                LogUtils.info("Image attached via externalObject API: ${fileName}")
+            } catch (Exception e) {
+                LogUtils.severe("Failed to attach image: ${e.message}", e)
+                throw e // Re-throw to be caught by outer catch block
+            }
+            
             LogUtils.info("Successfully attached image to node ${node.id}")
             UiHelper.showInformationMessage(ui, "Image added to node!")
 
