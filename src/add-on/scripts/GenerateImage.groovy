@@ -98,10 +98,10 @@ try {
         return """
         {
           "images": [
-            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" },
-            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" },
-            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" },
-            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" }
+            { "image_url": "images/placeholder1.png", "image_type": "png" },
+            { "image_url": "images/placeholder2.png", "image_type": "png" },
+            { "image_url": "images/placeholder3.png", "image_type": "png" },
+            { "image_url": "images/placeholder4.png", "image_type": "png" }
           ],
           "task": { "task_id": "dummy-task-id" }
         }
@@ -129,10 +129,10 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-        "/ChatGptCommunicator.png",
-        "/ChatGptCommunicator.png",
-        "/ChatGptCommunicator.png",
-        "/ChatGptCommunicator.png"
+        "/placeholder1.png",
+        "/placeholder2.png",
+        "/placeholder3.png",
+        "/placeholder4.png"
     ]
     if (imageUrls.isEmpty()) {
         UiHelper.showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
