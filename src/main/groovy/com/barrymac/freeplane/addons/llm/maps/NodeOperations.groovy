@@ -160,41 +160,4 @@ class NodeOperations {
         }
     }
     
-    /**
-     * Attaches image bytes to a node
-     * @param node The target node (Node proxy from c.selected)
-     * @param imageBytes Byte array of the image
-     * @param baseName Base filename (without extension)
-     * @param extension File extension (png/jpg/etc)
-     */
-    static void attachImageToNode(def node, byte[] imageBytes, 
-                                String baseName, String extension) {
-        try {
-            LogUtils.info("Attaching image to node: ${node.text}")
-            
-            // 1. Create unique filename
-            String safeName = baseName.replaceAll(/[^\w\-]/, '_')
-            String timestamp = new Date().format('yyyyMMddHHmmss')
-            String fileName = "${safeName}_${timestamp}.${extension}"
-            
-            // 2. Save image to map's directory
-            def mapFile = node.map.file
-            if (!mapFile) {
-                throw new LlmAddonException("Map must be saved before adding images")
-            }
-            
-            File imageFile = new File(mapFile.parentFile, fileName)
-            imageFile.bytes = imageBytes
-            
-            // 3. Attach using Freeplane's external object property
-            def uri = imageFile.toURI()
-            node.externalObject.uri = uri.toString() // Set external object URI
-            
-            LogUtils.info("Image attached via externalObject.uri: ${fileName}")
-        } catch (Exception e) {
-            String errorMsg = "Failed to attach image to node"
-            LogUtils.severe("${errorMsg}: ${e.message}")
-            throw new LlmAddonException(errorMsg, e)
-        }
-    }
 }

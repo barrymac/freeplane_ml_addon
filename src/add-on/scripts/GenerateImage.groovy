@@ -12,6 +12,7 @@ import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 // import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
 import com.barrymac.freeplane.addons.llm.maps.NodeOperations
+import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 // import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
 
 // === Script Entry Point ===
@@ -197,9 +198,10 @@ try {
             LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
             
             try {
-                // Use NodeOperations to properly attach the image
-                // Pass the Node proxy directly to the method
-                NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
+                // Use the dedicated ImageAttachmentHandler to attach the image
+                // Import needed at the top of the file
+                import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
+                ImageAttachmentHandler.attachImageToNode(node, selectedImageBytes, baseName, extension)
                 
                 LogUtils.info("Image successfully attached to node")
             } catch (Exception e) {
