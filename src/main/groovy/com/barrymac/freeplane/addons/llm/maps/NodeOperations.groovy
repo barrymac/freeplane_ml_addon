@@ -4,6 +4,7 @@ import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.core.util.LogUtils
 import org.freeplane.features.map.NodeModel
 import org.freeplane.features.url.UrlManager
+import org.freeplane.features.link.mindmapmode.MLinkController
 
 /**
  * Handles node-related operations with proper error handling and logging
@@ -185,11 +186,14 @@ class NodeOperations {
             File imageFile = new File(mapFile.parentFile, fileName)
             imageFile.bytes = imageBytes
             
-            // 3. Attach using Freeplane's Node API
+            // 3. Attach using Freeplane's ExternalObject extension
             def uri = imageFile.toURI()
-            node.setObject(uri.toString())  // Use the core Node.setObject() method
+            def externalObject = new org.freeplane.features.link.mindmapmode.MLinkController.ExternalObject()
+            externalObject.uri = uri
+            externalObject.zoom = 1.0f  // 100% scale
+            node.putExtension(externalObject)
             
-            LogUtils.info("Image attached: ${fileName}")
+            LogUtils.info("Image attached via ExternalObject: ${fileName}")
         } catch (Exception e) {
             String errorMsg = "Failed to attach image to node"
             LogUtils.severe("${errorMsg}: ${e.message}")
