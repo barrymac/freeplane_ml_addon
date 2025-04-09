@@ -188,7 +188,7 @@ class NodeOperations {
             
             // 3. Attach using Freeplane's ExternalObject extension
             def uri = imageFile.toURI()
-            def externalObject = new org.freeplane.features.link.mindmapmode.MLinkController.ExternalObject()
+            def externalObject = new MLinkController().setLink()
             externalObject.uri = uri
             externalObject.zoom = 1.0f  // 100% scale
             node.putExtension(externalObject)
