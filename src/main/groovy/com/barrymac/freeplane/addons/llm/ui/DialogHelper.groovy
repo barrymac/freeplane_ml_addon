@@ -263,6 +263,152 @@ class DialogHelper {
         }
         return new MessageArea(textArea: messageText, comboBox: messageComboBox)
     }
+    
+    /**
+     * Shows a dialog for selecting one image from a list of image URLs
+     *
+     * @param ui The Freeplane UI object
+     * @param imageUrls List of image URLs to display
+     * @param imageLoader Closure that loads image bytes from a URL
+     * @return The selected image URL or null if cancelled
+     */
+    static String showImageSelectionDialog(UITools ui, List<String> imageUrls, Closure<byte[]> imageLoader) {
+        try {
+            LogUtils.info("Showing image selection dialog with ${imageUrls.size()} images")
+            String selectedUrl = null
+            
+            def swingBuilder = new SwingBuilder()
+            def dialog = swingBuilder.dialog(
+                    title: 'Select Generated Image',
+                    modal: true,
+                    owner: ui.currentFrame,
+                    defaultCloseOperation: WindowConstants.DISPOSE_ON_CLOSE
+            ) {
+                borderLayout()
+                
+                panel(constraints: BorderLayout.NORTH) {
+                    label(text: '<html><b>Click on an image to select it</b></html>', 
+                          horizontalAlignment: JLabel.CENTER,
+                          border: BorderFactory.createEmptyBorder(10, 10, 10, 10))
+                }
+                
+                panel(constraints: BorderLayout.CENTER, layout: new GridLayout(2, 2, 10, 10), 
+                      border: BorderFactory.createEmptyBorder(10, 10, 10, 10)) {
+                    
+                    // Add image panels
+                    imageUrls.each { url ->
+                        def imagePanel = panel(layout: new BorderLayout(), 
+                                              border: BorderFactory.createEmptyBorder(5, 5, 5, 5)) {
+                            
+                            def imageLabel = label(text: "Loading...", 
+                                                  horizontalAlignment: JLabel.CENTER,
+                                                  verticalAlignment: JLabel.CENTER)
+                            
+                            // Create a loading panel with spinner
+                            panel(constraints: BorderLayout.SOUTH) {
+                                label(text: "Loading image...", horizontalAlignment: JLabel.CENTER)
+                            }
+                        }
+                        
+                        // Add mouse listeners for selection and hover effects
+                        imagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+                            void mouseClicked(java.awt.event.MouseEvent e) {
+                                selectedUrl = url
+                                dialog.dispose()
+                            }
+                            
+                            void mouseEntered(java.awt.event.MouseEvent e) {
+                                imagePanel.border = BorderFactory.createCompoundBorder(
+                                    BorderFactory.createLineBorder(Color.BLUE, 2),
+                                    BorderFactory.createEmptyBorder(3, 3, 3, 3)
+                                )
+                            }
+                            
+                            void mouseExited(java.awt.event.MouseEvent e) {
+                                imagePanel.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+                            }
+                        })
+                        
+                        // Load image in background thread
+                        new Thread({
+                            try {
+                                // Get image bytes using the provided loader
+                                byte[] imageBytes = imageLoader(url)
+                                if (imageBytes) {
+                                    // Create and scale image
+                                    def originalIcon = new ImageIcon(imageBytes)
+                                    def originalImage = originalIcon.image
+                                    
+                                    // Scale to reasonable preview size (max 256x256)
+                                    int maxDim = 256
+                                    int width = originalImage.width
+                                    int height = originalImage.height
+                                    double scale = 1.0
+                                    
+                                    if (width > maxDim || height > maxDim) {
+                                        scale = Math.min(maxDim / width, maxDim / height)
+                                        width = (int)(width * scale)
+                                        height = (int)(height * scale)
+                                    }
+                                    
+                                    def scaledImage = originalImage.getScaledInstance(
+                                        width, height, java.awt.Image.SCALE_SMOOTH)
+                                    
+                                    // Update UI on EDT
+                                    SwingUtilities.invokeLater {
+                                        // Replace loading text with image
+                                        def components = imagePanel.components
+                                        for (component in components) {
+                                            if (component instanceof JLabel) {
+                                                component.icon = new ImageIcon(scaledImage)
+                                                component.text = null
+                                            } else if (component instanceof JPanel) {
+                                                imagePanel.remove(component)
+                                            }
+                                        }
+                                        imagePanel.revalidate()
+                                        imagePanel.repaint()
+                                    }
+                                }
+                            } catch (Exception e) {
+                                LogUtils.severe("Failed to load image: ${e.message}", e)
+                                // Update UI on EDT to show error
+                                SwingUtilities.invokeLater {
+                                    def components = imagePanel.components
+                                    for (component in components) {
+                                        if (component instanceof JLabel) {
+                                            component.icon = null
+                                            component.text = "Failed to load image"
+                                            component.foreground = Color.RED
+                                        } else if (component instanceof JPanel) {
+                                            imagePanel.remove(component)
+                                        }
+                                    }
+                                    imagePanel.revalidate()
+                                    imagePanel.repaint()
+                                }
+                            }
+                        }).start()
+                    }
+                }
+                
+                panel(constraints: BorderLayout.SOUTH) {
+                    button(text: 'Cancel', actionPerformed: { dialog.dispose() })
+                }
+            }
+            
+            // Set size and position
+            dialog.pack()
+            dialog.minimumSize = new Dimension(600, 600)
+            ui.setDialogLocationRelativeTo(dialog, ui.currentFrame)
+            dialog.visible = true
+            
+            return selectedUrl
+        } catch (Exception e) {
+            LogUtils.severe("Error showing image selection dialog: ${e.message}", e)
+            return null
+        }
+    }
 
 
     /**

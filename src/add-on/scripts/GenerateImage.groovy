@@ -144,30 +144,44 @@ try {
 
     // 7. Show Selection Dialog
     LogUtils.info("Showing image selection dialog...")
-    // Placeholder downloader function - replace with actual implementation later
-    // TODO: Replace placeholder with:
-    // Closure downloader = ImageDownloader.&downloadImageBytes // Or similar
-    Closure downloader = { String imagePath ->
+    // Enhanced downloader function that handles both resources and URLs
+    Closure downloader = { String url ->
         try {
-            LogUtils.info("Loading bundled image: ${imagePath}")
-            def imageStream = getClass().getResourceAsStream(imagePath)
-            if (!imageStream) {
-                throw new FileNotFoundException("Bundled image not found at: ${imagePath}")
+            LogUtils.info("Loading image from: ${url}")
+            // Handle bundled resources
+            if (url.startsWith("/")) {
+                def imageStream = getClass().getResourceAsStream(url)
+                if (!imageStream) {
+                    throw new FileNotFoundException("Bundled image not found at: ${url}")
+                }
+                def bytes = imageStream.bytes
+                LogUtils.info("Successfully loaded ${bytes.length} bytes from resource: ${url}")
+                return bytes
+            } 
+            // Handle real URLs (for future API integration)
+            else {
+                def connection = new URL(url).openConnection()
+                connection.connectTimeout = 10000 // 10 seconds
+                connection.readTimeout = 30000    // 30 seconds
+                def bytes = connection.inputStream.bytes
+                LogUtils.info("Successfully downloaded ${bytes.length} bytes from URL: ${url}")
+                return bytes
             }
-            def bytes = imageStream.bytes
-            LogUtils.info("Successfully loaded ${bytes.length} bytes from ${imagePath}")
-            return bytes
         } catch (Exception e) {
             LogUtils.severe("Error loading image: ${e.message}")
-            UiHelper.showErrorMessage(ui, "Failed to load preview image: ${e.message}")
-            return null
+            return null // Return null to allow dialog to show error
         }
     }
-    // TODO: Replace placeholder selection simulation with actual dialog call:
-    // String selectedUrl = DialogHelper.showImageSelectionDialog(ui, imageUrls, downloader)
-    // Simulate user selection (e.g., selects the second image)
-    String selectedUrl = imageUrls.size() > 1 ? imageUrls[1] : imageUrls[0]
-    LogUtils.info("User selected URL (placeholder): ${selectedUrl}")
+    
+    // Show the image selection dialog
+    String selectedUrl = DialogHelper.showImageSelectionDialog(ui, imageUrls, downloader)
+    
+    if (!selectedUrl) {
+        LogUtils.info("User cancelled image selection or selection failed")
+        UiHelper.showInformationMessage(ui, "Image selection cancelled")
+        return
+    }
+    LogUtils.info("User selected image URL: ${selectedUrl}")
 
 
     // 8. Process Selection
