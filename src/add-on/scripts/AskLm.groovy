@@ -120,7 +120,10 @@ try {
             LogUtils.info("AskLm Script: Sending payload: ${payload}")
 
             // 4. Show Progress & Call API (using closure defined earlier)
-            def progressDialog = DialogHelper.createProgressDialog(ui, "LLM Request", "Sending prompt to ${dialogResult.model}...")
+            // --- Updated Progress Dialog Message ---
+            def truncatedPrompt = expandedUserMessage.take(300) + (expandedUserMessage.length() > 300 ? "..." : "")
+            def progressMessage = "Sending prompt to ${dialogResult.model}:\n\n${truncatedPrompt}"
+            def progressDialog = DialogHelper.createProgressDialog(ui, "LLM Request", progressMessage)
             progressDialog.visible = true
             def rawApiResponse
             try {
@@ -149,7 +152,8 @@ try {
                     "LLM Prompt Result"     // Optional type string
             )
 
-            UiHelper.showInformationMessage(ui, "Response added as a new branch.")
+            // --- Removed Success Confirmation Dialog ---
+            // UiHelper.showInformationMessage(ui, "Response added as a new branch.")
 
         } catch (Exception ex) {
             LogUtils.severe("Error during 'Prompt LLM' action in script: ${ex.message}", ex)
