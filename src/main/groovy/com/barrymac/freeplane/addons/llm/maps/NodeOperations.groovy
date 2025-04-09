@@ -186,15 +186,11 @@ class NodeOperations {
             File imageFile = new File(mapFile.parentFile, fileName)
             imageFile.bytes = imageBytes
             
-            // 3. Attach using Freeplane's public Node API
+            // 3. Attach using Freeplane's external object property
             def uri = imageFile.toURI()
+            node.externalObject.uri = uri.toString() // Set external object URI
             
-            // Preserve original text, set URI, then restore text
-            String originalText = node.text
-            node.setObject(uri.toString())
-            node.text = originalText
-            
-            LogUtils.info("Image attached via setObject(): ${fileName}")
+            LogUtils.info("Image attached via externalObject.uri: ${fileName}")
         } catch (Exception e) {
             String errorMsg = "Failed to attach image to node"
             LogUtils.severe("${errorMsg}: ${e.message}")
