@@ -1,12 +1,12 @@
 // Freeplane & Core Java/Groovy
 import org.freeplane.core.util.LogUtils
 import org.freeplane.features.map.NodeModel
-import java.io.IOException
+
 import javax.swing.JDialog // For progress dialog type hint
 
 // LLM Add-on specific
-import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.utils.UiHelper
+
+import com.barrymac.freeplane.addons.llm.ui.UiHelper
 import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 // import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented

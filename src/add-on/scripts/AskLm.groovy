@@ -10,7 +10,7 @@ import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.prompts.MessageExpander // Needed for expanding template
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException // Needed for API error handling
 import com.barrymac.freeplane.addons.llm.utils.JsonUtils // Needed for response parsing
-import com.barrymac.freeplane.addons.llm.utils.UiHelper // Still needed for error/info messages
+import com.barrymac.freeplane.addons.llm.ui.UiHelper // Still needed for error/info messages
 import com.barrymac.freeplane.addons.llm.maps.NodeOperations // Needed for adding branch
 import com.barrymac.freeplane.addons.llm.maps.NodeTagger // Still needed for tagging
 import com.barrymac.freeplane.addons.llm.prompts.MessageFileHandler // Needed for loading/saving messages

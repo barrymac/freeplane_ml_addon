@@ -2,20 +2,16 @@
 import org.freeplane.core.util.LogUtils
 
 // Standard Java/Swing imports
-import groovy.swing.SwingBuilder
-import javax.swing.*
-import java.awt.*
 
 // Core LLM Add-on imports
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ApiConfig
 import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
-import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 
 // Utility imports
 import com.barrymac.freeplane.addons.llm.utils.JsonUtils
-import com.barrymac.freeplane.addons.llm.utils.UiHelper
+import com.barrymac.freeplane.addons.llm.ui.UiHelper
 
 // Map operation imports
 import com.barrymac.freeplane.addons.llm.maps.NodeOperations

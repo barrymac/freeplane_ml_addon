@@ -19,15 +19,15 @@ import com.barrymac.freeplane.addons.llm.prompts.PromptBuilder
 
 // UI related classes
 import com.barrymac.freeplane.addons.llm.ui.DialogHelper
-import com.barrymac.freeplane.addons.llm.utils.UiHelper
+import com.barrymac.freeplane.addons.llm.ui.UiHelper
 
 // Freeplane specific classes
-import org.freeplane.plugin.script.proxy.NodeProxy
 
-import org.freeplane.core.util.LogUtils // Ensure LogUtils is imported
+// Ensure LogUtils is imported
 
 // Standard Java/Swing classes
-import javax.swing.JDialog // Explicitly needed by UiHelper methods used here
+
+// Explicitly needed by UiHelper methods used here
 
 // Ensure LogUtils is imported
 import org.freeplane.core.util.LogUtils

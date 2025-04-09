@@ -1,34 +1,30 @@
 package com.barrymac.freeplane.addons.llm.ui
 
 import com.barrymac.freeplane.addons.llm.ApiConfig
-import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException // Keep for potential internal UI errors if needed
-import com.barrymac.freeplane.addons.llm.maps.NodeOperations // Remove - No longer used here
+
+// Keep for potential internal UI errors if needed
+
+// Remove - No longer used here
 import com.barrymac.freeplane.addons.llm.models.MessageArea
 import com.barrymac.freeplane.addons.llm.models.MessageItem
-import com.barrymac.freeplane.addons.llm.prompts.MessageExpander // Remove - No longer used here
-import com.barrymac.freeplane.addons.llm.prompts.MessageFileHandler // Remove - No longer used here
-import com.barrymac.freeplane.addons.llm.utils.JsonUtils // Remove - No longer used here
-import com.barrymac.freeplane.addons.llm.utils.UiHelper // Keep for potential internal UI messages if needed
+
+// Remove - No longer used here
+
+// Remove - No longer used here
+
+// Remove - No longer used here
+
+// Keep for potential internal UI messages if needed
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
 import org.freeplane.core.ui.components.UITools // Keep for ui.currentFrame, setDialogLocationRelativeTo
-import org.freeplane.plugin.script.proxy.ControllerProxy // Remove - No longer used here
+
+// Remove - No longer used here
 import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Remove - No longer used here
 
 import javax.swing.*
 import java.awt.*
-import java.util.Hashtable
 import java.util.List // Keep explicit import for method signature and internal list copies
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JTextArea
-import javax.swing.JComboBox
-import javax.swing.JPasswordField
-import javax.swing.JFormattedTextField
-import javax.swing.JSlider
-import java.awt.GridBagLayout
-import java.awt.GridBagConstraints
-import java.awt.FlowLayout
-
 
 /**
  * Helper class for creating and managing UI dialogs

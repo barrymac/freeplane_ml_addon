@@ -1,4 +1,4 @@
-package com.barrymac.freeplane.addons.llm.utils
+package com.barrymac.freeplane.addons.llm.ui
 
 import org.freeplane.core.util.LogUtils
 import javax.swing.*
