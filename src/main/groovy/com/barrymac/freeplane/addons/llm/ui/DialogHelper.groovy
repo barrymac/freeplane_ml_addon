@@ -288,12 +288,14 @@ class DialogHelper {
         // Null check for parent frame should happen in the calling script
 
         Map resultMap = null // Initialize result map
+        def askLmDialogWindow // <<< DECLARED HERE
 
         try {
             def swingBuilder = new SwingBuilder()
             swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
                 // Rename 'dialog' to 'askLmDialogWindow'
-                def askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: uiTools.currentFrame, modal: true) { // Make modal
+                // --- Assign to the pre-declared variable (removed 'def') ---
+                askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: uiTools.currentFrame, modal: true) { // <<< ASSIGNED HERE
                     swingBuilder.panel(layout: new GridBagLayout()) {
                         def constraints = new GridBagConstraints()
                         constraints.fill = GridBagConstraints.BOTH
@@ -430,7 +432,7 @@ class DialogHelper {
                         }
                     }
                 }
-                // Pack, set minimum size, and location
+                // Pack, set minimum size, and location (now using the correctly scoped variable)
                 askLmDialogWindow.pack()
                 askLmDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
                 uiTools.setDialogLocationRelativeTo(askLmDialogWindow, uiTools.currentFrame)
