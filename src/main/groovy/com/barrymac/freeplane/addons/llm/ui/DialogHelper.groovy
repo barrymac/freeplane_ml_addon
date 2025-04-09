@@ -1,24 +1,24 @@
 package com.barrymac.freeplane.addons.llm.ui
 
 import com.barrymac.freeplane.addons.llm.ApiConfig
-import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
-import com.barrymac.freeplane.addons.llm.maps.NodeOperations
+import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException // Keep for potential internal UI errors if needed
+import com.barrymac.freeplane.addons.llm.maps.NodeOperations // Remove - No longer used here
 import com.barrymac.freeplane.addons.llm.models.MessageArea
 import com.barrymac.freeplane.addons.llm.models.MessageItem
-import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
-import com.barrymac.freeplane.addons.llm.prompts.MessageFileHandler
-import com.barrymac.freeplane.addons.llm.utils.JsonUtils
-import com.barrymac.freeplane.addons.llm.utils.UiHelper
+import com.barrymac.freeplane.addons.llm.prompts.MessageExpander // Remove - No longer used here
+import com.barrymac.freeplane.addons.llm.prompts.MessageFileHandler // Remove - No longer used here
+import com.barrymac.freeplane.addons.llm.utils.JsonUtils // Remove - No longer used here
+import com.barrymac.freeplane.addons.llm.utils.UiHelper // Keep for potential internal UI messages if needed
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
-import org.freeplane.core.ui.components.UITools // Still potentially useful, keeping import
-import org.freeplane.plugin.script.proxy.ControllerProxy // Still potentially useful, keeping import
-import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Still potentially useful, keeping import
+import org.freeplane.core.ui.components.UITools // Keep for ui.currentFrame, setDialogLocationRelativeTo
+import org.freeplane.plugin.script.proxy.ControllerProxy // Remove - No longer used here
+import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Remove - No longer used here
 
 import javax.swing.*
 import java.awt.*
 import java.util.Hashtable
-import java.util.List // Keep explicit import for showComparisonDialog
+import java.util.List // Keep explicit import for method signature and internal list copies
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JTextArea
 import javax.swing.JComboBox
@@ -271,45 +271,28 @@ class DialogHelper {
 
     /**
      * Shows the main dialog for interacting with the LLM via AskLm.
-     * Handles UI creation, event handling, API calls, and configuration saving.
+     * Handles UI creation and data collection, returning the result in a Map.
      */
-    // --- Updated Signature ---
-    static void showAskLmDialog(
-            Object ui,                     // Reverted to Object
-            Object config,                 // Reverted to Object
-            Object c,                      // Reverted to Object
+    // --- Updated Signature: Returns Map, fewer parameters ---
+    static Map showAskLmDialog(
+            Object ui,                     // Keep as Object for flexibility from script
             ApiConfig apiConfig,
-            List systemMessages,           // Reverted to List
-            List userMessages,             // Reverted to List
+            List systemMessages,           // Keep for display/modification
+            List userMessages,             // Keep for display/modification
             int initialSystemIndex,
-            int initialUserIndex,
-            String systemMessagesFilePath,
-            String userMessagesFilePath,
-            Closure make_api_call,
-            Closure tagWithModel
+            int initialUserIndex
+            // Removed: config, c, file paths, make_api_call, tagWithModel
     ) {
-        // --- Add Casts ---
         // Cast ui to UITools for checks and subsequent calls
         def uiTools = ui as UITools
-        // --- Add Null Check for Parent Frame ---
-        if (uiTools.currentFrame == null) {
-            LogUtils.severe("Cannot show askLm dialog: ui.currentFrame is null.")
-            // Use uiTools for error message
-            UiHelper.showErrorMessage(uiTools, "Cannot show dialog: Parent window not found.")
-            return // Exit the method
-        }
+        // Null check for parent frame should happen in the calling script
 
-        // Cast config to ConfigProperties where needed (e.g., setProperty)
-        def configProps = config as ConfigProperties
-
-        // Cast c to ControllerProxy where needed (e.g., c.selected)
-        def controller = c as ControllerProxy
+        Map resultMap = null // Initialize result map
 
         try {
             def swingBuilder = new SwingBuilder()
             swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
-                // --- Rename 'dialog' to 'askLmDialogWindow' ---
-                // Use uiTools here
+                // Rename 'dialog' to 'askLmDialogWindow'
                 def askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: uiTools.currentFrame, modal: true) { // Make modal
                     swingBuilder.panel(layout: new GridBagLayout()) {
                         def constraints = new GridBagConstraints()
@@ -319,7 +302,7 @@ class DialogHelper {
                         constraints.gridy = -1  // Will be incremented
 
                         // Create message sections using the helper method
-                        // Pass the original List objects
+                        // Pass the original List objects (they might be modified by the UI actions like duplicate/delete)
                         MessageArea systemMessageArea = createMessageSection(swingBuilder, systemMessages, "System Message", initialSystemIndex, constraints, 4)
                         MessageArea userMessageArea = createMessageSection(swingBuilder, userMessages, "User Message", initialUserIndex, constraints, 1)
 
@@ -375,139 +358,92 @@ class DialogHelper {
                         swingBuilder.panel(constraints: constraints, layout: new FlowLayout(FlowLayout.RIGHT)) {
                             // --- Prompt LLM Button ---
                             def askLmButton = swingBuilder.button(action: swingBuilder.action(name: 'Prompt LLM') { actionEvent ->
-                                try {
-                                    // 1. Get current values from GUI
-                                    def currentApiKey = String.valueOf(apiKeyField.password)
-                                    def currentSystemMessage = systemMessageArea.textArea.text
-                                    def currentUserMessageTemplate = userMessageArea.textArea.text
-                                    def currentModel = gptModelBox.selectedItem
-                                    def currentMaxTokens = responseLengthField.value
-                                    def currentTemperature = temperatureSlider.value / 100.0
-                                    def currentProvider = apiProviderBox.selectedItem
+                                try { // Add inner try-catch for safety during data collection
+                                    // Ensure latest text area content is reflected in the underlying list before copying
+                                    systemMessageArea.updateSelectedItemFromTextArea()
+                                    userMessageArea.updateSelectedItemFromTextArea()
 
-                                    // 2. Get selected node (using casted controller)
-                                    def node = controller.selected
-                                    if (node == null) {
-                                        // Use uiTools here
-                                        UiHelper.showInformationMessage(uiTools, "Please select a node first.")
-                                        return
-                                    }
-
-                                    // 3. Expand user message template
-                                    def expandedUserMessage = MessageExpander.expandTemplate(
-                                            currentUserMessageTemplate,
-                                            MessageExpander.createBinding(node, null, null, null, null)
-                                    )
-
-                                    // 4. Prepare API Payload Map
-                                    def messagesList = [
-                                            [role: 'system', content: currentSystemMessage],
-                                            [role: 'user', content: expandedUserMessage]
+                                    // Populate resultMap with current UI state and action
+                                    resultMap = [
+                                            action              : 'Prompt',
+                                            apiKey              : String.valueOf(apiKeyField.password),
+                                            systemMessage       : systemMessageArea.textArea.text, // Current text
+                                            userMessage         : userMessageArea.textArea.text,   // Current text (template)
+                                            model               : gptModelBox.selectedItem,
+                                            maxTokens           : responseLengthField.value,
+                                            temperature         : temperatureSlider.value / 100.0,
+                                            provider            : apiProviderBox.selectedItem,
+                                            systemMessageIndex  : systemMessageArea.comboBox.selectedIndex, // Current index
+                                            userMessageIndex    : userMessageArea.comboBox.selectedIndex,   // Current index
+                                            // Return copies of the lists as they might have been modified (duplicate/delete)
+                                            updatedSystemMessages: new ArrayList(systemMessages),
+                                            updatedUserMessages : new ArrayList(userMessages)
                                     ]
-                                    Map<String, Object> payload = [
-                                            'model'      : currentModel,
-                                            'messages'   : messagesList,
-                                            'temperature': currentTemperature,
-                                            'max_tokens' : currentMaxTokens,
-                                            'response_format': (currentProvider == 'openai' && currentModel.contains("gpt")) ? [type: "text"] : null
-                                    ].findAll { key, value -> value != null }
-
-                                    LogUtils.info("askLm Dialog: Sending payload: ${payload}")
-
-                                    // 5. Call API (using passed closure)
-                                    // Use uiTools here
-                                    def progressDialog = DialogHelper.createProgressDialog(uiTools, "LLM Request", "Sending prompt to ${currentModel}...")
-                                    progressDialog.visible = true
-                                    def rawApiResponse
-                                    try {
-                                        rawApiResponse = make_api_call(currentProvider, currentApiKey, payload)
-                                    } finally {
-                                        progressDialog.dispose() // Ensure dialog closes
-                                    }
-
-
-                                    if (rawApiResponse == null || rawApiResponse.isEmpty()) {
-                                        throw new LlmAddonException("Received empty or null response from API.")
-                                    }
-
-                                    // 6. Process Response
-                                    def responseContent = JsonUtils.extractLlmContent(rawApiResponse)
-                                    LogUtils.info("askLm Dialog: Received response content:\n${responseContent}")
-
-                                    // 7. Update Map (using NodeOperations and passed tagger)
-                                    NodeOperations.addAnalysisBranch(
-                                            node,                   // Parent node
-                                            null,                   // No analysis map
-                                            responseContent,        // The raw text content
-                                            currentModel,           // Model used
-                                            tagWithModel,           // Tagger function (passed closure)
-                                            "LLM Prompt Result"     // Optional type string
-                                    )
-
-                                    // Use uiTools here
-                                    UiHelper.showInformationMessage(uiTools, "Response added as a new branch.")
-                                    // Optionally close dialog after successful prompt
-                                    // SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
-
+                                    // Close the dialog
+                                    SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                                 } catch (Exception ex) {
-                                    LogUtils.severe("Error during 'Prompt LLM' action: ${ex.message}", ex)
-                                    // Use uiTools here
-                                    UiHelper.showErrorMessage(uiTools, "Prompt LLM Error: ${ex.message.split('\n').head()}")
+                                     LogUtils.severe("Error collecting data in Prompt action: ${ex.message}", ex)
+                                     resultMap = [action: 'Error', message: "Error collecting data: ${ex.message}"] // Indicate error
+                                     SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                                 }
                             })
-                            // Set default button - referencing renamed variable
+                            // Set default button
                             askLmDialogWindow.rootPane.defaultButton = askLmButton
 
                             // --- Save Changes Button ---
                             swingBuilder.button(action: swingBuilder.action(name: 'Save Changes') { actionEvent ->
-                                try {
-                                    // Ensure the current text area content is saved to the list before saving files/config
-                                    systemMessageArea.updateSelectedItemFromTextArea() // Use helper method
-                                    userMessageArea.updateSelectedItemFromTextArea()   // Use helper method
+                                 try { // Add inner try-catch
+                                    // Ensure latest text area content is reflected in the underlying list before copying
+                                    systemMessageArea.updateSelectedItemFromTextArea()
+                                    userMessageArea.updateSelectedItemFromTextArea()
 
-                                    // Save messages to files (using passed paths and original List objects)
-                                    MessageFileHandler.saveMessagesToFile(systemMessagesFilePath, systemMessages)
-                                    MessageFileHandler.saveMessagesToFile(userMessagesFilePath, userMessages)
-
-                                    // Save configuration properties (using casted configProps)
-                                    configProps.setProperty('openai.key', String.valueOf(apiKeyField.password))
-                                    configProps.setProperty('openai.gpt_model', gptModelBox.selectedItem)
-                                    configProps.setProperty('openai.max_response_length', responseLengthField.value)
-                                    configProps.setProperty('openai.temperature', temperatureSlider.value / 100.0)
-                                    configProps.setProperty('openai.system_message_index', systemMessageArea.comboBox.selectedIndex)
-                                    configProps.setProperty('openai.user_message_index', userMessageArea.comboBox.selectedIndex)
-                                    configProps.setProperty('openai.api_provider', apiProviderBox.selectedItem)
-
-                                    // Use uiTools here
-                                    UiHelper.showInformationMessage(uiTools, "Changes saved.") // Provide feedback
+                                    // Populate resultMap with relevant UI state and action
+                                    resultMap = [
+                                            action              : 'Save',
+                                            apiKey              : String.valueOf(apiKeyField.password),
+                                            model               : gptModelBox.selectedItem,
+                                            maxTokens           : responseLengthField.value,
+                                            temperature         : temperatureSlider.value / 100.0,
+                                            provider            : apiProviderBox.selectedItem,
+                                            systemMessageIndex  : systemMessageArea.comboBox.selectedIndex, // Current index
+                                            userMessageIndex    : userMessageArea.comboBox.selectedIndex,   // Current index
+                                            // Return copies of the lists as they might have been modified (duplicate/delete)
+                                            updatedSystemMessages: new ArrayList(systemMessages),
+                                            updatedUserMessages : new ArrayList(userMessages)
+                                    ]
+                                    // Close the dialog
+                                    SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                                 } catch (Exception ex) {
-                                    LogUtils.severe("Error during 'Save Changes' action: ${ex.message}", ex)
-                                    // Use uiTools here
-                                    UiHelper.showErrorMessage(uiTools, "Save Error: ${ex.message.split('\n').head()}")
+                                     LogUtils.severe("Error collecting data in Save action: ${ex.message}", ex)
+                                     resultMap = [action: 'Error', message: "Error collecting data: ${ex.message}"] // Indicate error
+                                     SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                                 }
                             })
 
                             // --- Close Button ---
                             swingBuilder.button(text: 'Close', actionPerformed: { actionEvent ->
-                                // Get the button source, find its window (the dialog), and dispose it
-                                // This remains okay as it finds the ancestor window dynamically
+                                // Populate resultMap with close action
+                                resultMap = [action: 'Close']
+                                // Close the dialog
                                 SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
                             })
                         }
                     }
                 }
-                // --- Update references to the renamed variable ---
+                // Pack, set minimum size, and location
                 askLmDialogWindow.pack()
-                // Adjust minimum size if needed
                 askLmDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
-                // Use uiTools here
                 uiTools.setDialogLocationRelativeTo(askLmDialogWindow, uiTools.currentFrame)
-                askLmDialogWindow.visible = true // Show the modal dialog
+                askLmDialogWindow.visible = true // Show the modal dialog (blocks until closed)
             }
         } catch (Exception e) {
             LogUtils.severe("Error showing askLm dialog: ${e.message}", e)
-            // Use uiTools here
-            UiHelper.showErrorMessage(uiTools, "Dialog Error: ${e.message.split('\n').head()}")
+            // Cannot use UiHelper here reliably if uiTools caused the error
+            // Return an error indicator map
+            return [action: 'Error', message: "Dialog creation failed: ${e.message.split('\n').head()}"]
         }
+
+        // Return the map populated by button actions (or error map)
+        return resultMap
     }
 }
