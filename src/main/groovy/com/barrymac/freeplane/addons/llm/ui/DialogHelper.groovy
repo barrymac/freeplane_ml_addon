@@ -277,8 +277,11 @@ class DialogHelper {
             LogUtils.info("Showing image selection dialog with ${imageUrls.size()} images")
             String selectedUrl = null
             
+            // Declare dialog variable outside the closure
+            def dialog
+            
             def swingBuilder = new SwingBuilder()
-            def dialog = swingBuilder.dialog(
+            dialog = swingBuilder.dialog(
                     title: 'Select Generated Image',
                     modal: true,
                     owner: ui.currentFrame,
