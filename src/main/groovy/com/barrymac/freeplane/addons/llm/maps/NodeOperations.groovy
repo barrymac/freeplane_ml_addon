@@ -187,7 +187,7 @@ class NodeOperations {
             
             // 3. Attach using Freeplane's Node API
             def uri = imageFile.toURI()
-            node.object = uri.toString()  // Use the core Node.setObject() method
+            node.setObject(uri.toString())  // Use the core Node.setObject() method
             
             LogUtils.info("Image attached: ${fileName}")
         } catch (Exception e) {
