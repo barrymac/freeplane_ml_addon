@@ -11,7 +11,7 @@ import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 // import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
-// import com.barrymac.freeplane.addons.llm.maps.NodeOperations // TODO: Uncomment when implemented
+import com.barrymac.freeplane.addons.llm.maps.NodeOperations
 // import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
 
 // === Script Entry Point ===
@@ -78,9 +78,6 @@ try {
     }
     LogUtils.info("Using prompt from node ${node.id}: '${prompt.take(100)}...'")
 
-    LogUtils.info(">>> Skipping image generation steps (feature not fully implemented yet).")
-    UiHelper.showInformationMessage(ui, "Image generation feature is under development.") // Optional user feedback
-    return // Stop script execution here for now
 
     // 3. Build Payload
     LogUtils.info("Building Novita payload...")
@@ -190,9 +187,9 @@ try {
             if (!['png', 'jpg', 'jpeg', 'gif'].contains(extension)) extension = 'png'
 
             LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
-            // TODO: Replace placeholder log with actual attachment call:
-            // NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
-            LogUtils.info("Placeholder: Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})") // Keep placeholder log for now
+            NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
+            LogUtils.info("Successfully attached image to node ${node.id}")
+            UiHelper.showInformationMessage(ui, "Image added to node!")
 
         } catch (IOException e) {
            LogUtils.severe("Failed to download or attach image: ${e.message}", e)
