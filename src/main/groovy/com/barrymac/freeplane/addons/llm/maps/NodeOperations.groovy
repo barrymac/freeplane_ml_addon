@@ -185,9 +185,9 @@ class NodeOperations {
             File imageFile = new File(mapFile.parentFile, fileName)
             imageFile.bytes = imageBytes
             
-            // 3. Attach to node using Freeplane's URL management
+            // 3. Attach to node using external object
             def uri = imageFile.toURI()
-            UrlManager.getController().loadURL(node, uri)
+            node.externalObject = uri.toString() // Direct assignment
             
             LogUtils.info("Image attached: ${fileName}")
         } catch (Exception e) {
