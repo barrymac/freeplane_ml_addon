@@ -3,6 +3,7 @@ package com.barrymac.freeplane.addons.llm.maps
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.core.util.LogUtils
 import org.freeplane.features.map.NodeModel
+import org.freeplane.features.url.UrlManager
 
 /**
  * Handles node-related operations with proper error handling and logging
@@ -181,11 +182,12 @@ class NodeOperations {
                 throw new LlmAddonException("Map must be saved before adding images")
             }
             
-            File imageFile = new File(mapFile.parent, fileName)
+            File imageFile = new File(mapFile.parentFile, fileName)
             imageFile.bytes = imageBytes
             
-            // 3. Attach to node
-            node.externalObject.uri = imageFile.toURI().toString()
+            // 3. Attach to node using Freeplane's URL management
+            def uri = imageFile.toURI()
+            UrlManager.getController().loadURL(node, uri)
             
             LogUtils.info("Image attached: ${fileName}")
         } catch (Exception e) {
