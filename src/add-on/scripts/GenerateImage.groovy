@@ -48,7 +48,7 @@ try {
 
     // 2. Get Selected Node & Prompt
     LogUtils.info("Getting selected node...")
-    NodeModel node = c.selected // Placeholder access
+    def node = c.selected?.delegate  // Get the actual NodeModel from the proxy
     if (node == null) {
         UiHelper.showInformationMessage(ui, "Please select a node first to use as the image prompt.")
         LogUtils.info("No node selected.")
