@@ -41,8 +41,7 @@ dependencies {
 sourceSets {
     main {
         groovy {
-            srcDirs 'src/main/groovy'
-//            , 'src/add-on/scripts'
+            srcDirs 'src/main/groovy' ,'src/add-on/scripts'
         }
         resources {
             srcDirs 'src/main/resources'
