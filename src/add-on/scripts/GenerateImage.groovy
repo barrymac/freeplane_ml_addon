@@ -201,7 +201,7 @@ try {
                 // Pass the Node proxy directly to the method
                 NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
                 
-                LogUtils.info("Image attached via NodeOperations: ${fileName}")
+                LogUtils.info("Image successfully attached to node")
             } catch (Exception e) {
                 LogUtils.severe("Failed to attach image: ${e.message}", e)
                 throw e // Re-throw to be caught by outer catch block
