@@ -13,10 +13,13 @@ class MessageLoader {
      * @return String containing the resource content
      */
     private static String getResourceContent(String path) {
-        def stream = MessageLoader.class.getResourceAsStream(path)
+        // Use Thread Context ClassLoader, more reliable in complex environments
+        // Remove leading '/' as getResourceAsStream on ClassLoader expects path relative to root
+        String resourcePath = path.startsWith("/") ? path.substring(1) : path
+        def stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)
         if (!stream) {
-            LogUtils.severe("Missing required resource: ${path}")
-            throw new Exception("Missing required resource: ${path}")
+            LogUtils.severe("Missing required resource: ${path} (tried path: ${resourcePath})")
+            throw new Exception("Missing required resource: ${path} (tried path: ${resourcePath})")
         }
         return stream.getText("UTF-8").trim()
     }
