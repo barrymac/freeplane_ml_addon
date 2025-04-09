@@ -1,4 +1,8 @@
 // Core Freeplane imports
+
+
+import com.barrymac.freeplane.addons.llm.ui.AskLmDialogueHelper
+import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import org.freeplane.core.util.LogUtils
 
 // Standard Java/Swing imports - No longer needed for main dialog UI elements here
@@ -19,7 +23,11 @@ import com.barrymac.freeplane.addons.llm.prompts.MessageLoader // Needed for loa
 // Model imports (MessageItem, MessageArea are handled by DialogHelper now)
 
 // UI Helper import
-import com.barrymac.freeplane.addons.llm.ui.DialogHelper // Import the refactored helper
+import com.barrymac.freeplane.addons.llm.ui.DialogHelper
+
+import static com.barrymac.freeplane.addons.llm.ui.AskLmDialogueHelper.showAskLmDialog
+
+// Import the refactored helper
 
 // --- Initialize Core Components ---
 LogUtils.info("AskLm script started.")
@@ -67,7 +75,7 @@ try {
 
     // --- Show the Dialog using DialogHelper ---
     // Pass only necessary parameters. DialogHelper returns a Map.
-    Map dialogResult = DialogHelper.showAskLmDialog(
+    Map dialogResult = showAskLmDialog(
             ui,                     // Pass Freeplane UI object (needed for owner/placement)
             apiConfig,              // Pass loaded API configuration (for initial values)
             systemMessages,         // Pass list (can be modified by dialog UI actions)

@@ -1,8 +1,6 @@
 package com.barrymac.freeplane.addons.llm.prompts
 
-
 import org.freeplane.core.util.LogUtils
-import org.freeplane.plugin.script.proxy.NodeProxy
 
 class PromptBuilder {
     static String buildSystemPrompt(

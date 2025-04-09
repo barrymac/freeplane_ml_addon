@@ -1,9 +1,9 @@
 package com.barrymac.freeplane.addons.llm.ui
 
 import org.freeplane.core.util.LogUtils
+
 import javax.swing.*
-import java.awt.Component
-import java.awt.Container
+import java.awt.*
 
 class UiHelper {
     static void safeEdt(Closure action) {

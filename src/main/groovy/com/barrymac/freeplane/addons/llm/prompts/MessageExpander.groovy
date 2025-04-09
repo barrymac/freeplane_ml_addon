@@ -2,7 +2,6 @@ package com.barrymac.freeplane.addons.llm.prompts
 
 import groovy.text.SimpleTemplateEngine
 import org.freeplane.core.util.LogUtils
-import org.freeplane.plugin.script.proxy.NodeProxy
 
 class MessageExpander {
     static Map createBinding(def node, def otherNode,

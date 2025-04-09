@@ -1,8 +1,6 @@
 package com.barrymac.freeplane.addons.llm.models
 
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JComboBox
-import javax.swing.JTextArea
+import javax.swing.*
 
 class MessageArea {
     JTextArea textArea

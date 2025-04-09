@@ -1,6 +1,7 @@
 // Freeplane & Core Java/Groovy
+
+import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import org.freeplane.core.util.LogUtils
-import org.freeplane.features.map.NodeModel
 
 import javax.swing.*  // Imports all Swing classes including JDialog and JOptionPane
 
@@ -11,7 +12,7 @@ import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 // import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
-import com.barrymac.freeplane.addons.llm.maps.NodeOperations
+
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 // import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
 
@@ -174,7 +175,7 @@ try {
     }
     
     // Show the image selection dialog
-    String selectedUrl = DialogHelper.showImageSelectionDialog(ui, imageUrls, downloader)
+    String selectedUrl = ImageDialogueHelper.showImageSelectionDialog(ui, imageUrls, downloader)
     
     if (!selectedUrl) {
         LogUtils.info("User cancelled image selection or selection failed")

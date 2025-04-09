@@ -1,7 +1,6 @@
 package com.barrymac.freeplane.addons.llm.maps
 
 import org.freeplane.core.util.LogUtils
-import org.freeplane.plugin.script.proxy.NodeProxy
 
 class NodeTagger {
     static void tagWithModel(def node, String modelName) {

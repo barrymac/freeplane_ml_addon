@@ -1,126 +1,31 @@
 package com.barrymac.freeplane.addons.llm.ui
 
-import com.barrymac.freeplane.addons.llm.ApiConfig
-
-// Keep for potential internal UI errors if needed
-
-// Remove - No longer used here
 import com.barrymac.freeplane.addons.llm.models.MessageArea
 import com.barrymac.freeplane.addons.llm.models.MessageItem
+import groovy.swing.SwingBuilder
 
 // Remove - No longer used here
 
-// Remove - No longer used here
-
-// Remove - No longer used here
+import org.freeplane.core.ui.components.UITools
+import org.freeplane.core.util.LogUtils
 
 // Keep for potential internal UI messages if needed
-import groovy.swing.SwingBuilder
-import org.freeplane.core.util.LogUtils
-import org.freeplane.core.ui.components.UITools // Keep for ui.currentFrame, setDialogLocationRelativeTo
 
-// Remove - No longer used here
-import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties // Remove - No longer used here
+import org.freeplane.plugin.script.FreeplaneScriptBaseClass.ConfigProperties
 
 import javax.swing.*
 import java.awt.*
-import java.util.List // Keep explicit import for method signature and internal list copies
+
+// Keep for ui.currentFrame, setDialogLocationRelativeTo
+
+import java.util.List
+
+// Keep explicit import for method signature and internal list copies
 
 /**
  * Helper class for creating and managing UI dialogs
  */
 class DialogHelper {
-    /**
-     * Shows a dialog for selecting or entering a comparison type
-     *
-     * @param ui The Freeplane UI object
-     * @param config The Freeplane config object
-     * @param contextNode The node model for context
-     * @param message The message to display
-     * @param defaultTypes Default comparison type options
-     * @param configKey The config key to store custom types
-     * @return The selected comparison type or null if cancelled
-     */
-    static String showComparisonDialog(UITools ui, ConfigProperties config, contextNode, String message,
-                                       java.util.List<String> defaultTypes,
-                                       String configKey = "promptLlmAddOn.comparisonTypes") {
-        try {
-            // Load previously saved custom types
-            def savedTypesString = config.getProperty(configKey, '')
-            def customTypes = savedTypesString ? savedTypesString.split('\\|').toList() : []
-            customTypes = customTypes.findAll { !it.trim().isEmpty() } // Remove empty entries
-
-            // Combine defaults and custom, ensuring defaults come first and no duplicates
-            def allTypes = (defaultTypes + customTypes).unique()
-            LogUtils.info("Showing comparison dialog with ${allTypes.size()} types (${defaultTypes.size()} defaults, ${customTypes.size()} custom)")
-
-            def selectedType = null // Variable to store the result
-            def swing = new SwingBuilder()
-
-            // Build the dialog
-            def dialog = swing.dialog(
-                    title: "Define Comparison Type",
-                    modal: true, // Make it modal
-                    owner: ui.currentFrame, // Parent frame
-                    pack: true, // Size based on content
-                    locationRelativeTo: ui.currentFrame // Center on frame
-            ) {
-                panel(layout: new BorderLayout(5, 5), border: BorderFactory.createEmptyBorder(10, 10, 10, 10)) {
-                    // Message Label
-                    label(text: "<html>${message.replaceAll('\n', '<br>')}</html>", constraints: BorderLayout.NORTH)
-                    // Use HTML for multi-line
-
-                    // Editable ComboBox
-                    comboBox(id: 'typeCombo',
-                            items: allTypes,
-                            editable: true,
-                            selectedItem: allTypes.isEmpty() ? "" : allTypes[0], // Select first item or empty
-                            constraints: BorderLayout.CENTER)
-
-                    // Button Panel
-                    panel(layout: new FlowLayout(FlowLayout.RIGHT), constraints: BorderLayout.SOUTH) {
-                        button(text: 'OK', defaultButton: true, actionPerformed: {
-                            // Get selected/entered item
-                            selectedType = typeCombo.editor.item?.toString()?.trim() ?: ""
-                            if (!selectedType.isEmpty()) {
-                                // Check if it's a new custom type
-                                if (!defaultTypes.contains(selectedType) && !customTypes.contains(selectedType)) {
-                                    customTypes.add(selectedType)
-                                    // Save updated custom types list
-                                    config.setProperty(configKey, customTypes.join('|'))
-                                    LogUtils.info("Added new comparison type: ${selectedType}")
-                                }
-                            }
-                            // Get the button source, find its window (the dialog), and dispose it
-                            SwingUtilities.getWindowAncestor(it.source).dispose()
-                        })
-                        button(text: 'Cancel', actionPerformed: {
-                            selectedType = null // Indicate cancellation
-                            // Get the button source, find its window (the dialog), and dispose it
-                            SwingUtilities.getWindowAncestor(it.source).dispose()
-                        })
-                    }
-                }
-            }
-
-            // Show the dialog (it's modal, so execution waits here)
-            dialog.visible = true
-
-            if (selectedType) {
-                LogUtils.info("User selected comparison type: ${selectedType}")
-            } else {
-                LogUtils.info("User cancelled comparison type selection")
-            }
-
-            // Return the selected type (or null if cancelled)
-            return selectedType
-        } catch (Exception e) {
-            LogUtils.severe("Error showing comparison dialog: ${e.message}")
-            ui.errorMessage("Error showing dialog: ${e.message}")
-            return null
-        }
-    }
-
     /**
      * Creates a progress dialog for long-running operations
      *
@@ -169,7 +74,7 @@ class DialogHelper {
     /**
      * Helper method to create a message section (ComboBox + TextArea + Buttons)
      */
-    private static MessageArea createMessageSection(def swingBuilder, def messages, def title, int initialIndex, def constraints, def weighty) {
+    static MessageArea createMessageSection(def swingBuilder, def messages, def title, int initialIndex, def constraints, def weighty) {
         def comboBoxModel = new DefaultComboBoxModel()
         messages.each { comboBoxModel.addElement(new MessageItem(it)) }
         def messageComboBox, messageText
@@ -263,343 +168,98 @@ class DialogHelper {
         }
         return new MessageArea(textArea: messageText, comboBox: messageComboBox)
     }
-    
+
+
     /**
-     * Shows a dialog for selecting one image from a list of image URLs
+     * Shows a dialog for selecting or entering a comparison type
      *
      * @param ui The Freeplane UI object
-     * @param imageUrls List of image URLs to display
-     * @param imageLoader Closure that loads image bytes from a URL
-     * @return The selected image URL or null if cancelled
+     * @param config The Freeplane config object
+     * @param contextNode The node model for context
+     * @param message The message to display
+     * @param defaultTypes Default comparison type options
+     * @param configKey The config key to store custom types
+     * @return The selected comparison type or null if cancelled
      */
-    static String showImageSelectionDialog(UITools ui, List<String> imageUrls, Closure<byte[]> imageLoader) {
+    static String showComparisonDialog(UITools ui, ConfigProperties config, contextNode, String message,
+                                       List<String> defaultTypes,
+                                       String configKey = "promptLlmAddOn.comparisonTypes") {
         try {
-            LogUtils.info("Showing image selection dialog with ${imageUrls.size()} images")
-            String selectedUrl = null
-            
-            // Declare dialog variable outside the closure
-            def dialog
-            
-            def swingBuilder = new SwingBuilder()
-            dialog = swingBuilder.dialog(
-                    title: 'Select Generated Image',
-                    modal: true,
-                    owner: ui.currentFrame,
-                    defaultCloseOperation: WindowConstants.DISPOSE_ON_CLOSE
+            // Load previously saved custom types
+            def savedTypesString = config.getProperty(configKey, '')
+            def customTypes = savedTypesString ? savedTypesString.split('\\|').toList() : []
+            customTypes = customTypes.findAll { !it.trim().isEmpty() } // Remove empty entries
+
+            // Combine defaults and custom, ensuring defaults come first and no duplicates
+            def allTypes = (defaultTypes + customTypes).unique()
+            LogUtils.info("Showing comparison dialog with ${allTypes.size()} types (${defaultTypes.size()} defaults, ${customTypes.size()} custom)")
+
+            def selectedType = null // Variable to store the result
+            def swing = new SwingBuilder()
+
+            // Build the dialog
+            def dialog = swing.dialog(
+                    title: "Define Comparison Type",
+                    modal: true, // Make it modal
+                    owner: ui.currentFrame, // Parent frame
+                    pack: true, // Size based on content
+                    locationRelativeTo: ui.currentFrame // Center on frame
             ) {
-                borderLayout()
-                
-                panel(constraints: BorderLayout.NORTH) {
-                    label(text: '<html><b>Click on an image to select it</b></html>', 
-                          horizontalAlignment: JLabel.CENTER,
-                          border: BorderFactory.createEmptyBorder(10, 10, 10, 10))
-                }
-                
-                panel(constraints: BorderLayout.CENTER, layout: new GridLayout(2, 2, 10, 10), 
-                      border: BorderFactory.createEmptyBorder(10, 10, 10, 10)) {
-                    
-                    // Add image panels
-                    imageUrls.each { url ->
-                        def imagePanel = panel(layout: new BorderLayout(), 
-                                              border: BorderFactory.createEmptyBorder(5, 5, 5, 5)) {
-                            
-                            def imageLabel = label(text: "Loading...", 
-                                                  horizontalAlignment: JLabel.CENTER,
-                                                  verticalAlignment: JLabel.CENTER)
-                            
-                            // Create a loading panel with spinner
-                            panel(constraints: BorderLayout.SOUTH) {
-                                label(text: "Loading image...", horizontalAlignment: JLabel.CENTER)
+                panel(layout: new BorderLayout(5, 5), border: BorderFactory.createEmptyBorder(10, 10, 10, 10)) {
+                    // Message Label
+                    label(text: "<html>${message.replaceAll('\n', '<br>')}</html>", constraints: BorderLayout.NORTH)
+                    // Use HTML for multi-line
+
+                    // Editable ComboBox
+                    comboBox(id: 'typeCombo',
+                            items: allTypes,
+                            editable: true,
+                            selectedItem: allTypes.isEmpty() ? "" : allTypes[0], // Select first item or empty
+                            constraints: BorderLayout.CENTER)
+
+                    // Button Panel
+                    panel(layout: new FlowLayout(FlowLayout.RIGHT), constraints: BorderLayout.SOUTH) {
+                        button(text: 'OK', defaultButton: true, actionPerformed: {
+                            // Get selected/entered item
+                            selectedType = typeCombo.editor.item?.toString()?.trim() ?: ""
+                            if (!selectedType.isEmpty()) {
+                                // Check if it's a new custom type
+                                if (!defaultTypes.contains(selectedType) && !customTypes.contains(selectedType)) {
+                                    customTypes.add(selectedType)
+                                    // Save updated custom types list
+                                    config.setProperty(configKey, customTypes.join('|'))
+                                    LogUtils.info("Added new comparison type: ${selectedType}")
+                                }
                             }
-                        }
-                        
-                        // Add mouse listeners for selection and hover effects
-                        imagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
-                            void mouseClicked(java.awt.event.MouseEvent e) {
-                                selectedUrl = url
-                                dialog.dispose()
-                            }
-                            
-                            void mouseEntered(java.awt.event.MouseEvent e) {
-                                imagePanel.border = BorderFactory.createCompoundBorder(
-                                    BorderFactory.createLineBorder(Color.BLUE, 2),
-                                    BorderFactory.createEmptyBorder(3, 3, 3, 3)
-                                )
-                            }
-                            
-                            void mouseExited(java.awt.event.MouseEvent e) {
-                                imagePanel.border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-                            }
+                            // Get the button source, find its window (the dialog), and dispose it
+                            SwingUtilities.getWindowAncestor(it.source).dispose()
                         })
-                        
-                        // Load image in background thread
-                        new Thread({
-                            try {
-                                // Get image bytes using the provided loader
-                                byte[] imageBytes = imageLoader(url)
-                                if (imageBytes) {
-                                    // Create and scale image
-                                    def originalIcon = new ImageIcon(imageBytes)
-                                    def originalImage = originalIcon.image
-                                    
-                                    // Scale to reasonable preview size (max 256x256)
-                                    int maxDim = 256
-                                    int width = originalImage.width
-                                    int height = originalImage.height
-                                    double scale = 1.0
-                                    
-                                    if (width > maxDim || height > maxDim) {
-                                        scale = Math.min(maxDim / width, maxDim / height)
-                                        width = (int)(width * scale)
-                                        height = (int)(height * scale)
-                                    }
-                                    
-                                    def scaledImage = originalImage.getScaledInstance(
-                                        width, height, java.awt.Image.SCALE_SMOOTH)
-                                    
-                                    // Update UI on EDT
-                                    SwingUtilities.invokeLater {
-                                        // Replace loading text with image
-                                        def components = imagePanel.components
-                                        for (component in components) {
-                                            if (component instanceof JLabel) {
-                                                component.icon = new ImageIcon(scaledImage)
-                                                component.text = null
-                                            } else if (component instanceof JPanel) {
-                                                imagePanel.remove(component)
-                                            }
-                                        }
-                                        imagePanel.revalidate()
-                                        imagePanel.repaint()
-                                    }
-                                }
-                            } catch (Exception e) {
-                                LogUtils.severe("Failed to load image: ${e.message}", e)
-                                // Update UI on EDT to show error
-                                SwingUtilities.invokeLater {
-                                    def components = imagePanel.components
-                                    for (component in components) {
-                                        if (component instanceof JLabel) {
-                                            component.icon = null
-                                            component.text = "Failed to load image"
-                                            component.foreground = Color.RED
-                                        } else if (component instanceof JPanel) {
-                                            imagePanel.remove(component)
-                                        }
-                                    }
-                                    imagePanel.revalidate()
-                                    imagePanel.repaint()
-                                }
-                            }
-                        }).start()
+                        button(text: 'Cancel', actionPerformed: {
+                            selectedType = null // Indicate cancellation
+                            // Get the button source, find its window (the dialog), and dispose it
+                            SwingUtilities.getWindowAncestor(it.source).dispose()
+                        })
                     }
                 }
-                
-                panel(constraints: BorderLayout.SOUTH) {
-                    button(text: 'Cancel', actionPerformed: { dialog.dispose() })
-                }
             }
-            
-            // Set size and position
-            dialog.pack()
-            dialog.minimumSize = new Dimension(600, 600)
-            ui.setDialogLocationRelativeTo(dialog, ui.currentFrame)
+
+            // Show the dialog (it's modal, so execution waits here)
             dialog.visible = true
-            
-            return selectedUrl
+
+            if (selectedType) {
+                LogUtils.info("User selected comparison type: ${selectedType}")
+            } else {
+                LogUtils.info("User cancelled comparison type selection")
+            }
+
+            // Return the selected type (or null if cancelled)
+            return selectedType
         } catch (Exception e) {
-            LogUtils.severe("Error showing image selection dialog: ${e.message}", e)
+            LogUtils.severe("Error showing comparison dialog: ${e.message}")
+            ui.errorMessage("Error showing dialog: ${e.message}")
             return null
         }
     }
 
 
-    /**
-     * Shows the main dialog for interacting with the LLM via AskLm.
-     * Handles UI creation and data collection, returning the result in a Map.
-     */
-    // --- Updated Signature: Returns Map, fewer parameters ---
-    static Map showAskLmDialog(
-            Object ui,                     // Keep as Object for flexibility from script
-            ApiConfig apiConfig,
-            List systemMessages,           // Keep for display/modification
-            List userMessages,             // Keep for display/modification
-            int initialSystemIndex,
-            int initialUserIndex
-            // Removed: config, c, file paths, make_api_call, tagWithModel
-    ) {
-        // Cast ui to UITools for checks and subsequent calls
-        def uiTools = ui as UITools
-        // Null check for parent frame should happen in the calling script
-
-        Map resultMap = null // Initialize result map
-        def askLmDialogWindow // <<< DECLARED HERE
-        def askLmButton       // <<< DECLARED HERE
-
-        try {
-            def swingBuilder = new SwingBuilder()
-            swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
-                // Rename 'dialog' to 'askLmDialogWindow'
-                // --- Assign to the pre-declared variable (removed 'def') ---
-                askLmDialogWindow = swingBuilder.dialog(title: 'Chat GPT Communicator', owner: uiTools.currentFrame, modal: true) { // <<< ASSIGNED HERE
-                    swingBuilder.panel(layout: new GridBagLayout()) {
-                        def constraints = new GridBagConstraints()
-                        constraints.fill = GridBagConstraints.BOTH
-                        constraints.weightx = 1.0
-                        constraints.gridx = 0
-                        constraints.gridy = -1  // Will be incremented
-
-                        // Create message sections using the helper method
-                        // Pass the original List objects (they might be modified by the UI actions like duplicate/delete)
-                        MessageArea systemMessageArea = createMessageSection(swingBuilder, systemMessages, "System Message", initialSystemIndex, constraints, 4)
-                        MessageArea userMessageArea = createMessageSection(swingBuilder, userMessages, "User Message", initialUserIndex, constraints, 1)
-
-                        constraints.gridy++
-                        JPasswordField apiKeyField
-                        JFormattedTextField responseLengthField
-                        JComboBox gptModelBox
-                        JSlider temperatureSlider
-                        JComboBox apiProviderBox
-
-                        swingBuilder.panel(constraints: constraints, layout: new GridBagLayout()) {
-                            def cPanel = new GridBagConstraints()
-                            cPanel.fill = GridBagConstraints.HORIZONTAL // Use HORIZONTAL fill for controls
-                            cPanel.weightx = 1.0
-                            cPanel.insets = new Insets(2, 2, 2, 2) // Add some padding
-                            cPanel.gridy = 0
-
-                            cPanel.gridx = 0
-                            swingBuilder.panel(constraints: cPanel, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('API Key')) {
-                                apiKeyField = swingBuilder.passwordField(columns: 10, text: apiConfig.apiKey)
-                            }
-                            cPanel.gridx++
-                            swingBuilder.panel(constraints: cPanel, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Max Tokens')) {
-                                responseLengthField = swingBuilder.formattedTextField(columns: 5, value: apiConfig.maxTokens)
-                            }
-                            cPanel.gridx++
-                            swingBuilder.panel(constraints: cPanel, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Model')) {
-                                gptModelBox = swingBuilder.comboBox(
-                                        items: apiConfig.availableModels,
-                                        selectedItem: apiConfig.model,
-                                        prototypeDisplayValue: apiConfig.availableModels.max { it.length() } ?: "DefaultModelName" // Provide prototype
-                                )
-                            }
-                            cPanel.gridx++
-                            swingBuilder.panel(constraints: cPanel, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Provider')) {
-                                apiProviderBox = swingBuilder.comboBox(items: ['openai', 'openrouter'], selectedItem: apiConfig.provider)
-                            }
-                            cPanel.gridx++
-                            cPanel.gridwidth = 2 // Make slider span 2 columns if needed
-                            swingBuilder.panel(constraints: cPanel, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Temperature')) {
-                                temperatureSlider = swingBuilder.slider(minimum: 0, maximum: 100, minorTickSpacing: 10, majorTickSpacing: 50, snapToTicks: false, // Allow finer control
-                                        paintTicks: true, paintLabels: true, value: (int) (apiConfig.temperature * 100.0 + 0.5))
-                                // Add labels for 0.0 and 1.0
-                                def labels = new Hashtable()
-                                labels.put(0, new JLabel("0.0"))
-                                labels.put(100, new JLabel("1.0"))
-                                temperatureSlider.setLabelTable(labels)
-                            }
-                        }
-                        constraints.gridy++
-                        constraints.fill = GridBagConstraints.NONE // Don't stretch buttons
-                        constraints.anchor = GridBagConstraints.EAST // Align buttons to the right
-                        swingBuilder.panel(constraints: constraints, layout: new FlowLayout(FlowLayout.RIGHT)) {
-                            // --- Prompt LLM Button ---
-                            // Assign to outer variable (removed 'def')
-                            askLmButton = swingBuilder.button(action: swingBuilder.action(name: 'Prompt LLM') { actionEvent -> // <<< ASSIGN HERE
-                                try { // Add inner try-catch for safety during data collection
-                                    // Ensure latest text area content is reflected in the underlying list before copying
-                                    systemMessageArea.updateSelectedItemFromTextArea()
-                                    userMessageArea.updateSelectedItemFromTextArea()
-
-                                    // Populate resultMap with current UI state and action
-                                    resultMap = [
-                                            action              : 'Prompt',
-                                            apiKey              : String.valueOf(apiKeyField.password),
-                                            systemMessage       : systemMessageArea.textArea.text, // Current text
-                                            userMessage         : userMessageArea.textArea.text,   // Current text (template)
-                                            model               : gptModelBox.selectedItem,
-                                            maxTokens           : responseLengthField.value,
-                                            temperature         : temperatureSlider.value / 100.0,
-                                            provider            : apiProviderBox.selectedItem,
-                                            systemMessageIndex  : systemMessageArea.comboBox.selectedIndex, // Current index
-                                            userMessageIndex    : userMessageArea.comboBox.selectedIndex,   // Current index
-                                            // Return copies of the lists as they might have been modified (duplicate/delete)
-                                            updatedSystemMessages: new ArrayList(systemMessages),
-                                            updatedUserMessages : new ArrayList(userMessages)
-                                    ]
-                                    // Close the dialog
-                                    SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
-                                } catch (Exception ex) {
-                                     LogUtils.severe("Error collecting data in Prompt action: ${ex.message}", ex)
-                                     resultMap = [action: 'Error', message: "Error collecting data: ${ex.message}"] // Indicate error
-                                     SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
-                                }
-                            })
-                            // --- REMOVED default button assignment from here ---
-
-                            // --- Save Changes Button ---
-                            swingBuilder.button(action: swingBuilder.action(name: 'Save Changes') { actionEvent ->
-                                 try { // Add inner try-catch
-                                    // Ensure latest text area content is reflected in the underlying list before copying
-                                    systemMessageArea.updateSelectedItemFromTextArea()
-                                    userMessageArea.updateSelectedItemFromTextArea()
-
-                                    // Populate resultMap with relevant UI state and action
-                                    resultMap = [
-                                            action              : 'Save',
-                                            apiKey              : String.valueOf(apiKeyField.password),
-                                            model               : gptModelBox.selectedItem,
-                                            maxTokens           : responseLengthField.value,
-                                            temperature         : temperatureSlider.value / 100.0,
-                                            provider            : apiProviderBox.selectedItem,
-                                            systemMessageIndex  : systemMessageArea.comboBox.selectedIndex, // Current index
-                                            userMessageIndex    : userMessageArea.comboBox.selectedIndex,   // Current index
-                                            // Return copies of the lists as they might have been modified (duplicate/delete)
-                                            updatedSystemMessages: new ArrayList(systemMessages),
-                                            updatedUserMessages : new ArrayList(userMessages)
-                                    ]
-                                    // Close the dialog
-                                    SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
-                                } catch (Exception ex) {
-                                     LogUtils.severe("Error collecting data in Save action: ${ex.message}", ex)
-                                     resultMap = [action: 'Error', message: "Error collecting data: ${ex.message}"] // Indicate error
-                                     SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
-                                }
-                            })
-
-                            // --- Close Button ---
-                            swingBuilder.button(text: 'Close', actionPerformed: { actionEvent ->
-                                // Populate resultMap with close action
-                                resultMap = [action: 'Close']
-                                // Close the dialog
-                                SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
-                            })
-                        }
-                    }
-                } // End dialog definition closure
-
-                // --- Set the default button AFTER the dialog is created ---
-                if (askLmDialogWindow != null && askLmButton != null) { // Add null checks for safety
-                    askLmDialogWindow.rootPane.defaultButton = askLmButton // <<< SET DEFAULT BUTTON HERE
-                } else {
-                    LogUtils.warn("Could not set default button: dialog or button was null.")
-                }
-
-                // Pack, set minimum size, and location (now using the correctly scoped variable)
-                askLmDialogWindow.pack()
-                askLmDialogWindow.minimumSize = new Dimension(600, 500) // Adjust as necessary
-                uiTools.setDialogLocationRelativeTo(askLmDialogWindow, uiTools.currentFrame)
-                askLmDialogWindow.visible = true // Show the modal dialog (blocks until closed)
-            } // End edt block
-        } catch (Exception e) {
-            LogUtils.severe("Error showing askLm dialog: ${e.message}", e)
-            // Cannot use UiHelper here reliably if uiTools caused the error
-            // Return an error indicator map
-            return [action: 'Error', message: "Dialog creation failed: ${e.message.split('\n').head()}"]
-        }
-
-        // Return the map populated by button actions (or error map)
-        return resultMap
-    }
 }

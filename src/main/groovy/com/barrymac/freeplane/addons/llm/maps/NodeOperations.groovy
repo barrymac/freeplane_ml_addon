@@ -2,9 +2,6 @@ package com.barrymac.freeplane.addons.llm.maps
 
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.core.util.LogUtils
-import org.freeplane.features.map.NodeModel
-import org.freeplane.features.url.UrlManager
-import org.freeplane.features.link.mindmapmode.MLinkController
 
 /**
  * Handles node-related operations with proper error handling and logging
@@ -159,5 +156,5 @@ class NodeOperations {
             return "Analysis formatting error: ${e.message}"
         }
     }
-    
+
 }

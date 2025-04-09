@@ -1,7 +1,6 @@
 package com.barrymac.freeplane.addons.llm.maps
 
 import org.freeplane.core.util.LogUtils
-import org.freeplane.plugin.script.proxy.NodeProxy
 
 class MapUpdater {
     static void createComparisonStructure(
