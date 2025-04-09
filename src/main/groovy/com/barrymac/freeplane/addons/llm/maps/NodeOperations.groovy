@@ -2,6 +2,7 @@ package com.barrymac.freeplane.addons.llm.maps
 
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.core.util.LogUtils
+import org.freeplane.features.map.NodeModel
 
 /**
  * Handles node-related operations with proper error handling and logging
@@ -154,6 +155,43 @@ class NodeOperations {
         } catch (Exception e) {
             LogUtils.warn("Analysis formatting failed: ${e.message}")
             return "Analysis formatting error: ${e.message}"
+        }
+    }
+    
+    /**
+     * Attaches image bytes to a node
+     * @param node The target node
+     * @param imageBytes Byte array of the image
+     * @param baseName Base filename (without extension)
+     * @param extension File extension (png/jpg/etc)
+     */
+    static void attachImageToNode(def node, byte[] imageBytes, 
+                                String baseName, String extension) {
+        try {
+            LogUtils.info("Attaching image to node: ${node.text}")
+            
+            // 1. Create unique filename
+            String safeName = baseName.replaceAll(/[^\w\-]/, '_')
+            String timestamp = new Date().format('yyyyMMddHHmmss')
+            String fileName = "${safeName}_${timestamp}.${extension}"
+            
+            // 2. Save image to map's directory
+            def mapFile = node.map.file
+            if (!mapFile) {
+                throw new LlmAddonException("Map must be saved before adding images")
+            }
+            
+            File imageFile = new File(mapFile.parent, fileName)
+            imageFile.bytes = imageBytes
+            
+            // 3. Attach to node
+            node.externalObject.uri = imageFile.toURI().toString()
+            
+            LogUtils.info("Image attached: ${fileName}")
+        } catch (Exception e) {
+            String errorMsg = "Failed to attach image to node"
+            LogUtils.severe("${errorMsg}: ${e.message}")
+            throw new LlmAddonException(errorMsg, e)
         }
     }
 }
