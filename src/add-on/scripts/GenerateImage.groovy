@@ -29,7 +29,7 @@ try {
             c.selected?.delegate, // Parent component
             "Please enter your Novita.ai API key:", // Message
             "API Key Required", // Title 
-            JOptionPane.QUESTION_MESSAGE
+            3 // QUESTION_MESSAGE = 3, WARNING_MESSAGE = 2, PLAIN_MESSAGE = 1
         )
         
         if (!novitaApiKey?.trim()) {
