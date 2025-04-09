@@ -200,7 +200,6 @@ try {
             try {
                 // Use the dedicated ImageAttachmentHandler to attach the image
                 // Import needed at the top of the file
-                import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
                 ImageAttachmentHandler.attachImageToNode(node, selectedImageBytes, baseName, extension)
                 
                 LogUtils.info("Image successfully attached to node")
