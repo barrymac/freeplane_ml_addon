@@ -191,9 +191,8 @@ try {
             LogUtils.info("Downloaded ${selectedImageBytes.length} bytes for selected image (placeholder).")
 
             LogUtils.info("Determining filename and extension...")
-            String baseName = node.text.replaceAll("[^a-zA-Z0-9_\\-]", "_").take(30) ?: "image"
-            String extension = selectedUrl.substring(selectedUrl.lastIndexOf('.') + 1).toLowerCase() ?: "png"
-            if (!['png', 'jpg', 'jpeg', 'gif'].contains(extension)) extension = 'png'
+            String baseName = ImageAttachmentHandler.sanitizeBaseName(node.text)
+            String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
 
             LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
             

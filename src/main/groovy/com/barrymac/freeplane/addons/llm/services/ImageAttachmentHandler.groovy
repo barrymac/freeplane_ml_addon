@@ -27,6 +27,27 @@ class ImageAttachmentHandler {
         }
     }
     
+    /**
+     * Sanitizes a base name for use in filenames by removing invalid characters
+     * @param input The original string to sanitize
+     * @return A sanitized string suitable for filenames
+     */
+    static String sanitizeBaseName(String input) {
+        if (!input?.trim()) return "image"
+        return input.replaceAll(/[^\w\-]/, '_').take(30)
+    }
+    
+    /**
+     * Extracts and validates file extension from a URL or filename
+     * @param url The URL or filename to extract extension from
+     * @return A valid image extension (png, jpg, jpeg, gif) or "png" as default
+     */
+    static String getFileExtension(String url) {
+        if (!url?.trim()) return "png"
+        def ext = url.substring(url.lastIndexOf('.') + 1).toLowerCase()
+        return ['png', 'jpg', 'jpeg', 'gif'].contains(ext) ? ext : 'png'
+    }
+    
     private static String generateFileName(String baseName, String extension) {
         String safeName = baseName.replaceAll(/[^\w\-]/, '_').take(30)
         String timestamp = new Date().format('yyyyMMddHHmmss')
