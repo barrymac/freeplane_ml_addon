@@ -20,29 +20,45 @@ LogUtils.info("GenerateImage script started.")
 try {
     // 1. Load Configuration
     LogUtils.info("Loading configuration...")
-    // Load base config (though not strictly needed for Novita key yet)
-    // ApiConfig baseApiConfig = ConfigManager.loadBaseConfig(config)
+    
+    // Check for API key FIRST before any other operations
     def novitaApiKey = config.getProperty('novita.key', '')
+    
+    // Handle missing key with dialog that persists the value
     if (!novitaApiKey) {
-        // Show input dialog instead of error message
+        LogUtils.warn("Novita.ai API key missing - prompting user")
+        
+        // Use main Freeplane frame as parent instead of node
         novitaApiKey = ui.showInputDialog(
-            c.selected?.delegate, // Parent component
-            "Please enter your Novita.ai API key:", // Message
-            "API Key Required", // Title 
-            3 // QUESTION_MESSAGE = 3, WARNING_MESSAGE = 2, PLAIN_MESSAGE = 1
+            ui.currentFrame, // More reliable parent component
+            """<html>Novita.ai API key required for image generation.<br>
+            Get your key at <a href='https://novita.ai/'>novita.ai</a></html>""",
+            "API Key Required",
+            3 // QUESTION_MESSAGE
         )
         
+        // Validate input
         if (!novitaApiKey?.trim()) {
-            LogUtils.warn("User cancelled API key input")
-            UiHelper.showInformationMessage(ui, "API key is required for image generation")
+            LogUtils.info("User cancelled API key input")
+            UiHelper.showInformationMessage(ui, "Image generation requires a valid API key")
             return
         }
         
-        // Save the key to preferences
-        config.setProperty('novita.key', novitaApiKey)
-        LogUtils.info("Novita API key saved to preferences")
+        // Persist the key properly
+        try {
+            config.setProperty('novita.key', novitaApiKey.trim())
+            LogUtils.info("Novita API key saved to preferences")
+            // Immediately update local variable with saved value
+            novitaApiKey = config.getProperty('novita.key', '') 
+        } catch (Exception e) {
+            LogUtils.severe("Failed to save API key: ${e.message}")
+            UiHelper.showErrorMessage(ui, "Failed to save API key: ${e.message}")
+            return
+        }
     }
-    LogUtils.info("Novita API Key loaded.")
+    
+    // Then proceed with node selection check
+    LogUtils.info("Novita API Key verified")
     // Create a simple map for now, later use ApiConfig if needed
     def apiConfig = [novitaApiKey: novitaApiKey]
 
