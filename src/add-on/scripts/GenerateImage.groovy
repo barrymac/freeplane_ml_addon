@@ -131,10 +131,10 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-        "/placeholder1.png",
-        "/placeholder2.png",
-        "/placeholder3.png",
-        "/placeholder4.png"
+        "/images/placeholder1.png",
+        "/images/placeholder2.png",
+        "/images/placeholder3.png",
+        "/images/placeholder4.png"
     ]
     if (imageUrls.isEmpty()) {
         UiHelper.showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
