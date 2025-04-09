@@ -94,17 +94,17 @@ try {
     LogUtils.info("Creating Novita API caller...")
     // TODO: Replace placeholder with:
     // Closure callNovitaApi = ApiCallerFactory.createNovitaImageCaller(apiConfig.novitaApiKey)
-    // Example placeholder: Define a dummy closure
+    // Replace the dummy closure with local image path
     Closure callNovitaApi = { String payload ->
-        LogUtils.info("Placeholder: Calling Novita API with payload: ${payload}")
-        // Return a dummy JSON response structure
+        LogUtils.info("Placeholder: Simulating Novita API call")
+        // Return paths to bundled image
         return """
         {
           "images": [
-            { "image_url": "https://example.com/placeholder1.png", "image_type": "png" },
-            { "image_url": "https://example.com/placeholder2.png", "image_type": "png" },
-            { "image_url": "https://example.com/placeholder3.png", "image_type": "png" },
-            { "image_url": "https://example.com/placeholder4.png", "image_type": "png" }
+            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" },
+            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" },
+            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" },
+            { "image_url": "images/ChatGptCommunicator.png", "image_type": "png" }
           ],
           "task": { "task_id": "dummy-task-id" }
         }
@@ -132,10 +132,10 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-        "https://example.com/placeholder1.png",
-        "https://example.com/placeholder2.png",
-        "https://example.com/placeholder3.png",
-        "https://example.com/placeholder4.png"
+        "images/ChatGptCommunicator.png",
+        "images/ChatGptCommunicator.png",
+        "images/ChatGptCommunicator.png",
+        "images/ChatGptCommunicator.png"
     ]
     if (imageUrls.isEmpty()) {
         UiHelper.showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
@@ -149,16 +149,24 @@ try {
     // Placeholder downloader function - replace with actual implementation later
     // TODO: Replace placeholder with:
     // Closure downloader = ImageDownloader.&downloadImageBytes // Or similar
-    Closure downloader = { String url ->
-        LogUtils.info("Placeholder: Simulating download of image from ${url}")
-        // Simulate delay
-        try { Thread.sleep(500) } catch (InterruptedException ignored) {}
-        return "dummy image data for ${url}".bytes // Return dummy bytes
+    Closure downloader = { String imagePath ->
+        try {
+            LogUtils.info("Loading bundled image: ${imagePath}")
+            def imageStream = getClass().getResourceAsStream("/${imagePath}")
+            if (!imageStream) {
+                throw new FileNotFoundException("Bundled image not found: ${imagePath}")
+            }
+            return imageStream.bytes
+        } catch (Exception e) {
+            LogUtils.severe("Error loading image: ${e.message}")
+            UiHelper.showErrorMessage(ui, "Failed to load preview image")
+            return null
+        }
     }
     // TODO: Replace placeholder selection simulation with actual dialog call:
     // String selectedUrl = DialogHelper.showImageSelectionDialog(ui, imageUrls, downloader)
     // Simulate user selection (e.g., selects the second image)
-    String selectedUrl = imageUrls.size() > 1 ? imageUrls[1] : null
+    String selectedUrl = imageUrls.size() > 1 ? imageUrls[1] : imageUrls[0]
     LogUtils.info("User selected URL (placeholder): ${selectedUrl}")
 
 
