@@ -1,6 +1,6 @@
 <map version="freeplane 1.12.1">
 <!--To view this file, download free mind mapping software Freeplane from https://www.freeplane.org -->
-<node TEXT="Prompt-LLM-AddOn" FOLDED="false" ID="ID_696401721" CREATED="1685111823904" MODIFIED="1744144756093" LINK="https://github.com/barrymac/freeplane_openai_addon" BACKGROUND_COLOR="#97c7dc" STYLE="oval" MAX_WIDTH="20 cm">
+<node TEXT="Prompt-LLM-AddOn" FOLDED="false" ID="ID_696401721" CREATED="1685111823904" MODIFIED="1744150100000" LINK="https://github.com/barrymac/freeplane_openai_addon" BACKGROUND_COLOR="#97c7dc" STYLE="oval" MAX_WIDTH="20 cm">
 <font SIZE="16" BOLD="true" ITALIC="true"/>
 <hook NAME="MapStyle">
     <properties show_icon_for_attributes="true" edgeColorConfiguration="#808080ff,#ff0000ff,#0000ffff,#00ff00ff,#ff00ffff,#00ffffff,#7c0000ff,#00007cff,#007c00ff,#7c007cff,#007c7cff,#7c7c00ff" mapUsesOwnSaveOptions="true" save_modification_times="false" show_tags="UNDER_NODES" save_last_visited_node="default" show_note_icons="true" associatedTemplateLocation="template:/standard-1.6.mm" save_folding="save_folding_if_map_is_changed" fit_to_viewport="false" show_icons="BESIDE_NODES"/>
@@ -242,15 +242,16 @@
     </ul>
   </body>
 </html></richcontent>
-<node TEXT="en" ID="ID_1097454652" CREATED="1685111823977" MODIFIED="1742847796035">
+<node TEXT="en" ID="ID_1097454652" CREATED="1685111823977" MODIFIED="1744150100001">
 <attribute_layout NAME_WIDTH="159 pt" VALUE_WIDTH="102 pt"/>
 <attribute NAME="addons.${name}" VALUE="LLM AddOn"/>
 <attribute NAME="addons.${name}.AskLm" VALUE="Configure Prompts and Model"/>
 <attribute NAME="addons.${name}.quickPrompt" VALUE="Quick Prompt (Ctrl+Alt+G)"/>
 <attribute NAME="addons.${name}.compareConnectedNodes" VALUE="Compare Connected Nodes"/>
+<attribute NAME="addons.${name}.generateImage" VALUE="Generate Image"/>
 </node>
 </node>
-<node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1744143852417">
+<node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1744150100002">
 <edge COLOR="#00007c"/>
 <richcontent TYPE="NOTE">
 <html>
@@ -270,13 +271,14 @@
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/AskLm.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/QuickPrompt.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/CompareConnectedNodes.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/GenerateImage.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn-icon.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/Exceptions.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/llm.jar"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib"/>
 </node>
-<node TEXT="scripts" POSITION="bottom_or_right" ID="ID_684917236" CREATED="1685111823977" MODIFIED="1742834859980">
+<node TEXT="scripts" POSITION="bottom_or_right" ID="ID_684917236" CREATED="1685111823977" MODIFIED="1744150100003">
 <edge COLOR="#007c00"/>
 <richcontent TYPE="NOTE">
 <html>
@@ -421,6 +423,18 @@
 <node TEXT="CompareConnectedNodes.groovy" ID="ID_COMPARE_NODES" CREATED="1743400000000" MODIFIED="1743400000000">
 <attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
 <attribute NAME="menuTitleKey" VALUE="addons.${name}.compareConnectedNodes"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE=""/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="true"/>
+</node>
+<node TEXT="GenerateImage.groovy" ID="ID_GENERATE_IMAGE" CREATED="1744150000000" MODIFIED="1744150000000">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.generateImage"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
 <attribute NAME="keyboardShortcut" VALUE=""/>
