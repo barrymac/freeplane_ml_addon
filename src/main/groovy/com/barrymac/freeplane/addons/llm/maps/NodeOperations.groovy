@@ -162,7 +162,7 @@ class NodeOperations {
     
     /**
      * Attaches image bytes to a node
-     * @param node The target node
+     * @param node The target node (Node proxy from c.selected)
      * @param imageBytes Byte array of the image
      * @param baseName Base filename (without extension)
      * @param extension File extension (png/jpg/etc)
@@ -191,10 +191,10 @@ class NodeOperations {
             
             // Preserve original text, set URI, then restore text
             String originalText = node.text
-            node.object = uri.toString()
+            node.setObject(uri.toString())
             node.text = originalText
             
-            LogUtils.info("Image attached via URI object with text preservation: ${fileName}")
+            LogUtils.info("Image attached via setObject(): ${fileName}")
         } catch (Exception e) {
             String errorMsg = "Failed to attach image to node"
             LogUtils.severe("${errorMsg}: ${e.message}")

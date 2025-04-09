@@ -64,7 +64,7 @@ try {
 
     // 2. Get Selected Node & Prompt
     LogUtils.info("Getting selected node...")
-    def node = c.selected?.delegate  // Get the actual NodeModel from the proxy
+    def node = c.selected  // Use the Node proxy directly
     if (node == null) {
         UiHelper.showInformationMessage(ui, "Please select a node first to use as the image prompt.")
         LogUtils.info("No node selected.")
@@ -197,23 +197,8 @@ try {
             LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
             
             try {
-                // Create unique filename
-                String timestamp = new Date().format('yyyyMMddHHmmss')
-                String fileName = "${baseName}_${timestamp}.${extension}"
-                
-                // Save image to map's directory
-                def mapFile = node.map.file
-                if (!mapFile) {
-                    throw new Exception("Map must be saved before adding images")
-                }
-                
-                File imageFile = new File(mapFile.parentFile, fileName)
-                imageFile.bytes = selectedImageBytes
-                
-                // Create URI relative to map file
-                def uri = imageFile.toURI()
-                
                 // Use NodeOperations to properly attach the image
+                // Pass the Node proxy directly to the method
                 NodeOperations.attachImageToNode(node, selectedImageBytes, baseName, extension)
                 
                 LogUtils.info("Image attached via NodeOperations: ${fileName}")
