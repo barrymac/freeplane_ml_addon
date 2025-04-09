@@ -22,11 +22,25 @@ try {
     LogUtils.info("Loading configuration...")
     // Load base config (though not strictly needed for Novita key yet)
     // ApiConfig baseApiConfig = ConfigManager.loadBaseConfig(config)
-    def novitaApiKey = config.getProperty('novita.key', '') // Read specific key
+    def novitaApiKey = config.getProperty('novita.key', '')
     if (!novitaApiKey) {
-        LogUtils.error("Novita.ai API key ('novita.key') is missing in Freeplane preferences.")
-        UiHelper.showErrorMessage(ui, "Novita.ai API Key ('novita.key') is not configured.\nPlease set it in Tools -> Preferences -> LLM AddOn.")
-        return // Stop script execution
+        // Show input dialog instead of error message
+        novitaApiKey = ui.showInputDialog(
+            c.selected?.delegate, // Parent component
+            "Please enter your Novita.ai API key:", // Message
+            "API Key Required", // Title 
+            JOptionPane.QUESTION_MESSAGE
+        )
+        
+        if (!novitaApiKey?.trim()) {
+            LogUtils.warn("User cancelled API key input")
+            UiHelper.showInformationMessage(ui, "API key is required for image generation")
+            return
+        }
+        
+        // Save the key to preferences
+        config.setProperty('novita.key', novitaApiKey)
+        LogUtils.info("Novita API key saved to preferences")
     }
     LogUtils.info("Novita API Key loaded.")
     // Create a simple map for now, later use ApiConfig if needed
