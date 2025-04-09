@@ -16,6 +16,7 @@ import com.barrymac.freeplane.addons.llm.maps.MapUpdater
 import com.barrymac.freeplane.addons.llm.prompts.MessageLoader
 import com.barrymac.freeplane.addons.llm.prompts.DimensionGenerator
 import com.barrymac.freeplane.addons.llm.prompts.PromptBuilder
+import com.barrymac.freeplane.addons.llm.ui.CompareDialogueHelper
 
 // UI related classes
 import com.barrymac.freeplane.addons.llm.ui.DialogHelper
@@ -31,6 +32,8 @@ import com.barrymac.freeplane.addons.llm.ui.UiHelper
 
 // Ensure LogUtils is imported
 import org.freeplane.core.util.LogUtils
+
+import static com.barrymac.freeplane.addons.llm.ui.CompareDialogueHelper.*
 
 // --- Initialize Core Components ---
 // Load configuration FIRST
@@ -78,7 +81,7 @@ try {
     def defaultComparisonTypes = ["Pros and Cons", "Compare and Contrast", "Strengths vs Weaknesses", "Advantages and Disadvantages"]
     def comparisonTypesConfigKey = "promptLlmAddOn.comparisonTypes"
 
-    String comparisonType = DialogHelper.showComparisonDialog(
+    String comparisonType = showComparisonDialog(
         ui, 
         config, 
         sourceNode.delegate, 
