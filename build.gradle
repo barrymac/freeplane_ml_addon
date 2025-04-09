@@ -45,7 +45,7 @@ sourceSets {
         }
         resources {
             srcDirs 'src/main/resources'
-            includes = ['**/*.png']  // Explicitly include PNG files
+            includes = ['**/*.png', '**/*.txt', '**/*.json'] // Include PNG, TXT, and JSON files
         }
     }
 }
