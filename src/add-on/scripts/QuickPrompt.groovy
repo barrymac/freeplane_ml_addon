@@ -91,8 +91,8 @@ try {
 
         LogUtils.info("QuickPrompt: Sending payload: ${payload}")
 
-        // Show progress indicator
-        UiHelper.showInformationMessage(ui, "Sending prompt to ${apiConfig.model}...")
+        // Show progress indicator - REMOVED
+        // UiHelper.showInformationMessage(ui, "Sending prompt to ${apiConfig.model}...")
 
         def rawApiResponse = make_api_call(apiConfig.provider, apiConfig.apiKey, payload)
 
@@ -113,7 +113,8 @@ try {
                 "Quick Prompt Result"   // Optional type string
         )
 
-        UiHelper.showInformationMessage(ui, "Response added as a new branch.")
+        // Confirmation message - REMOVED
+        // UiHelper.showInformationMessage(ui, "Response added as a new branch.")
         LogUtils.info("QuickPrompt script finished successfully.")
     }
 
