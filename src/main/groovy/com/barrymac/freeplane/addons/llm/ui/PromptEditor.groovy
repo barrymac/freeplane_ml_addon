@@ -5,6 +5,11 @@ import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
 import javax.swing.*
 import java.awt.*
+import javax.swing.KeyStroke
+import java.awt.event.KeyEvent
+import java.awt.event.ActionEvent
+import javax.swing.AbstractAction
+import javax.swing.JComponent
 
 class PromptEditor {
     static def showPromptEditor(ui, String initialPrompt, Map initialParams, def config) {
@@ -57,7 +62,7 @@ class PromptEditor {
                 }
             }
             panel(constraints: BorderLayout.SOUTH) {
-                button(text: 'Generate', actionPerformed: {
+                button(text: 'Generate', id: 'generateButton', actionPerformed: {
                     try {
                         // Validate numerical parameters
                         params.steps = validateNumberField(stepsField, 4, 50, "Steps")
@@ -101,6 +106,30 @@ class PromptEditor {
                 button(text: 'Cancel', actionPerformed: { 
                     modifiedPrompt = null
                     dialog.dispose()
+                })
+            }
+            
+            // Add keyboard bindings to the root pane
+            dialog.rootPane.with {
+                // Escape to close
+                getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeAction")
+                getActionMap().put("closeAction", new AbstractAction() {
+                    void actionPerformed(ActionEvent e) {
+                        modifiedPrompt = null
+                        dialog.dispose()
+                    }
+                })
+            }
+            
+            // Add Ctrl+Enter to textArea
+            promptArea.with {
+                getInputMap().put(KeyStroke.getKeyStroke("ctrl ENTER"), "generateAction")
+                getActionMap().put("generateAction", new AbstractAction() {
+                    void actionPerformed(ActionEvent e) {
+                        // Simulate Generate button click
+                        generateButton.doClick()
+                    }
                 })
             }
         }
