@@ -193,8 +193,7 @@ try {
     def (modifiedPrompt, params) = edited
     LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
     
-    // Expand template with node context
-    def binding = MessageExpander.createBinding(node, null, null, null, null)
+    // Reuse existing binding from earlier in the script
     def expandedPrompt = MessageExpander.expandTemplate(modifiedPrompt, binding)
     LogUtils.info("Expanded prompt template with node context")
     
