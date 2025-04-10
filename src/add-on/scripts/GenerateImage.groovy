@@ -1,3 +1,5 @@
+import com.barrymac.freeplane.addons.llm.api.ApiRequest
+import com.barrymac.freeplane.addons.llm.prompts.Message
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
@@ -183,15 +185,15 @@ try {
 
     // 6. Call API (with progress indication)
     LogUtils.info("Showing progress dialog...")
-    JDialog progressDialog = createProgressDialog(ui, "Generating Image", "Contacting Novita.ai API...")
+    JDialog novitaProgressDialog = createProgressDialog(ui, "Generating Image", "Contacting Novita.ai API...")
     String rawApiResponse // Declare here to be accessible in finally block if needed
     try {
-        progressDialog?.visible = true
+        novitaProgressDialog?.visible = true
         LogUtils.info("Progress dialog shown.")
         rawApiResponse = callNovitaApi(jsonPayload) // Placeholder call
         LogUtils.info("Received raw API response (placeholder).")
     } finally {
-        progressDialog?.dispose()
+        novitaProgressDialog?.dispose()
         LogUtils.info("Progress dialog disposed.")
     }
 
