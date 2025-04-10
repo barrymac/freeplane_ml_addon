@@ -152,9 +152,12 @@ try {
             // Handle bundled resources
             if (url.startsWith("/")) {
                 // Use a known class from the add-on JAR to ensure correct classloader context
-                def imageStream = ImageDialogueHelper.class.getResourceAsStream(url)
+                // Get classloader and load resource stream without leading slash
+                def classLoader = ImageDialogueHelper.class.getClassLoader()
+                def resourcePath = url.startsWith('/') ? url.substring(1) : url // Remove leading slash if present
+                def imageStream = classLoader.getResourceAsStream(resourcePath)
                 if (!imageStream) {
-                    throw new FileNotFoundException("Bundled image not found at: ${url}")
+                    throw new FileNotFoundException("Bundled image not found at: ${resourcePath} (original: ${url})") // Adjusted error message
                 }
                 def bytes = imageStream.bytes
                 LogUtils.info("Successfully loaded ${bytes.length} bytes from resource: ${url}")
