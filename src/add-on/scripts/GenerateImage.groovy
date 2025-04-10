@@ -1,5 +1,4 @@
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
-import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import org.freeplane.core.util.LogUtils
@@ -8,12 +7,11 @@ import javax.swing.*
 
 import static com.barrymac.freeplane.addons.llm.ui.DialogHelper.createProgressDialog
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showErrorMessage
+import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
 
 // import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
-
-import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
 
 // import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
 
