@@ -111,12 +111,17 @@ class ImageDialogueHelper {
 
                                     // Scale to reasonable preview size (max 256x256)
                                     int maxDim = 256
-                                    int width = originalImage.width
-                                    int height = originalImage.height
+                                    int width = originalImage.getWidth(null)
+                                    int height = originalImage.getHeight(null)
                                     double scale = 1.0
+                                    
+                                    // Validate image dimensions
+                                    if (width <= 0 || height <= 0) {
+                                        throw new IllegalStateException("Invalid image dimensions: ${width}x${height}")
+                                    }
 
                                     if (width > maxDim || height > maxDim) {
-                                        scale = Math.min(maxDim / width, maxDim / height)
+                                        scale = Math.min(maxDim.toDouble() / width, maxDim.toDouble() / height)
                                         width = (int) (width * scale)
                                         height = (int) (height * scale)
                                     }
