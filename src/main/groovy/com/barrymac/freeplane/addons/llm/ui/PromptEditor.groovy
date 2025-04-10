@@ -9,7 +9,9 @@ class PromptEditor {
     static def showPromptEditor(ui, String initialPrompt, Map initialParams) {
         def modifiedPrompt = null
         def params = initialParams.clone()
-        def dialog = new SwingBuilder().dialog(
+        // Declare dialog variable outside the closure
+        def dialog
+        dialog = new SwingBuilder().dialog(
             title: 'Edit Image Generation Parameters',
             modal: true,
             owner: ui.currentFrame,
