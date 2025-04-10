@@ -1,6 +1,7 @@
 package com.barrymac.freeplane.addons.llm.ui
 
 import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
 import javax.swing.*
@@ -112,6 +113,27 @@ class PromptEditor {
                     } catch (Exception e) {
                         LogUtils.severe("Error saving template: ${e.message}")
                         showError(dialog, "Failed to save template: ${e.message}")
+                    }
+                })
+                button(text: 'Reset to Default', actionPerformed: {
+                    int confirm = JOptionPane.showConfirmDialog(dialog,
+                        "Reset to default template? Your saved template will be deleted.",
+                        "Confirm Reset",
+                        JOptionPane.YES_NO_OPTION)
+                        
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        try {
+                            ConfigManager.deleteUserProperty(config, 'savedImagePromptTemplate')
+                            promptArea.text = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
+                            JOptionPane.showMessageDialog(dialog,
+                                "Reset to default template successful!\n"
+                                + "Changes will take effect next time.",
+                                "Template Reset",
+                                JOptionPane.INFORMATION_MESSAGE)
+                        } catch(Exception e) {
+                            LogUtils.severe("Reset failed: ${e.message}")
+                            showError(dialog, "Reset failed: ${e.message}")
+                        }
                     }
                 })
                 button(text: 'Cancel', actionPerformed: { 

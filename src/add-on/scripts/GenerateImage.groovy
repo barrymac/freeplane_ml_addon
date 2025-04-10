@@ -192,6 +192,12 @@ try {
     // Load base template
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
     
+    // Add validation for empty saved template
+    if (savedTemplate?.trim()?.isEmpty()) {
+        LogUtils.info("Saved template empty, using default")
+        savedTemplate = null
+    }
+    
     // Combine templates - use saved template or combine base with enhancement
     def initialTemplate = savedTemplate ?: "${userPromptTemplate}\n\n${enhancedPrompt}".trim()
     

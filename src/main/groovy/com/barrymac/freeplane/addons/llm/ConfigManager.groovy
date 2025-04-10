@@ -143,4 +143,19 @@ class ConfigManager {
             return defaultValue
         }
     }
+    
+    /**
+     * Deletes a user-specific property
+     * @param config The Freeplane config object
+     * @param key Property key (will be prefixed with 'llm.addon.')
+     */
+    static void deleteUserProperty(def config, String key) {
+        try {
+            config.remove("llm.addon.${key}")
+            LogUtils.info("Deleted user property '${key}'")
+        } catch (Exception e) {
+            LogUtils.severe("Failed to delete property '${key}': ${e.message}")
+            throw e
+        }
+    }
 }
