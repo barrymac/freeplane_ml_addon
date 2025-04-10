@@ -151,8 +151,9 @@ class ConfigManager {
      */
     static void deleteUserProperty(def config, String key) {
         try {
-            // Use string concatenation instead of GString to avoid type issues
-            config.remove('llm.addon.' + key)
+            // Use setProperty with null value to effectively remove it
+            String fullKey = 'llm.addon.' + key
+            config.setProperty(fullKey, null) // This clears the property
             LogUtils.info("Deleted user property '${key}'")
         } catch (Exception e) {
             LogUtils.severe("Failed to delete property '${key}': ${e.message}")
