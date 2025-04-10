@@ -34,75 +34,81 @@ class ImagePromptEditor {
             owner: ui.currentFrame,
             defaultCloseOperation: WindowConstants.DISPOSE_ON_CLOSE
         ) {
-            swingBuilder.borderLayout()
-            swingBuilder.panel(constraints: BorderLayout.CENTER) {
-                swingBuilder.layout = new GridBagLayout() // Set layout for THIS panel
-                def gbc = new GridBagConstraints(
-                    fill: GridBagConstraints.BOTH,
-                    anchor: GridBagConstraints.NORTHWEST,
-                    insets: [2, 5, 2, 5] // Top, left, bottom, right padding
-                )
+            swingBuilder.borderLayout() // Main dialog uses BorderLayout
 
-                // 1. Header - Use constraints: argument
-                gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0; gbc.weighty = 0.0
+            // --- MODIFICATION START: Change layout of the main center panel ---
+            swingBuilder.panel(constraints: BorderLayout.CENTER, layout: new BorderLayout()) { // Use BorderLayout here
+                // --- MODIFICATION END ---
+
+                // 1. Header - Place in NORTH of this panel
+                // --- MODIFICATION START ---
                 swingBuilder.label(
-                    constraints: gbc, // Pass constraints directly
+                    constraints: BorderLayout.NORTH, // Place header at the top
                     text: '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>'
                         + '<small style="font-size:11px">Template source: '
-                        + (isUsingSavedTemplate ? 'User-saved' : 'System default / Generated') // Updated text
+                        + (isUsingSavedTemplate ? 'User-saved' : 'System default / Generated')
                         + '</small></html>',
-                    border: BorderFactory.createEmptyBorder(2, 5, 2, 5)
+                    border: BorderFactory.createEmptyBorder(5, 5, 5, 5) // Add some padding around header
                 )
-
-                // 2. Text Area - Use constraints: argument
-                // --- MODIFICATION START ---
-                gbc.gridy++; gbc.weighty = 1.0; // Removed gbc.ipady = 10
                 // --- MODIFICATION END ---
-                swingBuilder.scrollPane(constraints: gbc) { // Pass constraints directly
-                    // --- MODIFICATION START ---
-                    promptArea = swingBuilder.textArea(
-                        rows: 15, // Suggest preferred rows
-                        columns: 80, // Suggest preferred columns
-                        text: initialPrompt,
-                        lineWrap: true,
-                        wrapStyleWord: true,
-                        font: new Font(Font.MONOSPACED, Font.PLAIN, 12)
+
+                // --- MODIFICATION START: Create a NEW inner panel for the rest ---
+                swingBuilder.panel(constraints: BorderLayout.CENTER) { // This panel goes in the center below the header
+                    swingBuilder.layout = new GridBagLayout() // Use GridBagLayout for the content area
+                    def gbc = new GridBagConstraints(
+                        fill: GridBagConstraints.BOTH,
+                        anchor: GridBagConstraints.NORTHWEST,
+                        insets: [2, 5, 2, 5] // Top, left, bottom, right padding
                     )
                     // --- MODIFICATION END ---
-                }
 
-                // 3. Variables Panel - Use constraints: argument
-                gbc.gridy++; gbc.weighty = 0.0; gbc.ipady = 0 // Ensure weighty is 0 and no extra padding
-                swingBuilder.scrollPane(constraints: gbc) { // Pass constraints directly
-                    swingBuilder.panel(border: BorderFactory.createTitledBorder("Available Variables")) {
-                        swingBuilder.gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
-                        swingBuilder.label(text: '$generatedPrompt'); swingBuilder.label(text: 'AI-generated base prompt')
-                        swingBuilder.label(text: '$nodeContent'); swingBuilder.label(text: 'Current node text')
-                        swingBuilder.label(text: '$ancestorContents'); swingBuilder.label(text: 'All ancestor texts')
-                        swingBuilder.label(text: '$siblingContents'); swingBuilder.label(text: 'Sibling node texts')
-                        swingBuilder.label(text: '$rootText'); swingBuilder.label(text: 'Root node text')
-                        swingBuilder.label(text: '$style'); swingBuilder.label(text: 'Art style (e.g. digital art)')
-                        swingBuilder.label(text: '$details'); swingBuilder.label(text: 'Detail level (e.g. high)')
-                        swingBuilder.label(text: '$colors'); swingBuilder.label(text: 'Color scheme')
-                        swingBuilder.label(text: '$lighting'); swingBuilder.label(text: 'Lighting (e.g. dramatic)') // Added example
+                    // 2. Text Area - Now gridy=0 in the *inner* panel
+                    gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0; gbc.weighty = 1.0; // Reset gridy, keep weighty=1.0
+                    swingBuilder.scrollPane(constraints: gbc) { // Pass constraints directly
+                        promptArea = swingBuilder.textArea(
+                            rows: 15,
+                            columns: 80,
+                            text: initialPrompt,
+                            lineWrap: true,
+                            wrapStyleWord: true,
+                            font: new Font(Font.MONOSPACED, Font.PLAIN, 12)
+                        )
                     }
-                }
 
-                // 4. Parameters Panel - Use constraints: argument
-                gbc.gridy++; gbc.weighty = 0.0; // Ensure weighty is 0
-                swingBuilder.panel(constraints: gbc, border: BorderFactory.createTitledBorder("Generation Parameters")) { // Pass constraints directly
-                    swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
-                    swingBuilder.label(text: 'Steps (4-50):')
-                    stepsField = swingBuilder.textField(text: params.steps.toString(), id: 'stepsField') // Assign to variable
-                    swingBuilder.label(text: 'Width (256-1024):')
-                    widthField = swingBuilder.textField(text: params.width.toString(), id: 'widthField') // Assign to variable
-                    swingBuilder.label(text: 'Height (256-1024):')
-                    heightField = swingBuilder.textField(text: params.height.toString(), id: 'heightField') // Assign to variable
-                    swingBuilder.label(text: 'Number of Images (1-4):') // Updated label text
-                    imageNumField = swingBuilder.textField(text: params.imageNum.toString(), id: 'imageNumField') // Assign to variable
-                }
-            } // End central panel
+                    // 3. Variables Panel - Now gridy=1 in the *inner* panel
+                    gbc.gridy++; gbc.weighty = 0.0; gbc.ipady = 0 // Reset weighty, ensure no extra padding
+                    swingBuilder.scrollPane(constraints: gbc) { // Pass constraints directly
+                        swingBuilder.panel(border: BorderFactory.createTitledBorder("Available Variables")) {
+                            swingBuilder.gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
+                            swingBuilder.label(text: '$generatedPrompt'); swingBuilder.label(text: 'AI-generated base prompt')
+                            swingBuilder.label(text: '$nodeContent'); swingBuilder.label(text: 'Current node text')
+                            swingBuilder.label(text: '$ancestorContents'); swingBuilder.label(text: 'All ancestor texts')
+                            swingBuilder.label(text: '$siblingContents'); swingBuilder.label(text: 'Sibling node texts')
+                            swingBuilder.label(text: '$rootText'); swingBuilder.label(text: 'Root node text')
+                            swingBuilder.label(text: '$style'); swingBuilder.label(text: 'Art style (e.g. digital art)')
+                            swingBuilder.label(text: '$details'); swingBuilder.label(text: 'Detail level (e.g. high)')
+                            swingBuilder.label(text: '$colors'); swingBuilder.label(text: 'Color scheme')
+                            swingBuilder.label(text: '$lighting'); swingBuilder.label(text: 'Lighting (e.g. dramatic)') // Added example
+                        }
+                    }
 
+                    // 4. Parameters Panel - Now gridy=2 in the *inner* panel
+                    gbc.gridy++; gbc.weighty = 0.0; // Reset weighty
+                    swingBuilder.panel(constraints: gbc, border: BorderFactory.createTitledBorder("Generation Parameters")) { // Pass constraints directly
+                        swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
+                        swingBuilder.label(text: 'Steps (4-50):')
+                        stepsField = swingBuilder.textField(text: params.steps.toString(), id: 'stepsField') // Assign to variable
+                        swingBuilder.label(text: 'Width (256-1024):')
+                        widthField = swingBuilder.textField(text: params.width.toString(), id: 'widthField') // Assign to variable
+                        swingBuilder.label(text: 'Height (256-1024):')
+                        heightField = swingBuilder.textField(text: params.height.toString(), id: 'heightField') // Assign to variable
+                        swingBuilder.label(text: 'Number of Images (1-4):') // Updated label text
+                        imageNumField = swingBuilder.textField(text: params.imageNum.toString(), id: 'imageNumField') // Assign to variable
+                    }
+                } // End NEW inner panel with GridBagLayout
+            } // End outer panel with BorderLayout (was the central panel)
+
+            // --- Button panel remains the same ---
             swingBuilder.panel(constraints: BorderLayout.SOUTH) {
                 generateButton = swingBuilder.button(text: 'Generate', actionPerformed: {
                     try {
@@ -141,8 +147,14 @@ class ImagePromptEditor {
                             "Template Saved",
                             JOptionPane.INFORMATION_MESSAGE)
                         // Update header label immediately after saving
-                        dialog.getRootPane().findComponentAt(0,0).findComponentAt(0,0).text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
+                        // Need a more robust way to find the label, but this might work for now
+                        Component headerLabel = dialog.rootPane.findComponentAt(5,5) // Approximate location
+                        if (headerLabel instanceof JLabel) {
+                            headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
                                 '<small style="font-size:11px">Template source: User-saved</small></html>'
+                        } else {
+                            LogUtils.warn("Could not find header label to update text after save.")
+                        }
                     } catch (Exception e) {
                         LogUtils.severe("Error saving template: ${e.message}")
                         showError(dialog, "Failed to save template: ${e.message}")
@@ -170,8 +182,14 @@ class ImagePromptEditor {
                                 "Template Reset",
                                 JOptionPane.INFORMATION_MESSAGE)
                             // Update header label immediately after resetting
-                            dialog.getRootPane().findComponentAt(0,0).findComponentAt(0,0).text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
-                                    '<small style="font-size:11px">Template source: System default / Generated</small></html>'
+                            // Need a more robust way to find the label, but this might work for now
+                            Component headerLabel = dialog.rootPane.findComponentAt(5,5) // Approximate location
+                            if (headerLabel instanceof JLabel) {
+                                headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
+                                        '<small style="font-size:11px">Template source: System default / Generated</small></html>'
+                            } else {
+                                LogUtils.warn("Could not find header label to update text after reset.")
+                            }
                         } catch(Exception e) {
                             LogUtils.severe("Reset failed: ${e.message}")
                             showError(dialog, "Reset failed: ${e.message}")
@@ -183,7 +201,7 @@ class ImagePromptEditor {
                     dialog.dispose()
                 })
             }
-        }
+        } // End dialog definition
 
         // Add keyboard bindings AFTER dialog is fully constructed
         dialog.rootPane.with {
