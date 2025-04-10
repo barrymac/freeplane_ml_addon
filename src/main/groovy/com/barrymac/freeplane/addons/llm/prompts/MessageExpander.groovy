@@ -45,4 +45,41 @@ class MessageExpander {
             return template
         }
     }
+    
+    /**
+     * Builds an enhanced image prompt by combining user input with a system prompt template
+     * 
+     * @param basePrompt The original user prompt text
+     * @param systemPromptTemplate Template for the system prompt with placeholders
+     * @param context Additional context parameters to include in the template binding
+     * @return A structured prompt optimized for image generation
+     */
+    static String buildImagePrompt(String basePrompt, String systemPromptTemplate, Map context=[:]) {
+        try {
+            // Create binding with base prompt and any additional context
+            def binding = [
+                basePrompt: basePrompt,
+                dimension: context.dimension ?: 'visual concept',
+                style: context.style ?: 'digital art',
+                details: context.details ?: 'high detail'
+            ] + context
+            
+            // Expand the system prompt template
+            def systemPrompt = new SimpleTemplateEngine()
+                .createTemplate(systemPromptTemplate)
+                .make(binding)
+                .toString()
+                
+            """${systemPrompt.trim()}
+            
+            USER INPUT:
+${basePrompt.indent(4)}
+
+            FINAL PROMPT:"""
+            
+        } catch(Exception e) {
+            LogUtils.severe("Failed to build image prompt: ${e.message}")
+            return basePrompt // Fallback to raw input
+        }
+    }
 }
