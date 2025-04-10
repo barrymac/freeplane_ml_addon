@@ -2,34 +2,16 @@ package com.barrymac.freeplane.addons.llm.ui
 
 import groovy.swing.SwingBuilder
 import org.freeplane.core.ui.components.UITools
-
-// Keep for potential internal UI errors if needed
-
-// Remove - No longer used here
-
 import org.freeplane.core.util.LogUtils
-
-// Remove - No longer used here
-
-// Remove - No longer used here
-
-// Remove - No longer used here
-
-// Keep for potential internal UI messages if needed
+import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
+import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 
 import javax.swing.*
 import java.awt.*
-
-// Keep for ui.currentFrame, setDialogLocationRelativeTo
-
-// Remove - No longer used here
-
 import java.util.List
-
-// Remove - No longer used here
+import javax.swing.SwingUtilities
 
 class ImageDialogueHelper {
-
 
     /**
      * Shows a dialog for selecting one image from a list of image URLs
@@ -182,6 +164,88 @@ class ImageDialogueHelper {
         } catch (Exception e) {
             LogUtils.severe("Error showing image selection dialog: ${e.message}", e)
             return null
+        }
+    }
+    
+    /**
+     * Handles the complete flow of image selection, downloading, and attachment
+     *
+     * @param ui The Freeplane UI object
+     * @param imageUrls List of image URLs to display
+     * @param node The node to attach the image to
+     * @param config The Freeplane config object
+     */
+    static void handleImageSelectionAndAttachment(UITools ui, List<String> imageUrls, def node, def config) {
+        try {
+            // Define the downloader within the helper
+            Closure<byte[]> downloader = { String url ->
+                try {
+                    LogUtils.info("Downloader: Loading image from: ${url}")
+                    if (url.startsWith("/")) {
+                        return ResourceLoaderService.loadBundledResourceBytes(url)
+                    } else {
+                        def connection = new URL(url).openConnection()
+                        connection.connectTimeout = 10000
+                        connection.readTimeout = 30000
+                        return connection.inputStream.bytes
+                    }
+                } catch (Exception e) {
+                    LogUtils.severe("Downloader error: ${e.message}")
+                    return null
+                }
+            }
+
+            // Show selection dialog and get URL
+            String selectedUrl = showImageSelectionDialog(ui, imageUrls, downloader)
+            
+            if (selectedUrl) {
+                // Show download progress
+                def downloadProgress = createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
+                try {
+                    downloadProgress.visible = true
+                    byte[] imageBytes = downloader(selectedUrl)
+                    
+                    if (imageBytes) {
+                        SwingUtilities.invokeLater {
+                            // Attach image
+                            String baseName = ImageAttachmentHandler.sanitizeBaseName(node.text)
+                            String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
+                            ImageAttachmentHandler.attachImageToNode(node, imageBytes, baseName, extension)
+                            ui.showInformationMessage("Image added to node!")
+                        }
+                    } else {
+                        ui.showErrorMessage("Failed to download image")
+                    }
+                } finally {
+                    downloadProgress.dispose()
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.severe("Image handling error: ${e.message}", e)
+            ui.showErrorMessage("Image handling failed: ${e.message}")
+        }
+    }
+
+    /**
+     * Creates a simple progress dialog
+     * 
+     * @param ui The Freeplane UI object
+     * @param title Dialog title
+     * @param message Message to display
+     * @return The created dialog
+     */
+    static JDialog createProgressDialog(UITools ui, String title, String message) {
+        new SwingBuilder().dialog(
+            title: title,
+            modal: true,
+            owner: ui.currentFrame,
+            defaultCloseOperation: WindowConstants.DO_NOTHING_ON_CLOSE
+        ) {
+            label(text: message, horizontalAlignment: JLabel.CENTER, border: BorderFactory.createEmptyBorder(10, 20, 10, 20))
+        }.with {
+            pack()
+            setLocationRelativeTo(ui.currentFrame)
+            it
         }
     }
 }

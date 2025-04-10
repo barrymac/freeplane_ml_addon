@@ -1,7 +1,6 @@
 import com.barrymac.freeplane.addons.llm.api.ApiRequest
 import com.barrymac.freeplane.addons.llm.prompts.Message
 import com.barrymac.freeplane.addons.llm.ConfigManager
-import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import com.barrymac.freeplane.addons.llm.ui.PromptEditor
@@ -10,14 +9,12 @@ import org.freeplane.core.util.LogUtils
 
 import javax.swing.*
 
-import static com.barrymac.freeplane.addons.llm.ui.DialogHelper.createProgressDialog
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showErrorMessage
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
 
 import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ResponseParser
-import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 
 // === Script Entry Point ===
@@ -287,98 +284,11 @@ try {
         LogUtils.error("API response did not contain any image URLs.")
         return
     }
-    LogUtils.info("Parsed image URLs (placeholder): ${imageUrls}")
+    LogUtils.info("Parsed image URLs: ${imageUrls}")
 
-    // 8. Show Selection Dialog
-    LogUtils.info("Showing image selection dialog...")
-    // Enhanced downloader function that handles both resources and URLs
-    Closure downloader = { String url ->
-        try {
-            LogUtils.info("Downloader: Loading image from: ${url}")
-            // Handle bundled resources via ResourceLoaderService
-            if (url.startsWith("/")) {
-                // Delegate loading to the dedicated service class within the add-on JAR
-                return ResourceLoaderService.loadBundledResourceBytes(url)
-            }
-            // Handle real URLs (for future API integration)
-            else {
-                // Keep the existing URL download logic
-                def connection = new URL(url).openConnection()
-                connection.connectTimeout = 10000 // 10 seconds
-                connection.readTimeout = 30000    // 30 seconds
-                def bytes = connection.inputStream.bytes
-                LogUtils.info("Downloader: Successfully downloaded ${bytes.length} bytes from URL: ${url}")
-                return bytes
-            }
-        } catch (Exception e) {
-            // Log the error more specifically from the downloader context
-            // Avoid full stack trace for FileNotFound, as it's expected if the service fails
-            LogUtils.severe("Downloader: Error loading image for URL '${url}': ${e.message}",
-                    (e instanceof FileNotFoundException || e instanceof IllegalArgumentException) ? null : e)
-            return null // Return null to allow dialog to show error
-        }
-    }
-
-    // Show the image selection dialog
-    String selectedUrl = ImageDialogueHelper.showImageSelectionDialog(ui, imageUrls, downloader)
-
-    if (!selectedUrl) {
-        LogUtils.info("User cancelled image selection or selection failed")
-        showInformationMessage(ui, "Image selection cancelled")
-        return
-    }
-    LogUtils.info("User selected image URL: ${selectedUrl}")
-
-
-    // 9. Process Selection
-    if (selectedUrl) {
-        LogUtils.info("Showing download progress dialog...")
-        JDialog downloadProgress = createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
-        try {
-            downloadProgress?.visible = true
-            LogUtils.info("Download progress dialog shown.")
-
-            LogUtils.info("Downloading image bytes...")
-            // Download the selected image
-            byte[] selectedImageBytes = downloader(selectedUrl)
-            if (!selectedImageBytes) {
-                LogUtils.warn("No image bytes received for ${selectedUrl}")
-                showErrorMessage(ui, "Failed to load selected image")
-                return
-            }
-            // Only proceed if bytes are valid
-            LogUtils.info("Downloaded ${selectedImageBytes.length} bytes for selected image (placeholder).")
-
-            LogUtils.info("Determining filename and extension...")
-            String baseName = ImageAttachmentHandler.sanitizeBaseName(node.text)
-            String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
-
-            LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
-
-            try {
-                // Use the dedicated ImageAttachmentHandler to attach the image
-                // Import needed at the top of the file
-                ImageAttachmentHandler.attachImageToNode(node, selectedImageBytes, baseName, extension)
-
-                LogUtils.info("Image successfully attached to node")
-            } catch (Exception e) {
-                LogUtils.severe("Failed to attach image: ${e.message}", e)
-                throw e // Re-throw to be caught by outer catch block
-            }
-
-            LogUtils.info("Successfully attached image to node ${node.id}")
-            showInformationMessage(ui, "Image added to node!")
-
-        } catch (IOException e) {
-            LogUtils.severe("Failed to download or attach image: ${e.message}", e)
-            showErrorMessage(ui, "Failed to download or attach image: ${e.message}")
-        } finally {
-            downloadProgress?.dispose()
-            LogUtils.info("Download progress dialog disposed.")
-        }
-    } else {
-        LogUtils.info("User cancelled image selection or no URL was selected.")
-    }
+    // 8. Delegate image selection, download and attachment to the helper
+    LogUtils.info("Delegating image handling to ImageDialogueHelper...")
+    ImageDialogueHelper.handleImageSelectionAndAttachment(ui, imageUrls, node, config)
 
 } catch (Exception e) { // Catching generic Exception for now
     LogUtils.severe("An unexpected error occurred in GenerateImage script: ${e.message}", e)
