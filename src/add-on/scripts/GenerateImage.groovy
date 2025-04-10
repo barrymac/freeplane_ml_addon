@@ -183,8 +183,8 @@ try {
     // Show prompt editor with default params
     def initialParams = [
         steps: 4,
-        width: 512,
-        height: 512,
+        width: 256,
+        height: 256,
         imageNum: 4,
         seed: new Random().nextInt(Integer.MAX_VALUE) // Generate valid 32-bit seed
     ]
