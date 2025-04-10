@@ -1,5 +1,6 @@
 import com.barrymac.freeplane.addons.llm.api.ApiRequest
 import com.barrymac.freeplane.addons.llm.prompts.Message
+import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
