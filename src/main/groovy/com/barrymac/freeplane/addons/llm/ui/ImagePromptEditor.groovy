@@ -32,8 +32,8 @@ class ImagePromptEditor {
             owner: ui.currentFrame,
             defaultCloseOperation: WindowConstants.DISPOSE_ON_CLOSE
         ) {
-            borderLayout()
-            panel(constraints: BorderLayout.CENTER) {
+            swingBuilder.borderLayout()
+            swingBuilder.panel(constraints: BorderLayout.CENTER) {
                 swingBuilder.layout = new GridBagLayout()
                 def gbc = new GridBagConstraints(
                     fill: GridBagConstraints.BOTH,
@@ -100,7 +100,7 @@ class ImagePromptEditor {
                 }, gbc)
             }
             
-            panel(constraints: BorderLayout.SOUTH) {
+            swingBuilder.panel(constraints: BorderLayout.SOUTH) {
                 generateButton = swingBuilder.button(text: 'Generate', actionPerformed: {
                     try {
                         // Validate numerical parameters
