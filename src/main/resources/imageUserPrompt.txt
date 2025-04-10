@@ -1,3 +1,6 @@
+high-resolution, detailed digital art of $nodeContent, $rootText
+
+${ancestorContents}
 ${generatedPrompt}
 
 Style parameters:
@@ -6,6 +9,3 @@ Style parameters:
 - Color scheme: ${colors}
 - Lighting: ${lighting}
 
-Context from mindmap:
-${nodeContent}
-${ancestorContents}
