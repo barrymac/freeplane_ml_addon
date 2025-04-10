@@ -1,12 +1,13 @@
 package com.barrymac.freeplane.addons.llm.ui
 
+import com.barrymac.freeplane.addons.llm.ConfigManager
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
 import javax.swing.*
 import java.awt.*
 
 class PromptEditor {
-    static def showPromptEditor(ui, String initialPrompt, Map initialParams) {
+    static def showPromptEditor(ui, String initialPrompt, Map initialParams, def config) {
         def modifiedPrompt = null
         def params = initialParams.clone()
         // Declare dialog variable outside the closure
@@ -78,6 +79,23 @@ class PromptEditor {
                             e.message, 
                             "Validation Error", 
                             JOptionPane.ERROR_MESSAGE)
+                    }
+                })
+                button(text: 'Save Template', actionPerformed: {
+                    try {
+                        def templateToSave = promptArea.text.trim()
+                        if (!templateToSave) {
+                            showError(dialog, "Cannot save empty template")
+                            return
+                        }
+                        ConfigManager.setUserProperty(config, 'savedImagePromptTemplate', templateToSave)
+                        JOptionPane.showMessageDialog(dialog, 
+                            "Template saved for future use", 
+                            "Template Saved", 
+                            JOptionPane.INFORMATION_MESSAGE)
+                    } catch (Exception e) {
+                        LogUtils.severe("Error saving template: ${e.message}")
+                        showError(dialog, "Failed to save template: ${e.message}")
                     }
                 })
                 button(text: 'Cancel', actionPerformed: { 

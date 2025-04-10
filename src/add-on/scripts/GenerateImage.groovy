@@ -176,6 +176,13 @@ try {
     // Load image user prompt template
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
     
+    // Check for saved template
+    def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
+    if (savedTemplate) {
+        LogUtils.info("Using saved prompt template from config")
+        userPromptTemplate = savedTemplate
+    }
+    
     // Create binding with generated prompt and all node context variables
     def binding = MessageExpander.createBinding(node, null, null, null, null) + [
         generatedPrompt: enhancedPrompt
@@ -184,7 +191,7 @@ try {
     // Expand template with generated prompt and full context
     def initialTemplate = MessageExpander.expandTemplate(userPromptTemplate, binding)
     
-    def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams)
+    def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
     if (!edited) {
         LogUtils.info("User cancelled prompt editing")
         return

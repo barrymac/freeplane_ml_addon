@@ -110,4 +110,36 @@ class ConfigManager {
             return 0
         }
     }
+    
+    /**
+     * Saves a user-specific property for the LLM add-on
+     * @param config The Freeplane config object
+     * @param key Property key (will be prefixed with 'llm.addon.')
+     * @param value Property value to store
+     */
+    static void setUserProperty(def config, String key, String value) {
+        try {
+            config.setProperty("llm.addon.${key}", value)
+            LogUtils.info("Saved user property '${key}'")
+        } catch (Exception e) {
+            LogUtils.severe("Failed to save user property '${key}': ${e.message}")
+            throw e
+        }
+    }
+
+    /**
+     * Retrieves a user-specific property for the LLM add-on
+     * @param config The Freeplane config object
+     * @param key Property key (will be prefixed with 'llm.addon.')
+     * @param defaultValue Value to return if property not found
+     * @return The stored value or defaultValue
+     */
+    static String getUserProperty(def config, String key, String defaultValue = '') {
+        try {
+            return config.getProperty("llm.addon.${key}", defaultValue)
+        } catch (Exception e) {
+            LogUtils.warn("Error reading user property '${key}': ${e.message}")
+            return defaultValue
+        }
+    }
 }
