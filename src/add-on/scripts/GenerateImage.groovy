@@ -182,7 +182,7 @@ try {
     def (modifiedPrompt, params) = edited
     LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
     
-    // 4. Build payload with user-edited values
+    // 4. Build payload map with user-edited values
     def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
         modifiedPrompt, 
         params.steps,
@@ -191,23 +191,20 @@ try {
         params.imageNum,
         params.seed
     )
-    String jsonPayload = new JsonBuilder(payloadMap).toString()
-    LogUtils.info("Built Novita payload with custom parameters")
+    LogUtils.info("Built Novita payload: ${payloadMap}")
 
-    // 5. Create API Caller
+    // 5. Create API Caller 
     LogUtils.info("Creating Novita API caller...")
     Closure callNovitaApi = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call.curry('novita', novitaApiKey)
-    LogUtils.info("Created Novita API caller.")
 
     // 6. Call API (with progress indication)
-    LogUtils.info("Showing progress dialog...")
-    JDialog novitaProgressDialog = createProgressDialog(ui, "Generating Image", "Contacting Novita.ai API...")
+    LogUtils.info("Calling Novita API...")
+    JDialog novitaProgressDialog = createProgressDialog(ui, "Generating Image", "Creating images with Novita.ai...")
     String rawApiResponse // Declare here to be accessible in finally block if needed
     try {
-        novitaProgressDialog?.visible = true
-        LogUtils.info("Progress dialog shown.")
-        rawApiResponse = callNovitaApi(jsonPayload) // Placeholder call
-        LogUtils.info("Received raw API response (placeholder).")
+        novitaProgressDialog.visible = true
+        rawApiResponse = callNovitaApi(payloadMap) // Pass the map directly
+        LogUtils.info("Novita API response received")
     } finally {
         novitaProgressDialog?.dispose()
         LogUtils.info("Progress dialog disposed.")
