@@ -24,7 +24,7 @@ class PromptEditor {
                     textArea(text: initialPrompt, rows: 8, columns: 60, id: 'promptArea')
                 }
                 panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
-                    gridLayout(rows: 4, cols: 2, hgap: 10, vgap: 5) // Explicit rows/columns
+                    gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5) // Explicit rows/columns
                     label(text: 'Steps (4-50):')
                     textField(text: params.steps.toString(), id: 'stepsField')
                     label(text: 'Width (256-1024):')
