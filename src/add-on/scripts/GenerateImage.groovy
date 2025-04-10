@@ -2,8 +2,8 @@ import com.barrymac.freeplane.addons.llm.api.ApiRequest
 import com.barrymac.freeplane.addons.llm.prompts.Message
 import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
-import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
-import com.barrymac.freeplane.addons.llm.ui.PromptEditor
+import com.barrymac.freeplane.addons.llm.ui.ImageSelectionDialog
+import com.barrymac.freeplane.addons.llm.ui.ImagePromptEditor
 import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
 import org.freeplane.core.util.LogUtils
 
@@ -203,7 +203,7 @@ try {
         generatedPrompt: enhancedPrompt
     ]
     
-    def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
+    def edited = ImagePromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
     if (!edited) {
         LogUtils.info("User cancelled prompt editing")
         return
@@ -265,7 +265,7 @@ try {
 
     // 6. Call API (with progress indication)
     LogUtils.info("Calling Novita API...")
-    JDialog novitaProgressDialog = createProgressDialog(ui, "Generating Image", "Creating images with Novita.ai...")
+    JDialog novitaProgressDialog = ImageSelectionDialog.createProgressDialog(ui, "Generating Image", "Creating images with Novita.ai...")
     String rawApiResponse // Declare here to be accessible in finally block if needed
     try {
         novitaProgressDialog.visible = true
@@ -287,8 +287,8 @@ try {
     LogUtils.info("Parsed image URLs: ${imageUrls}")
 
     // 8. Delegate image selection, download and attachment to the helper
-    LogUtils.info("Delegating image handling to ImageDialogueHelper...")
-    ImageDialogueHelper.handleImageSelectionAndAttachment(ui, imageUrls, node, config)
+    LogUtils.info("Delegating image handling to ImageSelectionDialog...")
+    ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
 
 } catch (Exception e) { // Catching generic Exception for now
     LogUtils.severe("An unexpected error occurred in GenerateImage script: ${e.message}", e)
