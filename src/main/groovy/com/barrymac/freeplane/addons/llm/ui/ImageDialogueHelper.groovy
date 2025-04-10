@@ -105,42 +105,42 @@ class ImageDialogueHelper {
                                 // Get image bytes using the provided loader
                                 byte[] imageBytes = imageLoader(url)
                                 if (imageBytes) {
-                                    // Create and scale image
-                                    def originalIcon = new ImageIcon(imageBytes)
-                                    def originalImage = originalIcon.image
-
-                                    // Scale to reasonable preview size (max 256x256)
-                                    int maxDim = 256
-                                    int width = originalImage.getWidth(null)
-                                    int height = originalImage.getHeight(null)
-                                    double scale = 1.0
+                                    // Create image and wait for loading
+                                    def image = Toolkit.defaultToolkit.createImage(imageBytes)
+                                    def tracker = new MediaTracker(new Panel()) // Dummy component
+                                    tracker.addImage(image, 0)
+                                    tracker.waitForAll()
                                     
-                                    // Validate image dimensions
+                                    // Validate dimensions
+                                    int width = image.getWidth(null)
+                                    int height = image.getHeight(null)
                                     if (width <= 0 || height <= 0) {
                                         throw new IllegalStateException("Invalid image dimensions: ${width}x${height}")
                                     }
 
+                                    // Scale to reasonable preview size (max 256x256)
+                                    int maxDim = 256
+                                    double scale = 1.0
+                                    
                                     if (width > maxDim || height > maxDim) {
                                         scale = Math.min(maxDim.toDouble() / width, maxDim.toDouble() / height)
                                         width = (int) (width * scale)
                                         height = (int) (height * scale)
                                     }
 
-                                    def scaledImage = originalImage.getScaledInstance(
+                                    def scaledImage = image.getScaledInstance(
                                             width, height, java.awt.Image.SCALE_SMOOTH)
+                                            
+                                    // Wait for scaled image to load
+                                    def scaledTracker = new MediaTracker(new Panel())
+                                    scaledTracker.addImage(scaledImage, 0)
+                                    scaledTracker.waitForAll()
 
                                     // Update UI on EDT
                                     SwingUtilities.invokeLater {
                                         // Replace loading text with image
-                                        def components = imagePanel.components
-                                        for (component in components) {
-                                            if (component instanceof JLabel) {
-                                                component.icon = new ImageIcon(scaledImage)
-                                                component.text = null
-                                            } else if (component instanceof JPanel) {
-                                                imagePanel.remove(component)
-                                            }
-                                        }
+                                        imagePanel.removeAll()
+                                        imagePanel.add(new JLabel(new ImageIcon(scaledImage)), BorderLayout.CENTER)
                                         imagePanel.revalidate()
                                         imagePanel.repaint()
                                     }
