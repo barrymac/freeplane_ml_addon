@@ -43,9 +43,11 @@ class MessageExpander {
 
     static String expandTemplate(String template, Map binding) {
         try {
-            new SimpleTemplateEngine()
+            // Add fallback for missing variables
+            def safeBinding = binding.withDefault { "" }
+            return new SimpleTemplateEngine()
                     .createTemplate(template)
-                    .make(binding)
+                    .make(safeBinding)
                     .toString()
         } catch (Exception e) {
             LogUtils.severe("Error expanding template: ${e.message}")

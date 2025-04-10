@@ -176,11 +176,13 @@ try {
     // Load image user prompt template
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
     
-    // Create binding with generated prompt
-    def templateBinding = [generatedPrompt: enhancedPrompt]
+    // Create binding with generated prompt and all node context variables
+    def binding = MessageExpander.createBinding(node, null, null, null, null) + [
+        generatedPrompt: enhancedPrompt
+    ]
     
-    // Expand template with generated prompt
-    def initialTemplate = MessageExpander.expandTemplate(userPromptTemplate, templateBinding)
+    // Expand template with generated prompt and full context
+    def initialTemplate = MessageExpander.expandTemplate(userPromptTemplate, binding)
     
     def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams)
     if (!edited) {

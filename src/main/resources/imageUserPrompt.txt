@@ -1,11 +1,11 @@
-Image generation request for concept: $generatedPrompt
+Image generation request for concept: ${generatedPrompt}
 
 Style parameters:
-- Artistic style: $style
-- Detail level: $details
-- Color scheme: $colors
-- Lighting: $lighting
+- Artistic style: ${style ?: 'digital art'}
+- Detail level: ${details ?: 'high detail'} 
+- Color scheme: ${colors ?: 'vibrant'}
+- Lighting: ${lighting ?: 'dramatic'}
 
 Context from mindmap:
-$nodeContent
-$ancestorContents
+${nodeContent}
+${ancestorContents}
