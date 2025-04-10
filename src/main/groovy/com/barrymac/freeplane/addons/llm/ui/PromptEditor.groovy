@@ -31,8 +31,8 @@ class PromptEditor {
                 scrollPane {
                     textArea(
                         text: initialPrompt, 
-                        rows: 8, 
-                        columns: 60, 
+                        rows: 16,  // Increased from 8
+                        columns: 80, // Increased from 60
                         id: 'promptArea',
                         lineWrap: true,      // Enable line wrapping
                         wrapStyleWord: true  // Wrap at word boundaries
@@ -135,7 +135,7 @@ class PromptEditor {
         }
         
         dialog.pack()
-        dialog.setSize(600, 500) // Explicit size to ensure visibility
+        dialog.setSize(800, 600) // Increased from 600x500
         dialog.setLocationRelativeTo(ui.currentFrame)
         dialog.visible = true
         
