@@ -53,7 +53,7 @@ try {
         // Persist the key properly
         try {
             config.setProperty('novita.key', novitaApiKey.trim())
-            config.save() // Persist changes to disk
+            // Freeplane config auto-saves, no need to call save()
             LogUtils.info("Novita API key saved to preferences")
             // Immediately update local variable with saved value
             novitaApiKey = config.getProperty('novita.key', '')
@@ -118,7 +118,7 @@ try {
             return
         }
         config.setProperty('openai.key', llmApiKey.trim())
-        config.save() // Persist changes to disk
+        // Freeplane config auto-saves, no need to call save()
     }
 
     // Load system prompt from resources

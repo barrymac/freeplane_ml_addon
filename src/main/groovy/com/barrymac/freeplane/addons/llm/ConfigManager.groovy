@@ -120,7 +120,7 @@ class ConfigManager {
     static void setUserProperty(def config, String key, String value) {
         try {
             config.setProperty("llm.addon.${key}", value)
-            config.save() // Persist changes to disk
+            // Freeplane config auto-saves, no need to call save()
             LogUtils.info("Saved user property '${key}'")
         } catch (Exception e) {
             LogUtils.severe("Failed to save user property '${key}': ${e.message}")
