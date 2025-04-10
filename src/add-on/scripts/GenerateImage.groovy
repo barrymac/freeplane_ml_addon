@@ -9,11 +9,11 @@ import static com.barrymac.freeplane.addons.llm.ui.DialogHelper.createProgressDi
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showErrorMessage
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
 
-// import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
-// import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
-// import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
-
-// import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
+import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder
+import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.ResponseParser
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 
 // === Script Entry Point ===
 LogUtils.info("GenerateImage script started.")
@@ -82,33 +82,14 @@ try {
 
     // 3. Build Payload
     LogUtils.info("Building Novita payload...")
-    // TODO: Replace placeholder with:
-    // String jsonPayload = ApiPayloadBuilder.buildNovitaImagePayload(prompt)
-    // Example placeholder:
-    String jsonPayload = """{"prompt": "${prompt}", "image_num": 4, "width": 512, "height": 512, "steps": 4}"""
-    LogUtils.info("Built Novita payload (placeholder): ${jsonPayload}")
+    def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(prompt)
+    String jsonPayload = new JsonBuilder(payloadMap).toString()
+    LogUtils.info("Built Novita payload: ${jsonPayload}")
 
     // 4. Create API Caller
     LogUtils.info("Creating Novita API caller...")
-    // TODO: Replace placeholder with:
-    // Closure callNovitaApi = ApiCallerFactory.createNovitaImageCaller(apiConfig.novitaApiKey)
-    // Replace the dummy closure with local image path
-    Closure callNovitaApi = { String payload ->
-        LogUtils.info("Placeholder: Simulating Novita API call")
-        // Return paths to bundled image
-        return """
-        {
-          "images": [
-            { "image_url": "/placeholder1.png", "image_type": "png" },
-            { "image_url": "/placeholder2.png", "image_type": "png" },
-            { "image_url": "/placeholder3.png", "image_type": "png" },
-            { "image_url": "/placeholder4.png", "image_type": "png" }
-          ],
-          "task": { "task_id": "dummy-task-id" }
-        }
-        """
-    }
-    LogUtils.info("Created Novita API caller (placeholder).")
+    Closure callNovitaApi = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call.curry('novita', novitaApiKey)
+    LogUtils.info("Created Novita API caller.")
 
     // 5. Call API (with progress indication)
     LogUtils.info("Showing progress dialog...")
@@ -126,15 +107,7 @@ try {
 
     // 6. Parse Response
     LogUtils.info("Parsing API response...")
-    // TODO: Replace placeholder with:
-    // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
-    // Example placeholder:
-    List<String> imageUrls = [
-            "/placeholder1.png",
-            "/placeholder2.png",
-            "/placeholder3.png",
-            "/placeholder4.png"
-    ]
+    List<String> imageUrls = ResponseParser.parseNovitaResponse(rawApiResponse)
     if (imageUrls.isEmpty()) {
         showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
         LogUtils.error("API response did not contain any image URLs.")
@@ -192,9 +165,8 @@ try {
             LogUtils.info("Download progress dialog shown.")
 
             LogUtils.info("Downloading image bytes...")
-            // TODO: Replace placeholder downloader call with actual download:
-            // byte[] selectedImageBytes = ImageDownloader.downloadImageBytes(selectedUrl)
-            byte[] selectedImageBytes = downloader(selectedUrl) // Use placeholder downloader
+            // Download the selected image
+            byte[] selectedImageBytes = downloader(selectedUrl)
             if (!selectedImageBytes) {
                 LogUtils.warn("No image bytes received for ${selectedUrl}")
                 showErrorMessage(ui, "Failed to load selected image")

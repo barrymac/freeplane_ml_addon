@@ -67,6 +67,36 @@ class ResponseParser {
      * Extracts JSON payload from markdown-formatted response
      */
     /**
+     * Parses Novita API response to extract image URLs
+     * 
+     * @param jsonResponse The raw JSON response from Novita API
+     * @return List of image URLs
+     * @throws Exception if parsing fails or no images found
+     */
+    static List<String> parseNovitaResponse(String jsonResponse) {
+        try {
+            def jsonSlurper = new JsonSlurper()
+            def parsed = jsonSlurper.parseText(jsonResponse)
+            
+            if (!parsed.images) {
+                throw new Exception("No images found in Novita API response")
+            }
+            
+            def imageUrls = parsed.images.collect { it.image_url }
+            if (imageUrls.isEmpty()) {
+                throw new Exception("Empty image URLs list in Novita API response")
+            }
+            
+            LogUtils.info("Parsed ${imageUrls.size()} image URLs from Novita response")
+            return imageUrls
+            
+        } catch (Exception e) {
+            LogUtils.severe("Failed to parse Novita response: ${e.message}")
+            throw new Exception("Failed to parse Novita API response: ${e.message}", e)
+        }
+    }
+    
+    /**
      * Extracts JSON payload from a potentially noisy response.
      * Handles markdown code fences (```json ... ```) and attempts to find
      * the first '{' if no code fence is present, ignoring leading text.

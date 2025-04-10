@@ -16,7 +16,8 @@ class ApiCallerFactory {
      */
     enum ApiProvider {
         OPENAI('https://api.openai.com/v1/chat/completions'),
-        OPENROUTER('https://openrouter.ai/api/v1/chat/completions')
+        OPENROUTER('https://openrouter.ai/api/v1/chat/completions'),
+        NOVITA('https://api.novita.ai/v3beta/flux-1-schnell')
 
         final String endpoint
 
@@ -31,6 +32,7 @@ class ApiCallerFactory {
             switch (provider.toLowerCase()) {
                 case 'openai': return OPENAI
                 case 'openrouter': return OPENROUTER
+                case 'novita': return NOVITA
                 default: throw new LlmAddonException("Unsupported API provider: $provider")
             }
         }
@@ -103,6 +105,9 @@ class ApiCallerFactory {
         if (provider == ApiProvider.OPENROUTER) {
             headers["HTTP-Referer"] = "https://github.com/barrymac/freeplane_openai_addon"
             headers["X-Title"] = "Freeplane GPT AddOn"
+        } else if (provider == ApiProvider.NOVITA) {
+            // Novita uses Bearer token in Authorization header, already set above
+            // Content-Type is already set to application/json
         }
 
 
@@ -135,15 +140,26 @@ class ApiCallerFactory {
                     case 401:
                         errorMsg = "Invalid authentication or incorrect API key provided for ${provider.name().toLowerCase()}."
                         browseUrl = (provider == ApiProvider.OPENROUTER) ?
-                                "https://openrouter.ai/keys" : "https://platform.openai.com/account/api-keys"
+                                "https://openrouter.ai/keys" : 
+                                (provider == ApiProvider.NOVITA) ? 
+                                "https://novita.ai/account" : "https://platform.openai.com/account/api-keys"
                         break
                     case 404:
                         errorMsg = (provider == ApiProvider.OPENROUTER) ?
                                 "Endpoint not found. Check your OpenRouter configuration." :
+                                (provider == ApiProvider.NOVITA) ?
+                                "Endpoint not found. Check your Novita configuration." :
                                 "You might need organization membership for OpenAI API."
                         break
                     case 429:
                         errorMsg = "Rate limit reached or quota exceeded for ${provider.name().toLowerCase()}."
+                        break
+                    case 400:
+                        if (provider == ApiProvider.NOVITA) {
+                            errorMsg = "Bad request to Novita API. Check your prompt for prohibited content."
+                        } else {
+                            errorMsg = "Bad request to ${provider.name().toLowerCase()} API."
+                        }
                         break
                     default:
                         errorMsg = "Unhandled error code $postRC returned from ${provider.name().toLowerCase()} API."
