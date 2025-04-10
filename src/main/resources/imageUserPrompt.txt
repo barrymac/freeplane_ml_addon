@@ -1,5 +1,6 @@
 Main subject: ${nodeContent}
-Key elements: ${ancestorContents}
+Topic: $nodeContent
+Key elements: ${ancestorContents}, $siblingContents
 Art style: ${style}
 Details: ${details}
 Colors: ${colors}
