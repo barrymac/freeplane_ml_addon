@@ -194,8 +194,8 @@ try {
         generatedPrompt: enhancedPrompt
     ]
     
-    // Expand template with generated prompt and full context
-    def initialTemplate = MessageExpander.expandTemplate(userPromptTemplate, binding)
+    // Use raw template without expansion to preserve variables
+    def initialTemplate = userPromptTemplate
     
     def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
     if (!edited) {
@@ -206,7 +206,7 @@ try {
     def (modifiedPrompt, params) = edited
     LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
     
-    // Reuse existing binding from earlier in the script
+    // Expand the template with current context AFTER user edits
     def expandedPrompt = MessageExpander.expandTemplate(modifiedPrompt, binding)
     LogUtils.info("Expanded prompt template with node context")
     
