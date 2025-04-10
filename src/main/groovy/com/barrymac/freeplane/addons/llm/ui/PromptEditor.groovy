@@ -34,34 +34,61 @@ class PromptEditor {
         ) {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
-                gridLayout(rows: 4, columns: 2) // Explicit 4 rows for header, prompt, variables, params
-                label(text: '<html><b>Edit Image Generation Prompt</b><br>'
-                      + '<small>Template source: ' 
-                      + (savedTemplate ? 'User-saved' : 'System default') 
-                      + '</small></html>', 
-                      border: BorderFactory.createEmptyBorder(0,5,0,5))
-                scrollPane {
+                layout = new GridBagLayout()
+                def gbc = new GridBagConstraints(
+                    fill: GridBagConstraints.BOTH,
+                    anchor: GridBagConstraints.NORTHWEST,
+                    insets: [2,5,2,5] // Top, left, bottom, right padding
+                )
+
+                // 1. Header - Minimal height
+                gbc.gridx = 0
+                gbc.gridy = 0
+                gbc.weightx = 1.0
+                gbc.weighty = 0.0 // No vertical expansion
+                add(label(
+                    text: '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>'
+                        + '<small style="font-size:11px">Template source: ' 
+                        + (savedTemplate ? 'User-saved' : 'System default') 
+                        + '</small></html>',
+                    border: BorderFactory.createEmptyBorder(2,5,2,5)
+                ), gbc)
+
+                // 2. Text Area - Takes majority of space
+                gbc.gridy++
+                gbc.weighty = 1.0 // Allocates 100% of extra vertical space
+                gbc.ipady = 10 // Internal padding for text area
+                add(scrollPane {
                     promptArea = textArea(
                         text: initialPrompt, 
-                        rows: 25,  // Increased from 16
-                        columns: 200, // Increased from 80
-                        lineWrap: true,      // Enable line wrapping
-                        wrapStyleWord: true  // Wrap at word boundaries
+                        lineWrap: true,
+                        wrapStyleWord: true,
+                        font: new Font(Font.MONOSPACED, Font.PLAIN, 12)
                     )
-                }
-                panel(border: BorderFactory.createTitledBorder("Available Variables")) {
-                    gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)  // Increased rows
-                    label(text: '$generatedPrompt'); label(text: 'AI-generated base prompt') 
-                    label(text: '$nodeContent'); label(text: 'Current node text')
-                    label(text: '$ancestorContents'); label(text: 'All ancestor texts') 
-                    label(text: '$siblingContents'); label(text: 'Sibling node texts')
-                    label(text: '$rootText'); label(text: 'Root node text')
-                    label(text: '$style'); label(text: 'Art style (e.g. digital art)')
-                    label(text: '$details'); label(text: 'Detail level (e.g. high)')
-                    label(text: '$colors'); label(text: 'Color scheme')
-                }
-                panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
-                    gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5) // Explicit rows/columns
+                }, gbc)
+
+                // 3. Variables Panel - Fixed height
+                gbc.gridy++
+                gbc.weighty = 0.0
+                gbc.ipady = 0
+                add(scrollPane {
+                    panel(border: BorderFactory.createTitledBorder("Available Variables")) {
+                        gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
+                        label(text: '$generatedPrompt'); label(text: 'AI-generated base prompt') 
+                        label(text: '$nodeContent'); label(text: 'Current node text')
+                        label(text: '$ancestorContents'); label(text: 'All ancestor texts') 
+                        label(text: '$siblingContents'); label(text: 'Sibling node texts')
+                        label(text: '$rootText'); label(text: 'Root node text')
+                        label(text: '$style'); label(text: 'Art style (e.g. digital art)')
+                        label(text: '$details'); label(text: 'Detail level (e.g. high)')
+                        label(text: '$colors'); label(text: 'Color scheme')
+                    }
+                }, gbc)
+
+                // 4. Parameters Panel - Fixed height
+                gbc.gridy++
+                add(panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
+                    gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
                     label(text: 'Steps (4-50):')
                     textField(text: params.steps.toString(), id: 'stepsField')
                     label(text: 'Width (256-1024):')
@@ -70,7 +97,7 @@ class PromptEditor {
                     textField(text: params.height.toString(), id: 'heightField')
                     label(text: 'Number of Images:')
                     textField(text: params.imageNum.toString(), id: 'imageNumField')
-                }
+                }, gbc)
             }
             
             panel(constraints: BorderLayout.SOUTH) {
@@ -173,8 +200,8 @@ class PromptEditor {
             })
         }
         
+        dialog.preferredSize = new Dimension(1000, 800)
         dialog.pack()
-        dialog.setSize(1000, 800) // Increased from 800x600
         dialog.setLocationRelativeTo(ui.currentFrame)
         dialog.visible = true
         
