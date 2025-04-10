@@ -16,8 +16,13 @@ class PromptEditor {
         def modifiedPrompt = null
         def params = initialParams.clone()
         // Declare dialog variable outside the closure
+        // Declare dialog and builder variables
         def dialog
-        dialog = new SwingBuilder().dialog(
+        def swingBuilder = new SwingBuilder()
+        def promptArea
+        def generateButton
+        
+        dialog = swingBuilder.dialog(
             title: 'Edit Image Generation Parameters',
             modal: true,
             owner: ui.currentFrame,
@@ -29,11 +34,10 @@ class PromptEditor {
                 label(text: '<html><b>Edit Image Generation Prompt</b></html>', 
                       border: BorderFactory.createEmptyBorder(5,5,5,5))
                 scrollPane {
-                    textArea(
+                    promptArea = textArea(
                         text: initialPrompt, 
                         rows: 16,  // Increased from 8
                         columns: 80, // Increased from 60
-                        id: 'promptArea',
                         lineWrap: true,      // Enable line wrapping
                         wrapStyleWord: true  // Wrap at word boundaries
                     )
@@ -61,11 +65,9 @@ class PromptEditor {
                     textField(text: params.imageNum.toString(), id: 'imageNumField')
                 }
             }
-            // Declare button variable outside the panel
-            def generateButton
             
             panel(constraints: BorderLayout.SOUTH) {
-                generateButton = button(text: 'Generate', id: 'generateButton', actionPerformed: {
+                generateButton = button(text: 'Generate', actionPerformed: {
                     try {
                         // Validate numerical parameters
                         params.steps = validateNumberField(stepsField, 4, 50, "Steps")
@@ -111,30 +113,30 @@ class PromptEditor {
                     dialog.dispose()
                 })
             }
-            
-            // Add keyboard bindings to the root pane
-            dialog.rootPane.with {
-                // Escape to close
-                getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeAction")
-                getActionMap().put("closeAction", new AbstractAction() {
-                    void actionPerformed(ActionEvent e) {
-                        modifiedPrompt = null
-                        dialog.dispose()
-                    }
-                })
-            }
-            
-            // Add Ctrl+Enter to textArea
-            promptArea.with {
-                getInputMap().put(KeyStroke.getKeyStroke("ctrl ENTER"), "generateAction")
-                getActionMap().put("generateAction", new AbstractAction() {
-                    void actionPerformed(ActionEvent e) {
-                        // Simulate Generate button click
-                        generateButton.doClick()
-                    }
-                })
-            }
+        }
+        
+        // Add keyboard bindings AFTER dialog is fully constructed
+        dialog.rootPane.with {
+            // Escape to close
+            getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeAction")
+            getActionMap().put("closeAction", new AbstractAction() {
+                void actionPerformed(ActionEvent e) {
+                    modifiedPrompt = null
+                    dialog.dispose()
+                }
+            })
+        }
+        
+        // Add Ctrl+Enter to textArea
+        promptArea.with {
+            getInputMap().put(KeyStroke.getKeyStroke("ctrl ENTER"), "generateAction")
+            getActionMap().put("generateAction", new AbstractAction() {
+                void actionPerformed(ActionEvent e) {
+                    // Simulate Generate button click
+                    generateButton.doClick()
+                }
+            })
         }
         
         dialog.pack()
