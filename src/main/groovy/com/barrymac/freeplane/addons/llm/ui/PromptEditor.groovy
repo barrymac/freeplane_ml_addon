@@ -62,7 +62,7 @@ class PromptEditor {
                 }
             }
             panel(constraints: BorderLayout.SOUTH) {
-                button(text: 'Generate', id: 'generateButton', actionPerformed: {
+                def generateButton = button(text: 'Generate', id: 'generateButton', actionPerformed: {
                     try {
                         // Validate numerical parameters
                         params.steps = validateNumberField(stepsField, 4, 50, "Steps")
