@@ -3,6 +3,7 @@ package com.barrymac.freeplane.addons.llm.api
 import com.barrymac.freeplane.addons.llm.exceptions.ApiException
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 import org.freeplane.core.util.LogUtils
 
 import java.awt.*
@@ -156,7 +157,16 @@ class ApiCallerFactory {
                         break
                     case 400:
                         if (provider == ApiProvider.NOVITA) {
-                            errorMsg = "Bad request to Novita API. Check your prompt for prohibited content."
+                            // Try to parse Novita error details
+                            def errorBody = [:]
+                            try {
+                                errorBody = new JsonSlurper().parseText(post.errorStream?.getText('UTF-8'))
+                            } catch(Exception ignored) {}
+                            
+                            errorMsg = errorBody.message ?: "Bad request to Novita API"
+                            if (errorBody.details) {
+                                errorMsg += ": ${errorBody.details.join(', ')}"
+                            }
                         } else {
                             errorMsg = "Bad request to ${provider.name().toLowerCase()} API."
                         }

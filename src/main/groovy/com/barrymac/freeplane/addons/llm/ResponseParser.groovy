@@ -75,6 +75,10 @@ class ResponseParser {
      */
     static List<String> parseNovitaResponse(String jsonResponse) {
         try {
+            if (!jsonResponse?.trim()) {
+                throw new Exception("Empty response from Novita API")
+            }
+            
             def jsonSlurper = new JsonSlurper()
             def parsed = jsonSlurper.parseText(jsonResponse)
             

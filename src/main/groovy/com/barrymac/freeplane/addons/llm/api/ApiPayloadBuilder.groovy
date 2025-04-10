@@ -29,12 +29,13 @@ class ApiPayloadBuilder {
      * @throws IllegalArgumentException if any parameter is outside valid range
      */
     static Map buildNovitaImagePayload(String prompt, int steps=4, int width=512, 
-                                     int height=512, int imageNum=4, long seed=System.currentTimeMillis()) {
+                                     int height=512, int imageNum=4, int seed=new Random().nextInt(Integer.MAX_VALUE)) {
         // Validate parameters
         if(steps < 1 || steps > 50) throw new IllegalArgumentException("Steps must be 1-50")
         if(width < 256 || width > 1024) throw new IllegalArgumentException("Width must be 256-1024")
         if(height < 256 || height > 1024) throw new IllegalArgumentException("Height must be 256-1024")
         if(imageNum < 1 || imageNum > 4) throw new IllegalArgumentException("Image count must be 1-4")
+        if(seed < 0 || seed > 4294967295) throw new IllegalArgumentException("Seed must be between 0-4294967295")
         
         return [
             prompt: prompt,

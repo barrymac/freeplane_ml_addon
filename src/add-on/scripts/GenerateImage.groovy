@@ -170,7 +170,7 @@ try {
         width: 512,
         height: 512,
         imageNum: 4,
-        seed: System.currentTimeMillis()
+        seed: new Random().nextInt(Integer.MAX_VALUE) // Generate valid 32-bit seed
     ]
     
     def edited = PromptEditor.showPromptEditor(ui, enhancedPrompt, initialParams)
