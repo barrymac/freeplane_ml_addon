@@ -153,7 +153,7 @@ try {
         // Call LLM
         def (apiCaller, progressDialog, llmResponse) = [null, null, null]
         try {
-            progressDialog = createProgressDialog(ui, "Generating Prompt", "Creating image description...")
+            progressDialog = ImageSelectionDialog.createProgressDialog(ui, "Generating Prompt", "Creating image description...")
             progressDialog.visible = true
             apiCaller = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call
             llmResponse = apiCaller(llmProvider, llmApiKey, promptRequest)
