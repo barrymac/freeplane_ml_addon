@@ -4,6 +4,10 @@ import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 import org.freeplane.api.Node
 import org.freeplane.core.util.LogUtils
 
+import java.awt.MediaTracker
+import java.awt.Panel
+import java.awt.Toolkit
+
 class ImageAttachmentHandler {
     static void attachImageToNode(Node node, byte[] imageBytes, String baseName, String extension) {
         try {
@@ -63,7 +67,35 @@ class ImageAttachmentHandler {
         File imageFile = new File(mapFile.parentFile, fileName)
         imageFile.bytes = bytes
         LogUtils.info("Saved image to: ${imageFile.absolutePath}")
-        imageFile
+        
+        // Add image validation
+        validateImageDimensions(imageFile)
+        
+        return imageFile
+    }
+    
+    private static void validateImageDimensions(File imageFile) {
+        try {
+            def image = Toolkit.defaultToolkit.createImage(imageFile.bytes)
+            def tracker = new MediaTracker(new Panel()) // Dummy component
+            tracker.addImage(image, 0)
+            tracker.waitForAll()
+            
+            // Use getWidth()/getHeight() with ImageObserver instead of property access
+            int width = image.getWidth(null)
+            int height = image.getHeight(null)
+            
+            if (width <= 0 || height <= 0) {
+                throw new LlmAddonException("Invalid image dimensions: ${width}x${height}")
+            }
+            LogUtils.info("Validated image dimensions: ${width}x${height}")
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt()
+            throw new LlmAddonException("Image validation interrupted", e)
+        } catch (Exception e) {
+            LogUtils.severe("Error validating image: ${e.message}")
+            throw new LlmAddonException("Failed to validate image: ${e.message}", e)
+        }
     }
 
     private static void attachImageUri(Node node, File imageFile) {
