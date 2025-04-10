@@ -1,6 +1,8 @@
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
+import com.barrymac.freeplane.addons.llm.ui.PromptEditor
+import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
 import org.freeplane.core.util.LogUtils
 
 import javax.swing.*
@@ -80,11 +82,53 @@ try {
     LogUtils.info("Using prompt from node ${node.id}: '${prompt.take(100)}...'")
 
 
-    // 3. Build Payload
-    LogUtils.info("Building Novita payload...")
-    def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(prompt)
+    // 3. Prepare and edit prompt
+    LogUtils.info("Preparing image generation prompt...")
+    
+    // Try to load system prompt template, fall back to simple template if not found
+    String systemPrompt
+    try {
+        systemPrompt = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
+        LogUtils.info("Loaded system prompt template from resources")
+    } catch (Exception e) {
+        LogUtils.warn("Could not load system prompt template: ${e.message}")
+        systemPrompt = """You are an expert image prompt engineer. Enhance this prompt for AI image generation 
+                          while maintaining the core concept. Add details about style, lighting, and composition."""
+    }
+    
+    // Build enhanced prompt
+    String enhancedPrompt = MessageExpander.buildImagePrompt(prompt, systemPrompt)
+    LogUtils.info("Built enhanced prompt")
+    
+    // Show prompt editor with default params
+    def initialParams = [
+        steps: 4,
+        width: 512,
+        height: 512,
+        imageNum: 4,
+        seed: System.currentTimeMillis()
+    ]
+    
+    def edited = PromptEditor.showPromptEditor(ui, enhancedPrompt, initialParams)
+    if (!edited) {
+        LogUtils.info("User cancelled prompt editing")
+        return
+    }
+    
+    def (modifiedPrompt, params) = edited
+    LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
+    
+    // Build payload with user-edited values
+    def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
+        modifiedPrompt, 
+        params.steps,
+        params.width,
+        params.height,
+        params.imageNum,
+        params.seed
+    )
     String jsonPayload = new JsonBuilder(payloadMap).toString()
-    LogUtils.info("Built Novita payload: ${jsonPayload}")
+    LogUtils.info("Built Novita payload with custom parameters")
 
     // 4. Create API Caller
     LogUtils.info("Creating Novita API caller...")

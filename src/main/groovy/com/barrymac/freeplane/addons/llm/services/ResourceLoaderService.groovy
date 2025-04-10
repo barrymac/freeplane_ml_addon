@@ -70,4 +70,25 @@ class ResourceLoaderService {
             }
         }
     }
+    
+    /**
+     * Loads a text resource from the add-on JAR and returns its content as a String.
+     *
+     * @param path The path to the text resource (e.g., "/templates/prompt.txt")
+     * @return String The content of the text resource
+     * @throws FileNotFoundException if the resource cannot be found
+     * @throws IOException if there's an error reading the resource
+     */
+    static String loadTextResource(String path) throws FileNotFoundException, IOException {
+        LogUtils.info("ResourceLoaderService: Loading text resource '${path}'")
+        try {
+            byte[] bytes = loadBundledResourceBytes(path)
+            String content = new String(bytes, "UTF-8")
+            LogUtils.info("ResourceLoaderService: Successfully loaded text resource (${content.length()} chars)")
+            return content
+        } catch (Exception e) {
+            LogUtils.severe("ResourceLoaderService: Failed to load text resource '${path}': ${e.message}", e)
+            throw e
+        }
+    }
 }

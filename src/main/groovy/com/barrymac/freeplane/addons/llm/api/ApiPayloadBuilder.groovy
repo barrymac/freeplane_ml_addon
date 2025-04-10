@@ -26,9 +26,16 @@ class ApiPayloadBuilder {
      * @param imageNum Number of images to generate
      * @param seed Random seed for reproducibility (default: current timestamp)
      * @return Map containing the Novita API payload
+     * @throws IllegalArgumentException if any parameter is outside valid range
      */
     static Map buildNovitaImagePayload(String prompt, int steps=4, int width=512, 
                                      int height=512, int imageNum=4, long seed=System.currentTimeMillis()) {
+        // Validate parameters
+        if(steps < 1 || steps > 50) throw new IllegalArgumentException("Steps must be 1-50")
+        if(width < 256 || width > 1024) throw new IllegalArgumentException("Width must be 256-1024")
+        if(height < 256 || height > 1024) throw new IllegalArgumentException("Height must be 256-1024")
+        if(imageNum < 1 || imageNum > 4) throw new IllegalArgumentException("Image count must be 1-4")
+        
         return [
             prompt: prompt,
             steps: steps,
