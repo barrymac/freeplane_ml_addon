@@ -34,17 +34,17 @@ class PromptEditor {
         ) {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
-                gridLayout(rows: 4, columns: 1) // Explicit 4 rows for header, prompt, variables, params
+                gridLayout(rows: 4, columns: 2) // Explicit 4 rows for header, prompt, variables, params
                 label(text: '<html><b>Edit Image Generation Prompt</b><br>'
                       + '<small>Template source: ' 
                       + (savedTemplate ? 'User-saved' : 'System default') 
                       + '</small></html>', 
-                      border: BorderFactory.createEmptyBorder(5,5,5,5))
+                      border: BorderFactory.createEmptyBorder(0,5,0,5))
                 scrollPane {
                     promptArea = textArea(
                         text: initialPrompt, 
                         rows: 25,  // Increased from 16
-                        columns: 100, // Increased from 80
+                        columns: 200, // Increased from 80
                         lineWrap: true,      // Enable line wrapping
                         wrapStyleWord: true  // Wrap at word boundaries
                     )
