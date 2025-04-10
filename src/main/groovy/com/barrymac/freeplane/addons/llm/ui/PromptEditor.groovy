@@ -71,32 +71,32 @@ class PromptEditor {
                 gbc.gridy++
                 gbc.weighty = 0.0
                 gbc.ipady = 0
-                add(scrollPane {
-                    panel(border: BorderFactory.createTitledBorder("Available Variables")) {
-                        gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
-                        label(text: '$generatedPrompt'); label(text: 'AI-generated base prompt') 
-                        label(text: '$nodeContent'); label(text: 'Current node text')
-                        label(text: '$ancestorContents'); label(text: 'All ancestor texts') 
-                        label(text: '$siblingContents'); label(text: 'Sibling node texts')
-                        label(text: '$rootText'); label(text: 'Root node text')
-                        label(text: '$style'); label(text: 'Art style (e.g. digital art)')
-                        label(text: '$details'); label(text: 'Detail level (e.g. high)')
-                        label(text: '$colors'); label(text: 'Color scheme')
+                add(swingBuilder.scrollPane {
+                    swingBuilder.panel(border: BorderFactory.createTitledBorder("Available Variables")) {
+                        swingBuilder.gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
+                        swingBuilder.label(text: '$generatedPrompt'); swingBuilder.label(text: 'AI-generated base prompt') 
+                        swingBuilder.label(text: '$nodeContent'); swingBuilder.label(text: 'Current node text')
+                        swingBuilder.label(text: '$ancestorContents'); swingBuilder.label(text: 'All ancestor texts') 
+                        swingBuilder.label(text: '$siblingContents'); swingBuilder.label(text: 'Sibling node texts')
+                        swingBuilder.label(text: '$rootText'); swingBuilder.label(text: 'Root node text')
+                        swingBuilder.label(text: '$style'); swingBuilder.label(text: 'Art style (e.g. digital art)')
+                        swingBuilder.label(text: '$details'); swingBuilder.label(text: 'Detail level (e.g. high)')
+                        swingBuilder.label(text: '$colors'); swingBuilder.label(text: 'Color scheme')
                     }
                 }, gbc)
 
                 // 4. Parameters Panel - Fixed height
                 gbc.gridy++
-                add(panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
-                    gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
-                    label(text: 'Steps (4-50):')
-                    textField(text: params.steps.toString(), id: 'stepsField')
-                    label(text: 'Width (256-1024):')
-                    textField(text: params.width.toString(), id: 'widthField')
-                    label(text: 'Height (256-1024):')
-                    textField(text: params.height.toString(), id: 'heightField')
-                    label(text: 'Number of Images:')
-                    textField(text: params.imageNum.toString(), id: 'imageNumField')
+                add(swingBuilder.panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
+                    swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
+                    swingBuilder.label(text: 'Steps (4-50):')
+                    swingBuilder.textField(text: params.steps.toString(), id: 'stepsField')
+                    swingBuilder.label(text: 'Width (256-1024):')
+                    swingBuilder.textField(text: params.width.toString(), id: 'widthField')
+                    swingBuilder.label(text: 'Height (256-1024):')
+                    swingBuilder.textField(text: params.height.toString(), id: 'heightField')
+                    swingBuilder.label(text: 'Number of Images:')
+                    swingBuilder.textField(text: params.imageNum.toString(), id: 'imageNumField')
                 }, gbc)
             }
             
