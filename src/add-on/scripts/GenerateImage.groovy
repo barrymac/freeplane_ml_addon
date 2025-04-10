@@ -173,7 +173,15 @@ try {
         seed: new Random().nextInt(Integer.MAX_VALUE) // Generate valid 32-bit seed
     ]
     
-    def edited = PromptEditor.showPromptEditor(ui, enhancedPrompt, initialParams)
+    // Create initial template with variables
+    def initialTemplate = """\
+${enhancedPrompt}
+
+Style: \$style
+Details: high detail
+Related context: \$ancestorContents""".stripIndent()
+    
+    def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams)
     if (!edited) {
         LogUtils.info("User cancelled prompt editing")
         return
@@ -182,9 +190,23 @@ try {
     def (modifiedPrompt, params) = edited
     LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
     
+    // Expand template with node context
+    def binding = MessageExpander.createBinding(node, null, null, null, null)
+    def expandedPrompt = MessageExpander.expandTemplate(modifiedPrompt, binding)
+    LogUtils.info("Expanded prompt template with node context")
+    
+    // Build final prompt with system template
+    String systemPromptTemplate = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
+    String finalPrompt = MessageExpander.buildImagePrompt(
+        expandedPrompt, 
+        systemPromptTemplate,
+        [dimension: 'visual concept']
+    )
+    LogUtils.info("Built final prompt with system template")
+    
     // 4. Build payload map with user-edited values
     def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
-        modifiedPrompt, 
+        finalPrompt, 
         params.steps,
         params.width,
         params.height,

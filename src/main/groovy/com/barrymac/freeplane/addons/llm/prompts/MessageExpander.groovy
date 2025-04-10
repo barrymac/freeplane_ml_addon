@@ -70,12 +70,9 @@ class MessageExpander {
                 .make(binding)
                 .toString()
                 
-            """${systemPrompt.trim()}
-            
-            USER INPUT:
-${basePrompt.indent(4)}
-
-            FINAL PROMPT:"""
+            // For Novita API, we just return the expanded prompt directly
+            // This is the prompt that will be sent to the image generation API
+            return basePrompt
             
         } catch(Exception e) {
             LogUtils.severe("Failed to build image prompt: ${e.message}")

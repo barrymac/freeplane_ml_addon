@@ -19,7 +19,7 @@ class PromptEditor {
         ) {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
-                gridLayout(rows: 3, columns: 1) // Explicit 3 rows for header, prompt, params
+                gridLayout(rows: 4, columns: 1) // Explicit 4 rows for header, prompt, variables, params
                 label(text: '<html><b>Edit Image Generation Prompt</b></html>', 
                       border: BorderFactory.createEmptyBorder(5,5,5,5))
                 scrollPane {
@@ -31,6 +31,13 @@ class PromptEditor {
                         lineWrap: true,      // Enable line wrapping
                         wrapStyleWord: true  // Wrap at word boundaries
                     )
+                }
+                panel(border: BorderFactory.createTitledBorder("Available Variables")) {
+                    gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
+                    label(text: '$nodeContent'); label(text: 'Current node text')
+                    label(text: '$ancestorContents'); label(text: 'All ancestor texts') 
+                    label(text: '$siblingContents'); label(text: 'Sibling node texts')
+                    label(text: '$rootText'); label(text: 'Root node text')
                 }
                 panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
                     gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5) // Explicit rows/columns
