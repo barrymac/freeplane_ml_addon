@@ -12,6 +12,13 @@ class MessageExpander {
             pathToRoot = pathToRoot.take(pathToRoot.size() - 1)
 
             [
+                    // Add new image-specific variables
+                    generatedPrompt     : '',  // Will be set by caller
+                    style               : 'digital art',
+                    details             : 'high detail',
+                    colors              : 'vibrant',
+                    lighting            : 'dramatic',
+                    // Existing variables
                     rootText            : rootText,
                     nodeContent         : node.plainText,
                     otherNodeContent    : otherNode?.plainText ?: "",
@@ -61,7 +68,9 @@ class MessageExpander {
                 basePrompt: basePrompt,
                 dimension: context.dimension ?: 'visual concept',
                 style: context.style ?: 'digital art',
-                details: context.details ?: 'high detail'
+                details: context.details ?: 'high detail',
+                colors: context.colors ?: 'vibrant',
+                lighting: context.lighting ?: 'dramatic'
             ] + context
             
             // Expand the system prompt template
@@ -70,9 +79,19 @@ class MessageExpander {
                 .make(binding)
                 .toString()
                 
-            // For Novita API, we just return the expanded prompt directly
-            // This is the prompt that will be sent to the image generation API
-            return basePrompt
+            // Extract the core prompt from the expanded template
+            // For Novita API, we need to send a clean, focused prompt
+            // Look for patterns that might indicate the core prompt section
+            def lines = basePrompt.readLines()
+            def corePrompt = lines.size() > 0 ? lines[0] : basePrompt
+            
+            // If the first line contains "concept:" or similar, extract just the concept part
+            if (corePrompt.contains(":")) {
+                corePrompt = corePrompt.split(":", 2)[1].trim()
+            }
+            
+            LogUtils.info("Extracted core prompt for image generation: ${corePrompt}")
+            return corePrompt
             
         } catch(Exception e) {
             LogUtils.severe("Failed to build image prompt: ${e.message}")

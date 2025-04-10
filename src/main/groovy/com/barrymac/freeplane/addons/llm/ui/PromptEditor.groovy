@@ -33,11 +33,15 @@ class PromptEditor {
                     )
                 }
                 panel(border: BorderFactory.createTitledBorder("Available Variables")) {
-                    gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
+                    gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)  // Increased rows
+                    label(text: '$generatedPrompt'); label(text: 'AI-generated base prompt') 
                     label(text: '$nodeContent'); label(text: 'Current node text')
                     label(text: '$ancestorContents'); label(text: 'All ancestor texts') 
                     label(text: '$siblingContents'); label(text: 'Sibling node texts')
                     label(text: '$rootText'); label(text: 'Root node text')
+                    label(text: '$style'); label(text: 'Art style (e.g. digital art)')
+                    label(text: '$details'); label(text: 'Detail level (e.g. high)')
+                    label(text: '$colors'); label(text: 'Color scheme')
                 }
                 panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
                     gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5) // Explicit rows/columns

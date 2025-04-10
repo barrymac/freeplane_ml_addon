@@ -173,13 +173,14 @@ try {
         seed: new Random().nextInt(Integer.MAX_VALUE) // Generate valid 32-bit seed
     ]
     
-    // Create initial template with variables
-    def initialTemplate = """\
-${enhancedPrompt}
-
-Style: \$style
-Details: high detail
-Related context: \$ancestorContents""".stripIndent()
+    // Load image user prompt template
+    String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
+    
+    // Create binding with generated prompt
+    def templateBinding = [generatedPrompt: enhancedPrompt]
+    
+    // Expand template with generated prompt
+    def initialTemplate = MessageExpander.expandTemplate(userPromptTemplate, templateBinding)
     
     def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams)
     if (!edited) {
@@ -197,12 +198,35 @@ Related context: \$ancestorContents""".stripIndent()
     
     // Build final prompt with system template
     String systemPromptTemplate = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
+    
+    // Extract style parameters from the expanded prompt
+    def stylePattern = ~/Style:\s*([^\n]+)/
+    def detailsPattern = ~/Details:\s*([^\n]+)/
+    def colorsPattern = ~/Colors:\s*([^\n]+)/
+    def lightingPattern = ~/Lighting:\s*([^\n]+)/
+    
+    def styleMatcher = expandedPrompt =~ stylePattern
+    def detailsMatcher = expandedPrompt =~ detailsPattern
+    def colorsMatcher = expandedPrompt =~ colorsPattern
+    def lightingMatcher = expandedPrompt =~ lightingPattern
+    
+    def styleValue = styleMatcher.find() ? styleMatcher.group(1).trim() : 'digital art'
+    def detailsValue = detailsMatcher.find() ? detailsMatcher.group(1).trim() : 'high detail'
+    def colorsValue = colorsMatcher.find() ? colorsMatcher.group(1).trim() : 'vibrant'
+    def lightingValue = lightingMatcher.find() ? lightingMatcher.group(1).trim() : 'dramatic'
+    
     String finalPrompt = MessageExpander.buildImagePrompt(
         expandedPrompt, 
         systemPromptTemplate,
-        [dimension: 'visual concept']
+        [
+            dimension: 'visual concept',
+            style: styleValue,
+            details: detailsValue,
+            colors: colorsValue,
+            lighting: lightingValue
+        ]
     )
-    LogUtils.info("Built final prompt with system template")
+    LogUtils.info("Built final prompt with system template and extracted parameters")
     
     // 4. Build payload map with user-edited values
     def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
