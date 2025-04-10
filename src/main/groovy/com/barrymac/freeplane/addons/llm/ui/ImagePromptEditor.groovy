@@ -45,7 +45,6 @@ class ImagePromptEditor {
 
                 // 1. Header - Use constraints: argument
                 gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 1.0; gbc.weighty = 0.0
-                // --- FIX START ---
                 swingBuilder.label(
                     constraints: gbc, // Pass constraints directly
                     text: '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>'
@@ -54,24 +53,26 @@ class ImagePromptEditor {
                         + '</small></html>',
                     border: BorderFactory.createEmptyBorder(2, 5, 2, 5)
                 )
-                // --- FIX END ---
 
                 // 2. Text Area - Use constraints: argument
-                gbc.gridy++; gbc.weighty = 1.0; gbc.ipady = 10
-                // --- FIX START ---
+                // --- MODIFICATION START ---
+                gbc.gridy++; gbc.weighty = 1.0; // Removed gbc.ipady = 10
+                // --- MODIFICATION END ---
                 swingBuilder.scrollPane(constraints: gbc) { // Pass constraints directly
+                    // --- MODIFICATION START ---
                     promptArea = swingBuilder.textArea(
+                        rows: 15, // Suggest preferred rows
+                        columns: 80, // Suggest preferred columns
                         text: initialPrompt,
                         lineWrap: true,
                         wrapStyleWord: true,
                         font: new Font(Font.MONOSPACED, Font.PLAIN, 12)
                     )
+                    // --- MODIFICATION END ---
                 }
-                // --- FIX END ---
 
                 // 3. Variables Panel - Use constraints: argument
-                gbc.gridy++; gbc.weighty = 0.0; gbc.ipady = 0
-                // --- FIX START ---
+                gbc.gridy++; gbc.weighty = 0.0; gbc.ipady = 0 // Ensure weighty is 0 and no extra padding
                 swingBuilder.scrollPane(constraints: gbc) { // Pass constraints directly
                     swingBuilder.panel(border: BorderFactory.createTitledBorder("Available Variables")) {
                         swingBuilder.gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
@@ -86,11 +87,9 @@ class ImagePromptEditor {
                         swingBuilder.label(text: '$lighting'); swingBuilder.label(text: 'Lighting (e.g. dramatic)') // Added example
                     }
                 }
-                // --- FIX END ---
 
                 // 4. Parameters Panel - Use constraints: argument
-                gbc.gridy++
-                // --- FIX START ---
+                gbc.gridy++; gbc.weighty = 0.0; // Ensure weighty is 0
                 swingBuilder.panel(constraints: gbc, border: BorderFactory.createTitledBorder("Generation Parameters")) { // Pass constraints directly
                     swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
                     swingBuilder.label(text: 'Steps (4-50):')
@@ -102,7 +101,6 @@ class ImagePromptEditor {
                     swingBuilder.label(text: 'Number of Images (1-4):') // Updated label text
                     imageNumField = swingBuilder.textField(text: params.imageNum.toString(), id: 'imageNumField') // Assign to variable
                 }
-                // --- FIX END ---
             } // End central panel
 
             swingBuilder.panel(constraints: BorderLayout.SOUTH) {
