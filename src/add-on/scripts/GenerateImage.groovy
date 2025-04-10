@@ -1,4 +1,6 @@
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
+import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
+import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import org.freeplane.core.util.LogUtils
 
@@ -147,51 +149,27 @@ try {
     // Enhanced downloader function that handles both resources and URLs
     Closure downloader = { String url ->
         try {
-            LogUtils.info("Loading image from: ${url}")
-            // Handle bundled resources
+            LogUtils.info("Downloader: Loading image from: ${url}")
+            // Handle bundled resources via ResourceLoaderService
             if (url.startsWith("/")) {
-                // Use the controller's classloader and the original path with leading slash
-                def classLoader = c.class.classLoader
-                LogUtils.info("Attempting to load resource '${url}' using classloader: ${classLoader}")
-                def imageStream = classLoader.getResourceAsStream(url) // Use original URL with '/'
-                if (!imageStream) {
-                    // Try without leading slash as a fallback for ClassLoader access
-                    def resourcePathNoSlash = url.startsWith('/') ? url.substring(1) : url
-                    LogUtils.warn("Resource '${url}' not found with leading slash, trying '${resourcePathNoSlash}'")
-                    imageStream = classLoader.getResourceAsStream(resourcePathNoSlash)
-                }
-
-                if (!imageStream) {
-                     // If still not found, try relative to ImageDialogueHelper class again, but with leading slash
-                     LogUtils.warn("Resource still not found with controller classloader, trying ImageDialogueHelper.class.getResourceAsStream('${url}')")
-                     imageStream = ImageDialogueHelper.class.getResourceAsStream(url) // Requires leading slash
-                }
-
-                if (!imageStream) {
-                    // Final attempt: Use the script's own class directly
-                    LogUtils.warn("Resource still not found, trying getClass().getResourceAsStream('${url}')")
-                    imageStream = getClass().getResourceAsStream(url) // Requires leading slash
-                }
-
-                if (!imageStream) {
-                    // Give up if none worked
-                    throw new FileNotFoundException("Bundled image not found using multiple classloaders/paths for: ${url}")
-                }
-                def bytes = imageStream.bytes
-                LogUtils.info("Successfully loaded ${bytes.length} bytes from resource: ${url}")
-                return bytes
+                // Delegate loading to the dedicated service class within the add-on JAR
+                return ResourceLoaderService.loadBundledResourceBytes(url)
             }
             // Handle real URLs (for future API integration)
             else {
+                // Keep the existing URL download logic
                 def connection = new URL(url).openConnection()
                 connection.connectTimeout = 10000 // 10 seconds
                 connection.readTimeout = 30000    // 30 seconds
                 def bytes = connection.inputStream.bytes
-                LogUtils.info("Successfully downloaded ${bytes.length} bytes from URL: ${url}")
+                LogUtils.info("Downloader: Successfully downloaded ${bytes.length} bytes from URL: ${url}")
                 return bytes
             }
         } catch (Exception e) {
-            LogUtils.severe("Error loading image: ${e.message}")
+            // Log the error more specifically from the downloader context
+            // Avoid full stack trace for FileNotFound, as it's expected if the service fails
+            LogUtils.severe("Downloader: Error loading image for URL '${url}': ${e.message}",
+                    (e instanceof FileNotFoundException || e instanceof IllegalArgumentException) ? null : e)
             return null // Return null to allow dialog to show error
         }
     }
