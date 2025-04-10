@@ -34,7 +34,7 @@ class PromptEditor {
         ) {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
-                layout = new GridBagLayout()
+                swingBuilder.layout = new GridBagLayout()
                 def gbc = new GridBagConstraints(
                     fill: GridBagConstraints.BOTH,
                     anchor: GridBagConstraints.NORTHWEST,
@@ -46,7 +46,7 @@ class PromptEditor {
                 gbc.gridy = 0
                 gbc.weightx = 1.0
                 gbc.weighty = 0.0 // No vertical expansion
-                add(label(
+                swingBuilder.add(swingBuilder.label(
                     text: '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>'
                         + '<small style="font-size:11px">Template source: ' 
                         + (savedTemplate ? 'User-saved' : 'System default') 
@@ -58,8 +58,8 @@ class PromptEditor {
                 gbc.gridy++
                 gbc.weighty = 1.0 // Allocates 100% of extra vertical space
                 gbc.ipady = 10 // Internal padding for text area
-                add(scrollPane {
-                    promptArea = textArea(
+                swingBuilder.add(swingBuilder.scrollPane {
+                    promptArea = swingBuilder.textArea(
                         text: initialPrompt, 
                         lineWrap: true,
                         wrapStyleWord: true,
@@ -71,7 +71,7 @@ class PromptEditor {
                 gbc.gridy++
                 gbc.weighty = 0.0
                 gbc.ipady = 0
-                add(swingBuilder.scrollPane {
+                swingBuilder.add(swingBuilder.scrollPane {
                     swingBuilder.panel(border: BorderFactory.createTitledBorder("Available Variables")) {
                         swingBuilder.gridLayout(rows: 8, columns: 2, hgap: 10, vgap: 5)
                         swingBuilder.label(text: '$generatedPrompt'); swingBuilder.label(text: 'AI-generated base prompt') 
@@ -87,7 +87,7 @@ class PromptEditor {
 
                 // 4. Parameters Panel - Fixed height
                 gbc.gridy++
-                add(swingBuilder.panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
+                swingBuilder.add(swingBuilder.panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
                     swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
                     swingBuilder.label(text: 'Steps (4-50):')
                     swingBuilder.textField(text: params.steps.toString(), id: 'stepsField')
@@ -101,7 +101,7 @@ class PromptEditor {
             }
             
             panel(constraints: BorderLayout.SOUTH) {
-                generateButton = button(text: 'Generate', actionPerformed: {
+                generateButton = swingBuilder.button(text: 'Generate', actionPerformed: {
                     try {
                         // Validate numerical parameters
                         params.steps = validateNumberField(stepsField, 4, 50, "Steps")
@@ -125,7 +125,7 @@ class PromptEditor {
                             JOptionPane.ERROR_MESSAGE)
                     }
                 })
-                button(text: 'Save Template', actionPerformed: {
+                swingBuilder.button(text: 'Save Template', actionPerformed: {
                     try {
                         def templateToSave = promptArea.text.trim()
                         if (!templateToSave) {
@@ -142,7 +142,7 @@ class PromptEditor {
                         showError(dialog, "Failed to save template: ${e.message}")
                     }
                 })
-                button(text: 'Reset to Default', actionPerformed: {
+                swingBuilder.button(text: 'Reset to Default', actionPerformed: {
                     int confirm = JOptionPane.showConfirmDialog(dialog,
                         "Reset to default template? This will overwrite any saved template.",
                         "Confirm Reset",
@@ -169,7 +169,7 @@ class PromptEditor {
                         }
                     }
                 })
-                button(text: 'Cancel', actionPerformed: { 
+                swingBuilder.button(text: 'Cancel', actionPerformed: { 
                     modifiedPrompt = null
                     dialog.dispose()
                 })
