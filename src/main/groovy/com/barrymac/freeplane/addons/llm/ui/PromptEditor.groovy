@@ -17,7 +17,7 @@ class PromptEditor {
         ) {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
-                gridLayout(rows: 3, cols: 1) // Explicit 3 rows for header, prompt, params
+                gridLayout(rows: 3, columns: 1) // Explicit 3 rows for header, prompt, params
                 label(text: '<html><b>Edit Image Generation Prompt</b></html>', 
                       border: BorderFactory.createEmptyBorder(5,5,5,5))
                 scrollPane {
