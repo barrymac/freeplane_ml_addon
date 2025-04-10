@@ -21,28 +21,46 @@ class ResourceLoaderService {
      */
     static byte[] loadBundledResourceBytes(String path) throws FileNotFoundException, IOException {
         LogUtils.info("ResourceLoaderService: Attempting to load resource '${path}'")
-        if (!path?.startsWith("/")) {
-            // Enforce the contract: paths must be absolute from JAR root
-            LogUtils.error("ResourceLoaderService: Path must start with '/'. Provided: '${path}'")
-            throw new IllegalArgumentException("Bundled resource path must start with '/'")
+        if (!path) {
+            LogUtils.error("ResourceLoaderService: Path cannot be null")
+            throw new IllegalArgumentException("Bundled resource path cannot be null")
         }
-
-        // Use the classloader of this service class itself, which is part of the add-on JAR
-        InputStream stream = ResourceLoaderService.class.getResourceAsStream(path)
+        
+        // Remove leading slash if present to use classpath-relative path
+        String adjustedPath = path.startsWith("/") ? path.substring(1) : path
+        LogUtils.info("ResourceLoaderService: Using adjusted path '${adjustedPath}'")
+        
+        // Use the classloader instead of class-based resource access
+        ClassLoader classLoader = ResourceLoaderService.class.getClassLoader()
+        InputStream stream = classLoader.getResourceAsStream(adjustedPath)
 
         if (stream == null) {
-            LogUtils.severe("ResourceLoaderService: Resource not found at path: ${path} using ${ResourceLoaderService.class.name} classloader.")
-            // You could try other classloaders here as a fallback if needed, but start with the most reliable one.
-            throw new FileNotFoundException("Bundled resource not found: ${path}")
+            // Try to list available resources for better debugging
+            LogUtils.severe("ResourceLoaderService: Resource not found at path: ${adjustedPath} using ${ResourceLoaderService.class.name} classloader.")
+            
+            // Add diagnostic information about what resources are available
+            try {
+                LogUtils.info("ResourceLoaderService: Checking for resources in 'images/' directory...")
+                def resources = classLoader.getResources("images")
+                if (resources.hasMoreElements()) {
+                    LogUtils.info("ResourceLoaderService: 'images/' directory exists in classpath")
+                } else {
+                    LogUtils.info("ResourceLoaderService: No 'images/' directory found in classpath")
+                }
+            } catch (Exception e) {
+                LogUtils.info("ResourceLoaderService: Error checking resources: ${e.message}")
+            }
+            
+            throw new FileNotFoundException("Bundled resource not found: ${adjustedPath}")
         }
 
-        LogUtils.info("ResourceLoaderService: Found resource stream for path: ${path}")
+        LogUtils.info("ResourceLoaderService: Found resource stream for path: ${adjustedPath}")
         try {
             byte[] bytes = stream.bytes
-            LogUtils.info("ResourceLoaderService: Successfully loaded ${bytes.length} bytes from resource: ${path}")
+            LogUtils.info("ResourceLoaderService: Successfully loaded ${bytes.length} bytes from resource: ${adjustedPath}")
             return bytes
         } catch (IOException e) {
-            LogUtils.severe("ResourceLoaderService: IOException reading resource stream for path: ${path}", e)
+            LogUtils.severe("ResourceLoaderService: IOException reading resource stream for path: ${adjustedPath}", e)
             throw e // Re-throw
         } finally {
             try {
