@@ -82,23 +82,69 @@ try {
     LogUtils.info("Using prompt from node ${node.id}: '${prompt.take(100)}...'")
 
 
-    // 3. Prepare and edit prompt
-    LogUtils.info("Preparing image generation prompt...")
-    
-    // Try to load system prompt template, fall back to simple template if not found
+    // 3. Generate image prompt using LLM
+    LogUtils.info("Generating image prompt via LLM...")
+    def llmApiKey = config.getProperty('openai.key', '')
+    if (!llmApiKey) {
+        llmApiKey = ui.showInputDialog(
+            ui.currentFrame,
+            """<html>OpenAI API key required for prompt generation.<br>
+            Get your key at <a href='https://platform.openai.com/api-keys'>OpenAI</a></html>""",
+            "API Key Required",
+            3
+        )
+        if (!llmApiKey?.trim()) {
+            showInformationMessage(ui, "Prompt generation requires a valid API key")
+            return
+        }
+        config.setProperty('openai.key', llmApiKey.trim())
+    }
+
+    // Load system prompt from resources
     String systemPrompt
     try {
         systemPrompt = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
         LogUtils.info("Loaded system prompt template from resources")
     } catch (Exception e) {
         LogUtils.warn("Could not load system prompt template: ${e.message}")
-        systemPrompt = """You are an expert image prompt engineer. Enhance this prompt for AI image generation 
-                          while maintaining the core concept. Add details about style, lighting, and composition."""
+        systemPrompt = "You are an expert image prompt engineer. Enhance this prompt for AI image generation."
     }
-    
-    // Build enhanced prompt
-    String enhancedPrompt = MessageExpander.buildImagePrompt(prompt, systemPrompt)
-    LogUtils.info("Built enhanced prompt")
+
+    // Build LLM request
+    def promptRequest = new ApiRequest(
+        model: "gpt-3.5-turbo",
+        messages: [
+            new Message(role: 'system', content: systemPrompt),
+            new Message(role: 'user', content: prompt)
+        ],
+        temperature: 0.7,
+        maxTokens: 200
+    )
+
+    // Call LLM
+    def (apiCaller, progressDialog, llmResponse) = [null, null, null]
+    try {
+        progressDialog = createProgressDialog(ui, "Generating Prompt", "Creating image description...")
+        progressDialog.visible = true
+        apiCaller = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call
+        llmResponse = apiCaller('openai', llmApiKey, promptRequest)
+    } catch (Exception e) {
+        showErrorMessage(ui, "Prompt generation failed: ${e.message.split('\n').head()}")
+        return
+    } finally {
+        progressDialog?.dispose()
+    }
+
+    // Parse LLM response
+    String enhancedPrompt
+    try {
+        def json = new JsonSlurper().parseText(llmResponse)
+        enhancedPrompt = json.choices[0].message.content.trim()
+        LogUtils.info("LLM generated prompt: ${enhancedPrompt.take(100)}...")
+    } catch (Exception e) {
+        LogUtils.warn("Failed to parse LLM response, using original prompt")
+        enhancedPrompt = prompt
+    }
     
     // Show prompt editor with default params
     def initialParams = [

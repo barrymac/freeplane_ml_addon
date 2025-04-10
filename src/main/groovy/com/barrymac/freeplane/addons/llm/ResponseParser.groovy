@@ -97,6 +97,22 @@ class ResponseParser {
     }
     
     /**
+     * Parses LLM response to extract generated prompt text
+     * 
+     * @param llmResponse The raw JSON response from OpenAI API
+     * @return The generated prompt text or null if parsing fails
+     */
+    static String extractGeneratedPrompt(String llmResponse) {
+        try {
+            def json = new JsonSlurper().parseText(llmResponse)
+            return json.choices[0].message.content.trim()
+        } catch (Exception e) {
+            LogUtils.warn("Failed to extract generated prompt: ${e.message}")
+            return null
+        }
+    }
+    
+    /**
      * Extracts JSON payload from a potentially noisy response.
      * Handles markdown code fences (```json ... ```) and attempts to find
      * the first '{' if no code fence is present, ignoring leading text.
