@@ -14,7 +14,7 @@ class ResourceLoaderService {
      * Loads bytes for a resource bundled within the add-on JAR.
      * Assumes the path starts with '/' and is relative to the JAR root.
      *
-     * @param path The absolute path within the JAR (e.g., "/images/my_icon.png")
+     * @param path The absolute path within the JAR (e.g., "/my_icon.png")
      * @return byte[] The resource bytes
      * @throws FileNotFoundException if the resource cannot be found
      * @throws IOException if there's an error reading the resource stream

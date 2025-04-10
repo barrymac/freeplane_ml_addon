@@ -101,10 +101,10 @@ try {
         return """
         {
           "images": [
-            { "image_url": "images/placeholder1.png", "image_type": "png" },
-            { "image_url": "images/placeholder2.png", "image_type": "png" },
-            { "image_url": "images/placeholder3.png", "image_type": "png" },
-            { "image_url": "images/placeholder4.png", "image_type": "png" }
+            { "image_url": "/placeholder1.png", "image_type": "png" },
+            { "image_url": "/placeholder2.png", "image_type": "png" },
+            { "image_url": "/placeholder3.png", "image_type": "png" },
+            { "image_url": "/placeholder4.png", "image_type": "png" }
           ],
           "task": { "task_id": "dummy-task-id" }
         }
@@ -132,10 +132,10 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-            "/images/placeholder1.png",
-            "/images/placeholder2.png",
-            "/images/placeholder3.png",
-            "/images/placeholder4.png"
+            "/placeholder1.png",
+            "/placeholder2.png",
+            "/placeholder3.png",
+            "/placeholder4.png"
     ]
     if (imageUrls.isEmpty()) {
         showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
