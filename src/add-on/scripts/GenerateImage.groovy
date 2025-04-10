@@ -86,85 +86,98 @@ try {
     LogUtils.info("Using prompt from node ${node.id}: '${prompt.take(100)}...'")
 
 
-    // 3. Generate image prompt using LLM
-    LogUtils.info("Generating image prompt via LLM...")
+    // 3. Generate image prompt using LLM if needed
+    LogUtils.info("Preparing image prompt...")
     
-    // Get configured provider (default to 'openai' if not set)
-    def llmProvider = config.getProperty('openai.api_provider', 'openai')
-    def llmApiKey = config.getProperty('openai.key', '')
+    // Initialize empty enhanced prompt
+    String enhancedPrompt = ""
     
-    // Handle missing key with provider-specific messaging
-    if (!llmApiKey) {
-        LogUtils.warn("${llmProvider} API key missing - prompting user")
+    // Check for saved template
+    def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
+    LogUtils.info("Saved template check - exists: ${!savedTemplate.isEmpty()}")
+    
+    // Only generate enhancement if no saved template exists
+    if (!savedTemplate) {
+        LogUtils.info("No saved template - generating enhancement")
         
-        // Provider-specific help URLs
-        def providerUrls = [
-            'openai': 'https://platform.openai.com/api-keys',
-            'openrouter': 'https://openrouter.ai/keys',
-            'novita': 'https://novita.ai/account' // Though novita is only for images
-        ]
-        def helpUrl = providerUrls[llmProvider] ?: providerUrls.openai
-    
-        llmApiKey = ui.showInputDialog(
-            ui.currentFrame,
-            """<html>${llmProvider.toUpperCase()} API key required for prompt generation.<br>
-            Get your key at <a href='${helpUrl}'>${llmProvider} website</a></html>""",
-            "API Key Required",
-            3
-        )
+        // Get configured provider (default to 'openai' if not set)
+        def llmProvider = config.getProperty('openai.api_provider', 'openai')
+        def llmApiKey = config.getProperty('openai.key', '')
         
-        if (!llmApiKey?.trim()) {
-            showInformationMessage(ui, "Prompt generation requires a valid API key")
-            return
+        // Handle missing key with provider-specific messaging
+        if (!llmApiKey) {
+            LogUtils.warn("${llmProvider} API key missing - prompting user")
+            
+            // Provider-specific help URLs
+            def providerUrls = [
+                'openai': 'https://platform.openai.com/api-keys',
+                'openrouter': 'https://openrouter.ai/keys',
+                'novita': 'https://novita.ai/account' // Though novita is only for images
+            ]
+            def helpUrl = providerUrls[llmProvider] ?: providerUrls.openai
+        
+            llmApiKey = ui.showInputDialog(
+                ui.currentFrame,
+                """<html>${llmProvider.toUpperCase()} API key required for prompt generation.<br>
+                Get your key at <a href='${helpUrl}'>${llmProvider} website</a></html>""",
+                "API Key Required",
+                3
+            )
+            
+            if (!llmApiKey?.trim()) {
+                showInformationMessage(ui, "Prompt generation requires a valid API key")
+                return
+            }
+            config.setProperty('openai.key', llmApiKey.trim())
+            // Freeplane config auto-saves, no need to call save()
         }
-        config.setProperty('openai.key', llmApiKey.trim())
-        // Freeplane config auto-saves, no need to call save()
-    }
 
-    // Load system prompt from resources
-    String systemPrompt
-    try {
-        systemPrompt = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
-        LogUtils.info("Loaded system prompt template from resources")
-    } catch (Exception e) {
-        LogUtils.warn("Could not load system prompt template: ${e.message}")
-        systemPrompt = "You are an expert image prompt engineer. Enhance this prompt for AI image generation."
-    }
+        // Load system prompt from resources
+        String systemPrompt
+        try {
+            systemPrompt = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
+            LogUtils.info("Loaded system prompt template from resources")
+        } catch (Exception e) {
+            LogUtils.warn("Could not load system prompt template: ${e.message}")
+            systemPrompt = "You are an expert image prompt engineer. Enhance this prompt for AI image generation."
+        }
 
-    // Build LLM request
-    def promptRequest = new ApiRequest(
-        model: "gpt-3.5-turbo",
-        messages: [
-            new Message(role: 'system', content: systemPrompt),
-            new Message(role: 'user', content: prompt)
-        ],
-        temperature: 0.7,
-        maxTokens: 200
-    )
+        // Build LLM request
+        def promptRequest = new ApiRequest(
+            model: "gpt-3.5-turbo",
+            messages: [
+                new Message(role: 'system', content: systemPrompt),
+                new Message(role: 'user', content: prompt)
+            ],
+            temperature: 0.7,
+            maxTokens: 200
+        )
 
-    // Call LLM
-    def (apiCaller, progressDialog, llmResponse) = [null, null, null]
-    try {
-        progressDialog = createProgressDialog(ui, "Generating Prompt", "Creating image description...")
-        progressDialog.visible = true
-        apiCaller = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call
-        llmResponse = apiCaller(llmProvider, llmApiKey, promptRequest)
-    } catch (Exception e) {
-        showErrorMessage(ui, "Prompt generation failed: ${e.message.split('\n').head()}")
-        return
-    } finally {
-        progressDialog?.dispose()
-    }
+        // Call LLM
+        def (apiCaller, progressDialog, llmResponse) = [null, null, null]
+        try {
+            progressDialog = createProgressDialog(ui, "Generating Prompt", "Creating image description...")
+            progressDialog.visible = true
+            apiCaller = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call
+            llmResponse = apiCaller(llmProvider, llmApiKey, promptRequest)
+        } catch (Exception e) {
+            showErrorMessage(ui, "Prompt generation failed: ${e.message.split('\n').head()}")
+            return
+        } finally {
+            progressDialog?.dispose()
+        }
 
-    // Parse LLM response
-    String enhancedPrompt
-    try {
-        def json = new JsonSlurper().parseText(llmResponse)
-        enhancedPrompt = json.choices[0].message.content.trim()
-        LogUtils.info("LLM generated prompt: ${enhancedPrompt.take(100)}...")
-    } catch (Exception e) {
-        LogUtils.warn("Failed to parse LLM response, using original prompt")
-        enhancedPrompt = prompt
+        // Parse LLM response
+        try {
+            def json = new JsonSlurper().parseText(llmResponse)
+            enhancedPrompt = json.choices[0].message.content.trim()
+            LogUtils.info("LLM generated prompt: ${enhancedPrompt.take(100)}...")
+        } catch (Exception e) {
+            LogUtils.warn("Failed to parse LLM response, using original prompt")
+            enhancedPrompt = prompt
+        }
+    } else {
+        LogUtils.info("Using saved template from config")
     }
     
     // Show prompt editor with default params
@@ -176,26 +189,16 @@ try {
         seed: new Random().nextInt(Integer.MAX_VALUE) // Generate valid 32-bit seed
     ]
     
-    // Load image user prompt template
+    // Load base template
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
     
-    // Check for saved template
-    def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
-    LogUtils.info("Saved template check - exists: ${!savedTemplate.isEmpty()}")
-    if (savedTemplate) {
-        LogUtils.info("Loaded saved template:\n${savedTemplate.take(100)}...")
-        userPromptTemplate = savedTemplate
-    } else {
-        LogUtils.info("Using default image prompt template")
-    }
+    // Combine templates - use saved template or combine base with enhancement
+    def initialTemplate = savedTemplate ?: "${userPromptTemplate}\n\n${enhancedPrompt}".trim()
     
     // Create binding with generated prompt and all node context variables
     def binding = MessageExpander.createBinding(node, null, null, null, null) + [
         generatedPrompt: enhancedPrompt
     ]
-    
-    // Use raw template without expansion to preserve variables
-    def initialTemplate = userPromptTemplate
     
     def edited = PromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
     if (!edited) {

@@ -1,7 +1,11 @@
-Main subject: ${nodeContent}
-Topic: $nodeContent
-Key elements: ${ancestorContents}, $siblingContents
-Art style: ${style}
-Details: ${details}
-Colors: ${colors}
-Lighting: ${lighting}
+${generatedPrompt}
+
+Style parameters:
+- Artistic style: ${style}
+- Detail level: ${details} 
+- Color scheme: ${colors}
+- Lighting: ${lighting}
+
+Context from mindmap:
+${nodeContent}
+${ancestorContents}

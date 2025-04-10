@@ -12,7 +12,7 @@ class MessageExpander {
             pathToRoot = pathToRoot.take(pathToRoot.size() - 1)
 
             [
-                    // Add new image-specific variables
+                    // Image-specific variables (generatedPrompt first for clarity)
                     generatedPrompt     : '',  // Will be set by caller
                     style               : 'digital art',
                     details             : 'high detail',

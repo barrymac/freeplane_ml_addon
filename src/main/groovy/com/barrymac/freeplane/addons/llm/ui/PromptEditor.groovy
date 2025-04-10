@@ -22,6 +22,9 @@ class PromptEditor {
         def promptArea
         def generateButton
         
+        // Check if we're using a saved template
+        def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
+        
         dialog = swingBuilder.dialog(
             title: 'Edit Image Generation Parameters',
             modal: true,
@@ -31,7 +34,10 @@ class PromptEditor {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
                 gridLayout(rows: 4, columns: 1) // Explicit 4 rows for header, prompt, variables, params
-                label(text: '<html><b>Edit Image Generation Prompt</b></html>', 
+                label(text: '<html><b>Edit Image Generation Prompt</b><br>'
+                      + '<small>Template source: ' 
+                      + (savedTemplate ? 'User-saved' : 'System default') 
+                      + '</small></html>', 
                       border: BorderFactory.createEmptyBorder(5,5,5,5))
                 scrollPane {
                     promptArea = textArea(
