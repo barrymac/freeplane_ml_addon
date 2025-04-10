@@ -118,7 +118,7 @@ try {
     def (modifiedPrompt, params) = edited
     LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
     
-    // Build payload with user-edited values
+    // 4. Build payload with user-edited values
     def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
         modifiedPrompt, 
         params.steps,
@@ -130,12 +130,12 @@ try {
     String jsonPayload = new JsonBuilder(payloadMap).toString()
     LogUtils.info("Built Novita payload with custom parameters")
 
-    // 4. Create API Caller
+    // 5. Create API Caller
     LogUtils.info("Creating Novita API caller...")
     Closure callNovitaApi = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call.curry('novita', novitaApiKey)
     LogUtils.info("Created Novita API caller.")
 
-    // 5. Call API (with progress indication)
+    // 6. Call API (with progress indication)
     LogUtils.info("Showing progress dialog...")
     JDialog progressDialog = createProgressDialog(ui, "Generating Image", "Contacting Novita.ai API...")
     String rawApiResponse // Declare here to be accessible in finally block if needed
@@ -149,7 +149,7 @@ try {
         LogUtils.info("Progress dialog disposed.")
     }
 
-    // 6. Parse Response
+    // 7. Parse Response
     LogUtils.info("Parsing API response...")
     List<String> imageUrls = ResponseParser.parseNovitaResponse(rawApiResponse)
     if (imageUrls.isEmpty()) {
@@ -159,7 +159,7 @@ try {
     }
     LogUtils.info("Parsed image URLs (placeholder): ${imageUrls}")
 
-    // 7. Show Selection Dialog
+    // 8. Show Selection Dialog
     LogUtils.info("Showing image selection dialog...")
     // Enhanced downloader function that handles both resources and URLs
     Closure downloader = { String url ->
@@ -200,7 +200,7 @@ try {
     LogUtils.info("User selected image URL: ${selectedUrl}")
 
 
-    // 8. Process Selection
+    // 9. Process Selection
     if (selectedUrl) {
         LogUtils.info("Showing download progress dialog...")
         JDialog downloadProgress = createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
