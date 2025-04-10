@@ -61,8 +61,11 @@ class PromptEditor {
                     textField(text: params.imageNum.toString(), id: 'imageNumField')
                 }
             }
+            // Declare button variable outside the panel
+            def generateButton
+            
             panel(constraints: BorderLayout.SOUTH) {
-                def generateButton = button(text: 'Generate', id: 'generateButton', actionPerformed: {
+                generateButton = button(text: 'Generate', id: 'generateButton', actionPerformed: {
                     try {
                         // Validate numerical parameters
                         params.steps = validateNumberField(stepsField, 4, 50, "Steps")
