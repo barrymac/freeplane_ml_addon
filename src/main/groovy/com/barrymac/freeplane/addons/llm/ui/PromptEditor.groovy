@@ -17,14 +17,14 @@ class PromptEditor {
         ) {
             borderLayout()
             panel(constraints: BorderLayout.CENTER) {
-                gridLayout(rows: 0, cols: 1)
-                label(text: '<html><b>Edit Image Generation Prompt</b><br>Modify the prompt and parameters:</html>', 
-                      border: BorderFactory.createEmptyBorder(5,5,15,5))
+                gridLayout(rows: 3, cols: 1) // Explicit 3 rows for header, prompt, params
+                label(text: '<html><b>Edit Image Generation Prompt</b></html>', 
+                      border: BorderFactory.createEmptyBorder(5,5,5,5))
                 scrollPane {
                     textArea(text: initialPrompt, rows: 8, columns: 60, id: 'promptArea')
                 }
                 panel(border: BorderFactory.createTitledBorder("Generation Parameters")) {
-                    gridLayout(rows: 4, cols: 2, hgap: 10, vgap: 5)
+                    gridLayout(rows: 4, cols: 2, hgap: 10, vgap: 5) // Explicit rows/columns
                     label(text: 'Steps (4-50):')
                     textField(text: params.steps.toString(), id: 'stepsField')
                     label(text: 'Width (256-1024):')
@@ -39,20 +39,25 @@ class PromptEditor {
                 button(text: 'Generate', actionPerformed: {
                     try {
                         // Validate numerical parameters
-                        params.steps = validateRange(stepsField.text.toInteger(), 4, 50, "Steps")
-                        params.width = validateRange(widthField.text.toInteger(), 256, 1024, "Width")
-                        params.height = validateRange(heightField.text.toInteger(), 256, 1024, "Height") 
-                        params.imageNum = validateRange(imageNumField.text.toInteger(), 1, 4, "Image Count")
+                        params.steps = validateNumberField(stepsField, 4, 50, "Steps")
+                        params.width = validateNumberField(widthField, 256, 1024, "Width")
+                        params.height = validateNumberField(heightField, 256, 1024, "Height") 
+                        params.imageNum = validateNumberField(imageNumField, 1, 4, "Image Count")
                         
                         modifiedPrompt = promptArea.text.trim()
                         if(!modifiedPrompt) {
-                            throw new IllegalArgumentException("Prompt cannot be empty")
+                            JOptionPane.showMessageDialog(dialog, 
+                                "Prompt cannot be empty", 
+                                "Input Error", 
+                                JOptionPane.ERROR_MESSAGE)
+                            return
                         }
                         dialog.dispose()
-                    } catch(NumberFormatException e) {
-                        showError("Invalid number format: ${e.message}")
                     } catch(IllegalArgumentException e) {
-                        showError(e.message)
+                        JOptionPane.showMessageDialog(dialog, 
+                            e.message, 
+                            "Validation Error", 
+                            JOptionPane.ERROR_MESSAGE)
                     }
                 })
                 button(text: 'Cancel', actionPerformed: { 
@@ -63,17 +68,23 @@ class PromptEditor {
         }
         
         dialog.pack()
+        dialog.setSize(600, 500) // Explicit size to ensure visibility
         dialog.setLocationRelativeTo(ui.currentFrame)
         dialog.visible = true
         
         return modifiedPrompt ? [modifiedPrompt, params] : null
     }
     
-    private static int validateRange(value, min, max, name) {
-        if(value < min || value > max) {
-            throw new IllegalArgumentException("$name must be between $min and $max")
+    private static int validateNumberField(textField, min, max, fieldName) {
+        try {
+            def value = textField.text.toInteger()
+            if(value < min || value > max) {
+                throw new IllegalArgumentException("${fieldName} must be between ${min}-${max}")
+            }
+            return value
+        } catch(NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid number for ${fieldName}")
         }
-        return value
     }
     
     private static void showError(dialog, message) {
