@@ -86,15 +86,31 @@ try {
 
     // 3. Generate image prompt using LLM
     LogUtils.info("Generating image prompt via LLM...")
+    
+    // Get configured provider (default to 'openai' if not set)
+    def llmProvider = config.getProperty('openai.api_provider', 'openai')
     def llmApiKey = config.getProperty('openai.key', '')
+    
+    // Handle missing key with provider-specific messaging
     if (!llmApiKey) {
+        LogUtils.warn("${llmProvider} API key missing - prompting user")
+        
+        // Provider-specific help URLs
+        def providerUrls = [
+            'openai': 'https://platform.openai.com/api-keys',
+            'openrouter': 'https://openrouter.ai/keys',
+            'novita': 'https://novita.ai/account' // Though novita is only for images
+        ]
+        def helpUrl = providerUrls[llmProvider] ?: providerUrls.openai
+    
         llmApiKey = ui.showInputDialog(
             ui.currentFrame,
-            """<html>OpenAI API key required for prompt generation.<br>
-            Get your key at <a href='https://platform.openai.com/api-keys'>OpenAI</a></html>""",
+            """<html>${llmProvider.toUpperCase()} API key required for prompt generation.<br>
+            Get your key at <a href='${helpUrl}'>${llmProvider} website</a></html>""",
             "API Key Required",
             3
         )
+        
         if (!llmApiKey?.trim()) {
             showInformationMessage(ui, "Prompt generation requires a valid API key")
             return
@@ -129,7 +145,7 @@ try {
         progressDialog = createProgressDialog(ui, "Generating Prompt", "Creating image description...")
         progressDialog.visible = true
         apiCaller = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call
-        llmResponse = apiCaller('openai', llmApiKey, promptRequest)
+        llmResponse = apiCaller(llmProvider, llmApiKey, promptRequest)
     } catch (Exception e) {
         showErrorMessage(ui, "Prompt generation failed: ${e.message.split('\n').head()}")
         return
