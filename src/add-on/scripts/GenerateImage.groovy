@@ -1,19 +1,18 @@
-// Freeplane & Core Java/Groovy
-
+import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import org.freeplane.core.util.LogUtils
 
-import javax.swing.*  // Imports all Swing classes including JDialog and JOptionPane
+import javax.swing.*
 
-// LLM Add-on specific
+import static com.barrymac.freeplane.addons.llm.ui.DialogHelper.createProgressDialog
+import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showErrorMessage
 
-import com.barrymac.freeplane.addons.llm.ui.UiHelper
-import com.barrymac.freeplane.addons.llm.ui.DialogHelper
 // import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory // TODO: Uncomment when implemented
 // import com.barrymac.freeplane.addons.llm.ResponseParser // TODO: Uncomment when implemented
 
-import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
+import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
+
 // import com.barrymac.freeplane.addons.llm.utils.ImageDownloader // TODO: Uncomment when implemented
 
 // === Script Entry Point ===
@@ -22,43 +21,43 @@ LogUtils.info("GenerateImage script started.")
 try {
     // 1. Load Configuration
     LogUtils.info("Loading configuration...")
-    
+
     // Check for API key FIRST before any other operations
     def novitaApiKey = config.getProperty('novita.key', '')
-    
+
     // Handle missing key with dialog that persists the value
     if (!novitaApiKey) {
         LogUtils.warn("Novita.ai API key missing - prompting user")
-        
+
         // Use main Freeplane frame as parent instead of node
         novitaApiKey = ui.showInputDialog(
-            ui.currentFrame, // More reliable parent component
-            """<html>Novita.ai API key required for image generation.<br>
+                ui.currentFrame, // More reliable parent component
+                """<html>Novita.ai API key required for image generation.<br>
             Get your key at <a href='https://novita.ai/'>novita.ai</a></html>""",
-            "API Key Required",
-            3 // QUESTION_MESSAGE
+                "API Key Required",
+                3 // QUESTION_MESSAGE
         )
-        
+
         // Validate input
         if (!novitaApiKey?.trim()) {
             LogUtils.info("User cancelled API key input")
-            UiHelper.showInformationMessage(ui, "Image generation requires a valid API key")
+            showInformationMessage(ui, "Image generation requires a valid API key")
             return
         }
-        
+
         // Persist the key properly
         try {
             config.setProperty('novita.key', novitaApiKey.trim())
             LogUtils.info("Novita API key saved to preferences")
             // Immediately update local variable with saved value
-            novitaApiKey = config.getProperty('novita.key', '') 
+            novitaApiKey = config.getProperty('novita.key', '')
         } catch (Exception e) {
             LogUtils.severe("Failed to save API key: ${e.message}")
-            UiHelper.showErrorMessage(ui, "Failed to save API key: ${e.message}")
+            showErrorMessage(ui, "Failed to save API key: ${e.message}")
             return
         }
     }
-    
+
     // Then proceed with node selection check
     LogUtils.info("Novita API Key verified")
     // Create a simple map for now, later use ApiConfig if needed
@@ -68,13 +67,13 @@ try {
     LogUtils.info("Getting selected node...")
     def node = c.selected  // Use the Node proxy directly
     if (node == null) {
-        UiHelper.showInformationMessage(ui, "Please select a node first to use as the image prompt.")
+        showInformationMessage(ui, "Please select a node first to use as the image prompt.")
         LogUtils.info("No node selected.")
         return
     }
     String prompt = node.text?.trim() // Placeholder access
     if (!prompt) {
-        UiHelper.showInformationMessage(ui, "The selected node has no text to use as an image prompt.")
+        showInformationMessage(ui, "The selected node has no text to use as an image prompt.")
         LogUtils.info("Selected node has no text.")
         return
     }
@@ -113,7 +112,7 @@ try {
 
     // 5. Call API (with progress indication)
     LogUtils.info("Showing progress dialog...")
-    JDialog progressDialog = DialogHelper.createProgressDialog(ui, "Generating Image", "Contacting Novita.ai API...")
+    JDialog progressDialog = createProgressDialog(ui, "Generating Image", "Contacting Novita.ai API...")
     String rawApiResponse // Declare here to be accessible in finally block if needed
     try {
         progressDialog?.visible = true
@@ -131,13 +130,13 @@ try {
     // List<String> imageUrls = ResponseParser.parseNovitaImageResponse(rawApiResponse)
     // Example placeholder:
     List<String> imageUrls = [
-        "/images/placeholder1.png",
-        "/images/placeholder2.png",
-        "/images/placeholder3.png",
-        "/images/placeholder4.png"
+            "/images/placeholder1.png",
+            "/images/placeholder2.png",
+            "/images/placeholder3.png",
+            "/images/placeholder4.png"
     ]
     if (imageUrls.isEmpty()) {
-        UiHelper.showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
+        showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
         LogUtils.error("API response did not contain any image URLs.")
         return
     }
@@ -157,12 +156,13 @@ try {
                 def resourcePath = url.startsWith('/') ? url.substring(1) : url // Remove leading slash if present
                 def imageStream = classLoader.getResourceAsStream(resourcePath)
                 if (!imageStream) {
-                    throw new FileNotFoundException("Bundled image not found at: ${resourcePath} (original: ${url})") // Adjusted error message
+                    throw new FileNotFoundException("Bundled image not found at: ${resourcePath} (original: ${url})")
+                    // Adjusted error message
                 }
                 def bytes = imageStream.bytes
                 LogUtils.info("Successfully loaded ${bytes.length} bytes from resource: ${url}")
                 return bytes
-            } 
+            }
             // Handle real URLs (for future API integration)
             else {
                 def connection = new URL(url).openConnection()
@@ -177,13 +177,13 @@ try {
             return null // Return null to allow dialog to show error
         }
     }
-    
+
     // Show the image selection dialog
     String selectedUrl = ImageDialogueHelper.showImageSelectionDialog(ui, imageUrls, downloader)
-    
+
     if (!selectedUrl) {
         LogUtils.info("User cancelled image selection or selection failed")
-        UiHelper.showInformationMessage(ui, "Image selection cancelled")
+        showInformationMessage(ui, "Image selection cancelled")
         return
     }
     LogUtils.info("User selected image URL: ${selectedUrl}")
@@ -192,7 +192,7 @@ try {
     // 8. Process Selection
     if (selectedUrl) {
         LogUtils.info("Showing download progress dialog...")
-        JDialog downloadProgress = DialogHelper.createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
+        JDialog downloadProgress = createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
         try {
             downloadProgress?.visible = true
             LogUtils.info("Download progress dialog shown.")
@@ -203,7 +203,7 @@ try {
             byte[] selectedImageBytes = downloader(selectedUrl) // Use placeholder downloader
             if (!selectedImageBytes) {
                 LogUtils.warn("No image bytes received for ${selectedUrl}")
-                UiHelper.showErrorMessage(ui, "Failed to load selected image")
+                showErrorMessage(ui, "Failed to load selected image")
                 return
             }
             // Only proceed if bytes are valid
@@ -214,24 +214,24 @@ try {
             String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
 
             LogUtils.info("Attaching image to node ${node.id} (baseName: ${baseName}, ext: ${extension})...")
-            
+
             try {
                 // Use the dedicated ImageAttachmentHandler to attach the image
                 // Import needed at the top of the file
                 ImageAttachmentHandler.attachImageToNode(node, selectedImageBytes, baseName, extension)
-                
+
                 LogUtils.info("Image successfully attached to node")
             } catch (Exception e) {
                 LogUtils.severe("Failed to attach image: ${e.message}", e)
                 throw e // Re-throw to be caught by outer catch block
             }
-            
+
             LogUtils.info("Successfully attached image to node ${node.id}")
-            UiHelper.showInformationMessage(ui, "Image added to node!")
+            showInformationMessage(ui, "Image added to node!")
 
         } catch (IOException e) {
-           LogUtils.severe("Failed to download or attach image: ${e.message}", e)
-           UiHelper.showErrorMessage(ui, "Failed to download or attach image: ${e.message}")
+            LogUtils.severe("Failed to download or attach image: ${e.message}", e)
+            showErrorMessage(ui, "Failed to download or attach image: ${e.message}")
         } finally {
             downloadProgress?.dispose()
             LogUtils.info("Download progress dialog disposed.")
@@ -242,7 +242,7 @@ try {
 
 } catch (Exception e) { // Catching generic Exception for now
     LogUtils.severe("An unexpected error occurred in GenerateImage script: ${e.message}", e)
-    UiHelper.showErrorMessage(ui, "An unexpected error occurred: ${e.message.split('\n').head()}")
+    showErrorMessage(ui, "An unexpected error occurred: ${e.message.split('\n').head()}")
 } finally {
     LogUtils.info("GenerateImage script finished.")
 }
