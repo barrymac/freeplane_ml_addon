@@ -117,17 +117,23 @@ class PromptEditor {
                 })
                 button(text: 'Reset to Default', actionPerformed: {
                     int confirm = JOptionPane.showConfirmDialog(dialog,
-                        "Reset to default template? Your saved template will be deleted.",
+                        "Reset to default template? This will overwrite any saved template.",
                         "Confirm Reset",
                         JOptionPane.YES_NO_OPTION)
                         
                     if (confirm == JOptionPane.YES_OPTION) {
                         try {
-                            ConfigManager.deleteUserProperty(config, 'savedImagePromptTemplate')
-                            promptArea.text = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
+                            // Load default template from JAR resources
+                            def defaultTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
+                            
+                            // Save the default template to config
+                            ConfigManager.setUserProperty(config, 'savedImagePromptTemplate', defaultTemplate)
+                            
+                            // Update UI with default template
+                            promptArea.text = defaultTemplate
+                            
                             JOptionPane.showMessageDialog(dialog,
-                                "Reset to default template successful!\n"
-                                + "Changes will take effect next time.",
+                                "Successfully reset to default template!",
                                 "Template Reset",
                                 JOptionPane.INFORMATION_MESSAGE)
                         } catch(Exception e) {
