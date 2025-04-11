@@ -286,7 +286,9 @@ class ImageSelectionDialog {
 
             dialog.pack()
             // Ensure minimum width for better layout
-            dialog.minimumSize = new Dimension(300, dialog.preferredSize.height)
+            // --- FIX START: Cast height to int ---
+            dialog.minimumSize = new Dimension(300, dialog.preferredSize.height as int)
+            // --- FIX END ---
             dialog.setLocationRelativeTo(ui.currentFrame)
             // DO NOT set visible here - the caller (SwingWorker setup) will do it
         }
