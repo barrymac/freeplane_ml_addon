@@ -291,7 +291,7 @@ class ImagePromptEditor {
                 }
 
                 dialog.rootPane.defaultButton = generateButton
-                dialog.preferredSize = new Dimension(1000, 900) // Increased height
+                dialog.preferredSize = new Dimension(1200, 800) // Increased height
                 dialog.pack()
                 dialog.setLocationRelativeTo(ui.currentFrame)
                 dialog.visible = true // Show the modal dialog
