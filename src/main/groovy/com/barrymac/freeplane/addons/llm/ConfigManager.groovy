@@ -137,7 +137,8 @@ class ConfigManager {
      */
     static String getUserProperty(def config, String key, String defaultValue = '') {
         try {
-            return config.getProperty("llm.addon.${key}", defaultValue)
+            // Defensive: always pass a String as default
+            return config.getProperty("llm.addon.${key}", defaultValue ?: '')
         } catch (Exception e) {
             LogUtils.warn("Error reading user property '${key}': ${e.message}")
             return defaultValue

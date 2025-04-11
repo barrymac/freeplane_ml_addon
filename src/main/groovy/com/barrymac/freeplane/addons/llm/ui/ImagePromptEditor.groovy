@@ -63,7 +63,7 @@ class ImagePromptEditor {
                 boolean usingSavedTemplate = savedTemplate && !savedTemplate.trim().isEmpty()
                 // Check if any param key exists using the full prefixed key
                 // --- MODIFY LINE ---
-                boolean usingSavedParams = ConfigManager.getUserProperty(config, KEY_STEPS, null) != null
+                boolean usingSavedParams = ConfigManager.getUserProperty(config, KEY_STEPS, '__NOT_SET__') != '__NOT_SET__'
 
                 String initialHeaderStatus
                 if (usingSavedTemplate && usingSavedParams) {
