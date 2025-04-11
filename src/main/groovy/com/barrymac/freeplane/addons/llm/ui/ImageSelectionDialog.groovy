@@ -5,6 +5,8 @@ import org.freeplane.core.ui.components.UITools
 import org.freeplane.core.util.LogUtils
 import com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
+// --- ADDED IMPORT ---
+import static com.barrymac.freeplane.addons.llm.ui.UiHelper.*
 
 import javax.swing.*
 import java.awt.*
@@ -232,18 +234,22 @@ class ImageSelectionDialog {
                                 String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
                                 ImageAttachmentHandler.attachImageToNode(node, imageBytes, baseName, extension)
                                 LogUtils.info("DownloadWorker: Image attached successfully.")
-                                ui.showInformationMessage("Image added to node!")
+                                // --- MODIFIED CALL ---
+                                showInformationMessage(ui, "Image added to node!")
                             } else {
                                 LogUtils.error("DownloadWorker: Download failed (imageBytes is null).")
-                                ui.showErrorMessage("Failed to download selected image.")
+                                // --- MODIFIED CALL ---
+                                showErrorMessage(ui, "Failed to download selected image.")
                             }
                         } catch (ExecutionException e) {
                             Throwable cause = e.getCause() ?: e
                             LogUtils.severe("DownloadWorker: Error during image download/attachment: ${cause.message}", cause)
-                            ui.showErrorMessage("Image download/attachment failed: ${cause.message?.split('\n')?.head()}")
+                            // --- MODIFIED CALL ---
+                            showErrorMessage(ui, "Image download/attachment failed: ${cause.message?.split('\n')?.head()}")
                         } catch (Exception e) { // Catch other unexpected errors
                             LogUtils.severe("DownloadWorker: Unexpected error in done(): ${e.message}", e)
-                            ui.showErrorMessage("An unexpected error occurred: ${e.message?.split('\n')?.head()}")
+                            // --- MODIFIED CALL ---
+                            showErrorMessage(ui, "An unexpected error occurred: ${e.message?.split('\n')?.head()}")
                         } finally {
                             LogUtils.info("DownloadWorker: Disposing download progress dialog.")
                             downloadProgress?.dispose() // Dispose the download dialog here
@@ -265,7 +271,8 @@ class ImageSelectionDialog {
         } catch (Exception e) {
             // Catch errors during the setup of handleImageSelection itself
             LogUtils.severe("Image handling setup error: ${e.message}", e)
-            ui.showErrorMessage("Image handling setup failed: ${e.message}")
+            // --- MODIFIED CALL (outside worker, but good practice) ---
+            showErrorMessage(ui, "Image handling setup failed: ${e.message}")
         }
     } // End handleImageSelection
 
