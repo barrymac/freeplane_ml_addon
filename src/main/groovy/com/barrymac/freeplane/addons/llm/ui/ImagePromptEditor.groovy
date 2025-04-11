@@ -204,8 +204,17 @@ class ImagePromptEditor {
                                 headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
                                             '<small style="font-size:11px">Source: User-saved Template & Parameters</small></html>'
 
-                                // 5. Show confirmation (using JOptionPane directly for simplicity here)
-                                JOptionPane.showMessageDialog(dialog, "Template and parameters saved.", "Saved", JOptionPane.INFORMATION_MESSAGE)
+                                // --- REMOVED CONFIRMATION DIALOG ---
+
+                                // --- ADDED UI FIELD UPDATE ---
+                                // 6. Update UI fields with saved values
+                                stepsField.text = currentSteps.toString()
+                                widthField.text = currentWidth.toString()
+                                heightField.text = currentHeight.toString()
+                                imageNumField.text = currentImageNum.toString()
+                                LogUtils.info("Updated UI fields after saving.")
+                                // --- END ADDED UI FIELD UPDATE ---
+
                                 // --- DO NOT DISPOSE DIALOG ---
                                 // --- DO NOT SET resultMap ---
                             } catch (IllegalArgumentException e) {
@@ -249,8 +258,8 @@ class ImagePromptEditor {
                                     headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
                                                 '<small style="font-size:11px">Source: System Template & Default Parameters</small></html>'
 
-                                    // 5. Show confirmation
-                                    JOptionPane.showMessageDialog(dialog, "Template and parameters reset to default.", "Reset Complete", JOptionPane.INFORMATION_MESSAGE)
+                                    // --- REMOVED CONFIRMATION DIALOG ---
+
                                     // --- DO NOT DISPOSE DIALOG ---
                                     // --- DO NOT SET resultMap ---
                                 } catch (Exception e) {
