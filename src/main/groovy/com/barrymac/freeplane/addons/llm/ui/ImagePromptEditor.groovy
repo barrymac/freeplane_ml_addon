@@ -280,11 +280,25 @@ class ImagePromptEditor {
                     }
                 } // End dialog definition
 
-                // Add change listeners to sliders for auto-save
-                stepsField.addChangeListener { ConfigManager.setUserProperty(config, KEY_STEPS, stepsField.value.toString()) }
-                widthField.addChangeListener { ConfigManager.setUserProperty(config, KEY_WIDTH, widthField.value.toString()) }
-                heightField.addChangeListener { ConfigManager.setUserProperty(config, KEY_HEIGHT, heightField.value.toString()) }
-                imageNumField.addChangeListener { ConfigManager.setUserProperty(config, KEY_IMG_NUM, imageNumField.value.toString()) }
+                // --- REMOVE addChangeListener AUTOSAVE CODE ---
+                // stepsField.addChangeListener { ConfigManager.setUserProperty(config, KEY_STEPS, stepsField.value.toString()) }
+                // widthField.addChangeListener { ConfigManager.setUserProperty(config, KEY_WIDTH, widthField.value.toString()) }
+                // heightField.addChangeListener { ConfigManager.setUserProperty(config, KEY_HEIGHT, heightField.value.toString()) }
+                // imageNumField.addChangeListener { ConfigManager.setUserProperty(config, KEY_IMG_NUM, imageNumField.value.toString()) }
+
+                // --- ADD MouseListener AUTOSAVE ON RELEASE ---
+                def addSliderAutoSaveOnRelease = { slider, key ->
+                    slider.addMouseListener(new java.awt.event.MouseAdapter() {
+                        void mouseReleased(java.awt.event.MouseEvent e) {
+                            ConfigManager.setUserProperty(config, key, slider.value.toString())
+                        }
+                    })
+                }
+                addSliderAutoSaveOnRelease(stepsField, KEY_STEPS)
+                addSliderAutoSaveOnRelease(widthField, KEY_WIDTH)
+                addSliderAutoSaveOnRelease(heightField, KEY_HEIGHT)
+                addSliderAutoSaveOnRelease(imageNumField, KEY_IMG_NUM)
+                // --- END MouseListener AUTOSAVE ON RELEASE ---
 
                 // Add keyboard bindings AFTER dialog is fully constructed
                 dialog.rootPane.with {
