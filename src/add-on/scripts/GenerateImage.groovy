@@ -178,11 +178,18 @@ try {
         // --- END MODIFY LOG MESSAGE ---
     }
 
-    // Prepare initial state for editor
+    // --- MODIFIED PARAMETER PREPARATION ---
+    // Prepare initial state for editor - Load parameters from config or use defaults
     def initialParams = [
-        steps: 4, width: 256, height: 256, imageNum: 4,
-        seed: new Random().nextInt(Integer.MAX_VALUE)
+        steps   : config.getProperty('imagegen.steps', '4').toInteger(),
+        width   : config.getProperty('imagegen.width', '256').toInteger(),
+        height  : config.getProperty('imagegen.height', '256').toInteger(),
+        imageNum: config.getProperty('imagegen.imageNum', '4').toInteger(),
+        seed    : new Random().nextInt(Integer.MAX_VALUE) // Seed is always random
     ]
+    LogUtils.info("Prepared initial parameters for editor: ${initialParams}")
+    // --- END MODIFIED PARAMETER PREPARATION ---
+
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
     // --- REPLACE LINE and ADD LOGGING ---
     boolean useSaved = savedTemplate && !savedTemplate.trim().isEmpty() // More explicit check
@@ -194,6 +201,7 @@ try {
 
     // 4. Show Prompt Editor and Handle Result (Uses the map result now)
     LogUtils.info("Showing Image Prompt Editor...")
+    // Pass initialParams, although editor now loads its own state from config
     Map editorResult = ImagePromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
 
     // Handle actions based on editorResult
@@ -201,7 +209,7 @@ try {
         case 'Generate':
             LogUtils.info("User chose 'Generate'.")
             String finalUserTemplate = editorResult.prompt
-            Map generationParams = editorResult.params
+            Map generationParams = editorResult.params // Contains validated params from editor
 
             // Expand the final template provided by the user
             LogUtils.info("Expanding final user template...")
@@ -219,7 +227,7 @@ try {
                 generationParams.width,
                 generationParams.height,
                 generationParams.imageNum,
-                generationParams.seed
+                generationParams.seed // Use the seed from the editor result
             )
             LogUtils.info("Built Novita payload: ${payloadMap}")
 
@@ -381,34 +389,7 @@ try {
 
             break // End of 'Generate' case
 
-        // --- Cases for 'Save', 'Reset', 'Cancel', 'Error' updated for map result ---
-        case 'Save':
-            LogUtils.info("User chose 'Save Template'.")
-            String templateToSave = editorResult.prompt
-            try {
-                ConfigManager.setUserProperty(config, 'savedImagePromptTemplate', templateToSave)
-                LogUtils.info("Saved image prompt template.")
-                showInformationMessage(ui, "Image prompt template saved successfully.")
-            } catch (Exception e) {
-                LogUtils.severe("Error saving template: ${e.message}", e)
-                showErrorMessage(ui, "Failed to save template: ${e.message}")
-            }
-            return // Stop script
-            break // Keep break for consistency, though return exits
-
-        case 'Reset':
-            LogUtils.info("User chose 'Reset to Default'.")
-            try {
-                def defaultTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
-                ConfigManager.setUserProperty(config, 'savedImagePromptTemplate', defaultTemplate)
-                LogUtils.info("Reset and saved default image prompt template.")
-                showInformationMessage(ui, "Image prompt template reset to default and saved.")
-            } catch (Exception e) {
-                LogUtils.severe("Reset failed: ${e.message}", e)
-                showErrorMessage(ui, "Failed to reset template: ${e.message}")
-            }
-            return // Stop script
-            break // Keep break for consistency
+        // --- REMOVED 'Save' and 'Reset' cases ---
 
         case 'Cancel':
             LogUtils.info("User cancelled the Image Prompt Editor.")
