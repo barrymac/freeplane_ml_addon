@@ -215,7 +215,6 @@ try {
 
             // --- SwingWorker Implementation ---
             LogUtils.info("Setting up SwingWorker for Novita API call...")
-            // --- REMOVED AtomicBoolean cancelled ---
             SwingWorker<String, Void> worker = null // Declare worker variable here
             JDialog progressDialog = null
 
@@ -243,22 +242,29 @@ try {
             worker = new SwingWorker<String, Void>() {
                 @Override
                 protected String doInBackground() throws Exception {
-                    LogUtils.info("SwingWorker: doInBackground started.")
-                    // --- REMOVED check for cancelled flag ---
+                    // --- LOGGING START 1 ---
+                    LogUtils.info("SwingWorker: doInBackground executing on thread: " + Thread.currentThread().getName())
+                    // --- LOGGING END 1 ---
+
                     // Check only for interruption *before* the call
                     if (Thread.currentThread().isInterrupted()) {
-                        LogUtils.info("SwingWorker: Thread interrupted before API call.")
+                        LogUtils.warn("SwingWorker: Thread interrupted BEFORE API call.") // More specific log
                         throw new InterruptedException("Operation cancelled by user before API call.")
                     }
 
-                    LogUtils.info("SwingWorker: Calling Novita API...")
+                    LogUtils.info("SwingWorker: Calling Novita API...") // Log right before the call
                     String rawApiResponse
                     try {
+                        // --- LOGGING START 2 ---
+                        LogUtils.info("SwingWorker: Entering try block for callNovitaApi...")
+                        // --- LOGGING END 2 ---
                         rawApiResponse = callNovitaApi(payloadMap) // Execute the blocking call
-                        LogUtils.info("SwingWorker: Novita API call finished successfully.")
+                        // --- LOGGING START 3 ---
+                        LogUtils.info("SwingWorker: callNovitaApi returned successfully.")
+                        // --- LOGGING END 3 ---
                     } catch (InterruptedException e) {
                         // If callNovitaApi itself throws InterruptedException
-                        LogUtils.warn("SwingWorker: API call was interrupted.", e)
+                        LogUtils.warn("SwingWorker: API call was interrupted (InterruptedException caught).", e)
                         Thread.currentThread().interrupt() // Re-interrupt the thread
                         throw e // Re-throw InterruptedException
                     } catch (Exception e) {
@@ -269,11 +275,11 @@ try {
 
                     // Check for interruption *after* the call returns successfully
                     if (Thread.currentThread().isInterrupted()) {
-                        LogUtils.info("SwingWorker: Thread interrupted after API call.")
+                        LogUtils.warn("SwingWorker: Thread interrupted AFTER API call.") // More specific log
                         throw new InterruptedException("Operation cancelled by user after API call.")
                     }
 
-                    LogUtils.info("SwingWorker: doInBackground finished.")
+                    LogUtils.info("SwingWorker: doInBackground finished successfully.") // Changed log message
                     return rawApiResponse
                 }
 
@@ -337,11 +343,15 @@ try {
                 }
             } // End SwingWorker definition
 
-            // Show the progress dialog *before* starting the worker
-            progressDialog.visible = true
-            // Start the worker
+            // --- MODIFICATION START: Swap order ---
+            // Start the worker FIRST
             worker.execute()
             LogUtils.info("SwingWorker started.")
+            // THEN show the modal progress dialog
+            progressDialog.visible = true
+            LogUtils.info("Progress dialog is now visible.")
+            // --- MODIFICATION END ---
+
             break // End of 'Generate' case
 
         // --- Cases for 'Save', 'Reset', 'Cancel', 'Error' updated for map result ---
