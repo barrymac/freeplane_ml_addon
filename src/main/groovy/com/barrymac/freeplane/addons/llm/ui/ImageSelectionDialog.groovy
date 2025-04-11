@@ -96,7 +96,7 @@ class ImageSelectionDialog {
                                     def tracker = new MediaTracker(new Panel()) // Dummy component
                                     tracker.addImage(image, 0)
                                     tracker.waitForAll()
-                                    
+
                                     // Validate dimensions
                                     int width = image.getWidth(null)
                                     int height = image.getHeight(null)
@@ -107,7 +107,7 @@ class ImageSelectionDialog {
                                     // Scale to reasonable preview size (max 256x256)
                                     int maxDim = 256
                                     double scale = 1.0
-                                    
+
                                     if (width > maxDim || height > maxDim) {
                                         scale = Math.min(maxDim.toDouble() / width, maxDim.toDouble() / height)
                                         width = (int) (width * scale)
@@ -116,7 +116,7 @@ class ImageSelectionDialog {
 
                                     def scaledImage = image.getScaledInstance(
                                             width, height, java.awt.Image.SCALE_SMOOTH)
-                                            
+
                                     // Wait for scaled image to load
                                     def scaledTracker = new MediaTracker(new Panel())
                                     scaledTracker.addImage(scaledImage, 0)
@@ -170,7 +170,7 @@ class ImageSelectionDialog {
             return null
         }
     }
-    
+
     /**
      * Handles the complete flow of image selection, downloading, and attachment
      *
@@ -201,7 +201,7 @@ class ImageSelectionDialog {
 
             // Show selection dialog and get URL
             String selectedUrl = showImageSelectionDialog(ui, imageUrls, downloader)
-            
+
             if (selectedUrl) {
                 // Show download progress - Use the updated createProgressDialog
                 // Note: No cancel action needed here as download is typically fast after selection
@@ -209,7 +209,7 @@ class ImageSelectionDialog {
                 try {
                     downloadProgress.visible = true // Show the simple progress dialog
                     byte[] imageBytes = downloader(selectedUrl)
-                    
+
                     if (imageBytes) {
                         SwingUtilities.invokeLater {
                             // Attach image
@@ -244,7 +244,7 @@ class ImageSelectionDialog {
         def dialog
         def swingBuilder = new SwingBuilder() // Need to instantiate SwingBuilder here
         swingBuilder.edt { // Ensure UI creation happens on EDT
-            dialog = swingBuilder.dialog(
+            dialog = swingBuilder.dialog( // Dialog definition starts here
                 title: title,
                 modal: true, // Keep it modal to block user interaction with main window
                 owner: ui.currentFrame,
@@ -264,19 +264,26 @@ class ImageSelectionDialog {
                     panel(constraints: BorderLayout.SOUTH, layout: new FlowLayout(FlowLayout.CENTER)) {
                         button(text: 'Cancel', actionPerformed: { cancelAction() })
                     }
-                    // Add Escape key binding to the dialog's root pane
-                    // Ensure dialog is assigned before accessing rootPane
-                    dialog.rootPane.with {
-                        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-                            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancelProgressAction")
-                        getActionMap().put("cancelProgressAction", new AbstractAction() {
-                            void actionPerformed(ActionEvent e) {
-                                cancelAction()
-                            }
-                        })
-                    }
+                    // --- KEY BINDING BLOCK WAS HERE ---
+                }
+            } // Dialog definition ends here
+
+            // --- MODIFICATION START: Move key binding setup here ---
+            // Add Escape key binding AFTER dialog is created, but before packing/showing
+            if (cancelAction) {
+                // Ensure dialog is assigned before accessing rootPane
+                dialog.rootPane.with { // Now 'dialog' is guaranteed to be non-null
+                    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                        KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancelProgressAction")
+                    getActionMap().put("cancelProgressAction", new AbstractAction() {
+                        void actionPerformed(ActionEvent e) {
+                            cancelAction()
+                        }
+                    })
                 }
             }
+            // --- MODIFICATION END ---
+
             dialog.pack()
             // Ensure minimum width for better layout
             dialog.minimumSize = new Dimension(300, dialog.preferredSize.height)
