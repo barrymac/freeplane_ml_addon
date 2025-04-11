@@ -78,6 +78,22 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.6.0
+- **Image Generation**: Added a new feature to generate images based on node content using the Novita.ai API.
+  - Accessed via `Tools > LLM AddOn > Generate Image`.
+  - Uses selected node text as the base prompt.
+  - Optionally enhances the prompt using configured LLM (OpenAI/OpenRouter) if no user template exists.
+  - Prompts for Novita.ai API key if not configured.
+  - Features an "Edit Image Generation Parameters" dialog:
+    - Edit the prompt template (supports variables like `$nodeContent`, `$generatedPrompt`).
+    - Adjust generation parameters (Steps, Width, Height, Image Count) using sliders.
+    - Slider values are automatically saved on release as user defaults.
+    - Save custom prompt templates and parameters.
+    - Reset to default template and parameters.
+  - Background image generation with a cancellable progress dialog.
+  - Attaches the generated image (or user-selected image if multiple are generated) to the node.
+  - See `docs/HELP.md` for detailed usage instructions.
+
 ### v0.4.1
 - **Automatic LLM Tagging**: Added recursive model identification tags to all generated content
   - Visible `LLM:<model>` tags in node cores
@@ -96,8 +112,8 @@ To modify saved settings:
 2. Adjust settings and click "Save Changes"
 
 ## Prompt template
-The default prompt should be found in the add-on configuration. 
-It is a good starting point for brainstorming ideas. You can change it to suit your needs. 
+The default prompt should be found in the add-on configuration.
+It is a good starting point for brainstorming ideas. You can change it to suit your needs.
 
 The following variables are replaced by the add-on:
 - `$nodeContent` is replaced with the text of the selected node
@@ -108,7 +124,7 @@ The following variables are replaced by the add-on:
 
 Using that default template LLM will be asked to generate ideas related to the selected node.
 
-The `node` variable is rendered by a groovy template and comes from the groovy script DSL within freeplane. There are probably many more useful variables that can be used, but I haven't found them yet.  
+The `node` variable is rendered by a groovy template and comes from the groovy script DSL within freeplane. There are probably many more useful variables that can be used, but I haven't found them yet.
 
 ## Improvements
 Prompt and feature suggestions are very welcome!
@@ -127,7 +143,7 @@ All AI-generated branches are automatically tagged with:
 
 Example tagged node:
 ```
-[LLM:gpt-4] 
+[LLM:gpt-4]
 <!-- Model: gpt-4-0613 -->
 Generated content here...
 ```
