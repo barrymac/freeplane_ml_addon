@@ -1,8 +1,4 @@
 // Core Freeplane imports
-
-
-import com.barrymac.freeplane.addons.llm.ui.AskLmDialogueHelper
-import com.barrymac.freeplane.addons.llm.ui.ImageDialogueHelper
 import org.freeplane.core.util.LogUtils
 
 // Standard Java/Swing imports - No longer needed for main dialog UI elements here

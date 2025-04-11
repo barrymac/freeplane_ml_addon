@@ -1,4 +1,7 @@
 # LLM plugin for freeplane
 
-## Quick Install
+## How image generation works
+
+1. Select a branch to generate an image for
+2. 
 

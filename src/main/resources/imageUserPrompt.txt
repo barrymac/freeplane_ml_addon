@@ -1,4 +1,4 @@
-high-resolution, detailed digital art of $nodeContent, $rootText
+high-resolution, detailed anime art of $nodeContent, $rootText
 
 ${ancestorContents}
 ${generatedPrompt}
