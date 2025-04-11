@@ -124,8 +124,6 @@ The following variables are replaced by the add-on:
 
 Using that default template LLM will be asked to generate ideas related to the selected node.
 
-The `node` variable is rendered by a groovy template and comes from the groovy script DSL within freeplane. There are probably many more useful variables that can be used, but I haven't found them yet.
-
 ## Improvements
 Prompt and feature suggestions are very welcome!
 
