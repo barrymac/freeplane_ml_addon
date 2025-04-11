@@ -8,6 +8,10 @@ import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
 import org.freeplane.core.util.LogUtils
 
 import javax.swing.*
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.CancellationException
+import java.util.concurrent.ExecutionException
+import java.lang.InterruptedException // Explicit import for clarity
 
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showErrorMessage
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
@@ -37,14 +41,14 @@ try {
                 """<html>Novita.ai API key required for image generation.<br>
             Get your key at <a href='https://novita.ai/'>novita.ai</a></html>""",
                 "API Key Required",
-                3 // QUESTION_MESSAGE
+                JOptionPane.QUESTION_MESSAGE // Use constant
         )
 
         // Validate input
         if (!novitaApiKey?.trim()) {
             LogUtils.info("User cancelled API key input")
             showInformationMessage(ui, "Image generation requires a valid API key")
-            return
+            return // Exit script
         }
 
         // Persist the key properly
@@ -57,7 +61,7 @@ try {
         } catch (Exception e) {
             LogUtils.severe("Failed to save API key: ${e.message}")
             showErrorMessage(ui, "Failed to save API key: ${e.message}")
-            return
+            return // Exit script
         }
     }
 
@@ -72,64 +76,52 @@ try {
     if (node == null) {
         showInformationMessage(ui, "Please select a node first to use as the image prompt.")
         LogUtils.info("No node selected.")
-        return
+        return // Exit script
     }
     String prompt = node.text?.trim() // Placeholder access
     if (!prompt) {
         showInformationMessage(ui, "The selected node has no text to use as an image prompt.")
         LogUtils.info("Selected node has no text.")
-        return
+        return // Exit script
     }
     LogUtils.info("Using prompt from node ${node.id}: '${prompt.take(100)}...'")
 
 
-    // 3. Generate image prompt using LLM if needed
+    // 3. Generate image prompt using LLM if needed (This part remains synchronous for now)
     LogUtils.info("Preparing image prompt...")
-    
-    // Initialize empty enhanced prompt
     String enhancedPrompt = ""
-    
-    // Check for saved template
     def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
     LogUtils.info("Saved template check - exists: ${!savedTemplate.isEmpty()}")
-    
-    // Only generate enhancement if no saved template exists
+
     if (!savedTemplate) {
         LogUtils.info("No saved template - generating enhancement")
-        
-        // Get configured provider (default to 'openai' if not set)
         def llmProvider = config.getProperty('openai.api_provider', 'openai')
         def llmApiKey = config.getProperty('openai.key', '')
-        
-        // Handle missing key with provider-specific messaging
+
         if (!llmApiKey) {
             LogUtils.warn("${llmProvider} API key missing - prompting user")
-            
-            // Provider-specific help URLs
             def providerUrls = [
                 'openai': 'https://platform.openai.com/api-keys',
                 'openrouter': 'https://openrouter.ai/keys',
-                'novita': 'https://novita.ai/account' // Though novita is only for images
+                'novita': 'https://novita.ai/account'
             ]
             def helpUrl = providerUrls[llmProvider] ?: providerUrls.openai
-        
+
             llmApiKey = ui.showInputDialog(
                 ui.currentFrame,
                 """<html>${llmProvider.toUpperCase()} API key required for prompt generation.<br>
                 Get your key at <a href='${helpUrl}'>${llmProvider} website</a></html>""",
                 "API Key Required",
-                3
+                JOptionPane.QUESTION_MESSAGE
             )
-            
+
             if (!llmApiKey?.trim()) {
                 showInformationMessage(ui, "Prompt generation requires a valid API key")
-                return
+                return // Exit script
             }
             config.setProperty('openai.key', llmApiKey.trim())
-            // Freeplane config auto-saves, no need to call save()
         }
 
-        // Load system prompt from resources
         String systemPrompt
         try {
             systemPrompt = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
@@ -139,9 +131,8 @@ try {
             systemPrompt = "You are an expert image prompt engineer. Enhance this prompt for AI image generation."
         }
 
-        // Build LLM request
         def promptRequest = new ApiRequest(
-            model: "gpt-3.5-turbo",
+            model: "gpt-3.5-turbo", // Consider making this configurable
             messages: [
                 new Message(role: 'system', content: systemPrompt),
                 new Message(role: 'user', content: prompt)
@@ -150,149 +141,191 @@ try {
             maxTokens: 200
         )
 
-        // Call LLM
+        // Call LLM (Synchronous for now, could be refactored to SwingWorker too if slow)
         def (apiCaller, progressDialog, llmResponse) = [null, null, null]
         try {
+            // Using a simple progress dialog here, not the cancellable one yet
             progressDialog = ImageSelectionDialog.createProgressDialog(ui, "Generating Prompt", "Creating image description...")
             progressDialog.visible = true
             apiCaller = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call
             llmResponse = apiCaller(llmProvider, llmApiKey, promptRequest)
         } catch (Exception e) {
             showErrorMessage(ui, "Prompt generation failed: ${e.message.split('\n').head()}")
-            return
+            return // Exit script
         } finally {
             progressDialog?.dispose()
         }
 
-        // Parse LLM response
         try {
             def json = new JsonSlurper().parseText(llmResponse)
             enhancedPrompt = json.choices[0].message.content.trim()
             LogUtils.info("LLM generated prompt: ${enhancedPrompt.take(100)}...")
         } catch (Exception e) {
-            LogUtils.warn("Failed to parse LLM response, using original prompt")
-            enhancedPrompt = prompt
+            LogUtils.warn("Failed to parse LLM response, using original prompt: ${e.message}")
+            enhancedPrompt = prompt // Fallback
         }
     } else {
         LogUtils.info("Using saved template from config")
     }
-    
-    // Show prompt editor with default params
+
+    // Show prompt editor
     def initialParams = [
-        steps: 4,
-        width: 256,
-        height: 256,
-        imageNum: 4,
-        seed: new Random().nextInt(Integer.MAX_VALUE) // Generate valid 32-bit seed
+        steps: 4, width: 256, height: 256, imageNum: 4,
+        seed: new Random().nextInt(Integer.MAX_VALUE)
     ]
-    
-    // Load base template
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
-    
-    // Add validation for empty saved template
-    if (savedTemplate?.trim()?.isEmpty()) {
-        LogUtils.info("Saved template empty, using default")
-        savedTemplate = null
-    }
-    
-    // Combine templates - use saved template or combine base with enhancement
+    if (savedTemplate?.trim()?.isEmpty()) savedTemplate = null
     def initialTemplate = savedTemplate ?: "${userPromptTemplate}\n\n${enhancedPrompt}".trim()
-    
-    // Create binding with generated prompt and all node context variables
-    def binding = MessageExpander.createBinding(node, null, null, null, null) + [
-        generatedPrompt: enhancedPrompt
-    ]
-    
+    def binding = MessageExpander.createBinding(node, null, null, null, null) + [generatedPrompt: enhancedPrompt]
+
     def edited = ImagePromptEditor.showPromptEditor(ui, initialTemplate, initialParams, config)
     if (!edited) {
         LogUtils.info("User cancelled prompt editing")
-        return
+        return // Exit script
     }
-    
+
     def (modifiedPrompt, params) = edited
     LogUtils.info("User edited prompt and parameters: steps=${params.steps}, dimensions=${params.width}x${params.height}, imageNum=${params.imageNum}")
-    
-    // Expand the template with current context AFTER user edits
+
     def expandedPrompt = MessageExpander.expandTemplate(modifiedPrompt, binding)
     LogUtils.info("Expanded prompt template with node context")
-    
-    // Build final prompt with system template
+
     String systemPromptTemplate = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
-    
-    // Extract style parameters from the expanded prompt
-    def stylePattern = ~/Style:\s*([^\n]+)/
-    def detailsPattern = ~/Details:\s*([^\n]+)/
-    def colorsPattern = ~/Colors:\s*([^\n]+)/
-    def lightingPattern = ~/Lighting:\s*([^\n]+)/
-    
-    def styleMatcher = expandedPrompt =~ stylePattern
-    def detailsMatcher = expandedPrompt =~ detailsPattern
-    def colorsMatcher = expandedPrompt =~ colorsPattern
-    def lightingMatcher = expandedPrompt =~ lightingPattern
-    
+    def styleMatcher = expandedPrompt =~ ~/Style:\s*([^\n]+)/
+    def detailsMatcher = expandedPrompt =~ ~/Details:\s*([^\n]+)/
+    def colorsMatcher = expandedPrompt =~ ~/Colors:\s*([^\n]+)/
+    def lightingMatcher = expandedPrompt =~ ~/Lighting:\s*([^\n]+)/
     def styleValue = styleMatcher.find() ? styleMatcher.group(1).trim() : 'digital art'
     def detailsValue = detailsMatcher.find() ? detailsMatcher.group(1).trim() : 'high detail'
     def colorsValue = colorsMatcher.find() ? colorsMatcher.group(1).trim() : 'vibrant'
     def lightingValue = lightingMatcher.find() ? lightingMatcher.group(1).trim() : 'dramatic'
-    
+
     String finalPrompt = MessageExpander.buildImagePrompt(
-        expandedPrompt, 
-        systemPromptTemplate,
-        [
-            dimension: 'visual concept',
-            style: styleValue,
-            details: detailsValue,
-            colors: colorsValue,
-            lighting: lightingValue
-        ]
+        expandedPrompt, systemPromptTemplate,
+        [ dimension: 'visual concept', style: styleValue, details: detailsValue, colors: colorsValue, lighting: lightingValue ]
     )
     LogUtils.info("Built final prompt with system template and extracted parameters")
-    
-    // 4. Build payload map with user-edited values
+
+    // 4. Build payload map
     def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
-        finalPrompt, 
-        params.steps,
-        params.width,
-        params.height,
-        params.imageNum,
-        params.seed
+        finalPrompt, params.steps, params.width, params.height, params.imageNum, params.seed
     )
     LogUtils.info("Built Novita payload: ${payloadMap}")
 
-    // 5. Create API Caller 
+    // 5. Create API Caller
     LogUtils.info("Creating Novita API caller...")
     Closure callNovitaApi = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call.curry('novita', novitaApiKey)
 
-    // 6. Call API (with progress indication)
-    LogUtils.info("Calling Novita API...")
-    JDialog novitaProgressDialog = ImageSelectionDialog.createProgressDialog(ui, "Generating Image", "Creating images with Novita.ai...")
-    String rawApiResponse // Declare here to be accessible in finally block if needed
-    try {
-        novitaProgressDialog.visible = true
-        rawApiResponse = callNovitaApi(payloadMap) // Pass the map directly
-        LogUtils.info("Novita API response received")
-    } finally {
-        novitaProgressDialog?.dispose()
-        LogUtils.info("Progress dialog disposed.")
+    // --- SwingWorker Implementation ---
+    LogUtils.info("Setting up SwingWorker for Novita API call...")
+    final AtomicBoolean cancelled = new AtomicBoolean(false)
+    JDialog progressDialog = null // Declare here for access in worker and finally
+
+    // Define the cancellation action
+    def cancelAction = {
+        LogUtils.info("User requested cancellation.")
+        cancelled.set(true)
+        // Optionally, try to interrupt the worker thread if the underlying network client supports it
+        // worker.cancel(true) // This might be needed depending on ApiCaller implementation
     }
 
-    // 7. Parse Response
-    LogUtils.info("Parsing API response...")
-    List<String> imageUrls = ResponseParser.parseNovitaResponse(rawApiResponse)
-    if (imageUrls.isEmpty()) {
-        showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
-        LogUtils.error("API response did not contain any image URLs.")
-        return
+    // Create the cancellable progress dialog
+    progressDialog = ImageSelectionDialog.createCancellableProgressDialog(
+            ui,
+            "Generating Image",
+            "Creating images with Novita.ai...",
+            cancelAction // Pass the closure
+    )
+
+    // Define the SwingWorker
+    def worker = new SwingWorker<String, Void>() {
+        @Override
+        protected String doInBackground() throws Exception {
+            LogUtils.info("SwingWorker: doInBackground started.")
+            // Check for cancellation before starting the network call
+            if (cancelled.get()) {
+                LogUtils.info("SwingWorker: Detected cancellation before API call.")
+                throw new CancellationException("Operation cancelled by user before API call.")
+            }
+
+            LogUtils.info("SwingWorker: Calling Novita API...")
+            String rawApiResponse = callNovitaApi(payloadMap) // Execute the blocking call
+            LogUtils.info("SwingWorker: Novita API call finished.")
+
+            // Check for cancellation immediately after the network call returns
+            if (cancelled.get()) {
+                LogUtils.info("SwingWorker: Detected cancellation after API call.")
+                throw new CancellationException("Operation cancelled by user after API call.")
+            }
+
+            LogUtils.info("SwingWorker: doInBackground finished successfully.")
+            return rawApiResponse
+        }
+
+        @Override
+        protected void done() {
+            LogUtils.info("SwingWorker: done() method started.")
+            try {
+                // Check cancellation flag first (more reliable than isCancelled() if only flag is set)
+                if (cancelled.get()) {
+                    LogUtils.info("SwingWorker: Task was cancelled by user (checked in done()).")
+                    // No further action needed, dialog will be disposed in finally
+                    return
+                }
+
+                // Call get() to retrieve result or exception
+                String rawApiResponse = get() // This will throw exceptions if doInBackground failed or was cancelled
+
+                // If get() succeeded without exception:
+                LogUtils.info("SwingWorker: API call successful. Parsing response...")
+                List<String> imageUrls = ResponseParser.parseNovitaResponse(rawApiResponse)
+                if (imageUrls.isEmpty()) {
+                    LogUtils.error("SwingWorker: API response did not contain any image URLs.")
+                    showErrorMessage(ui, "The API did not return any image URLs. Check the logs for details.")
+                    return
+                }
+                LogUtils.info("SwingWorker: Parsed image URLs: ${imageUrls}")
+
+                // Proceed to image selection
+                LogUtils.info("SwingWorker: Delegating image handling to ImageSelectionDialog...")
+                // Ensure UI updates happen on EDT (handleImageSelection likely does this internally, but good practice)
+                SwingUtilities.invokeLater {
+                    ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
+                }
+
+            } catch (CancellationException e) {
+                LogUtils.warn("SwingWorker: Operation cancelled by user.", e)
+                // Optionally show a message, but often just closing the dialog is enough
+                // showInformationMessage(ui, "Image generation cancelled.")
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause() ?: e
+                LogUtils.severe("SwingWorker: Error during Novita API call execution: ${cause.message}", cause)
+                showErrorMessage(ui, "Image Generation Error: ${cause.message?.split('\n')?.head()}")
+            } catch (InterruptedException e) {
+                LogUtils.warn("SwingWorker: Task interrupted.", e)
+                Thread.currentThread().interrupt() // Preserve interrupt status
+                showErrorMessage(ui, "Image generation was interrupted.")
+            } catch (Exception e) { // Catch any other unexpected errors during done() processing
+                LogUtils.severe("SwingWorker: Unexpected error in done() method: ${e.message}", e)
+                showErrorMessage(ui, "An unexpected error occurred: ${e.message?.split('\n')?.head()}")
+            } finally {
+                LogUtils.info("SwingWorker: Disposing progress dialog.")
+                progressDialog?.dispose() // Ensure dialog is closed
+            }
+            LogUtils.info("SwingWorker: done() method finished.")
+        }
     }
-    LogUtils.info("Parsed image URLs: ${imageUrls}")
 
-    // 8. Delegate image selection, download and attachment to the helper
-    LogUtils.info("Delegating image handling to ImageSelectionDialog...")
-    ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
+    // Show the progress dialog *before* starting the worker
+    progressDialog.visible = true
+    // Start the worker
+    worker.execute()
+    LogUtils.info("SwingWorker started.")
 
-} catch (Exception e) { // Catching generic Exception for now
-    LogUtils.severe("An unexpected error occurred in GenerateImage script: ${e.message}", e)
-    showErrorMessage(ui, "An unexpected error occurred: ${e.message.split('\n').head()}")
+} catch (Exception e) { // Catch errors during setup before worker starts
+    LogUtils.severe("An unexpected error occurred in GenerateImage script setup: ${e.message}", e)
+    showErrorMessage(ui, "An unexpected setup error occurred: ${e.message.split('\n').head()}")
 } finally {
-    LogUtils.info("GenerateImage script finished.")
+    // This finally block executes *before* the SwingWorker finishes
+    LogUtils.info("GenerateImage script main execution path finished (SwingWorker may still be running).")
 }
