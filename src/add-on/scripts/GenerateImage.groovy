@@ -314,9 +314,39 @@ try {
                         }
                         LogUtils.info("SwingWorker: Parsed image URLs: ${imageUrls.size()} found.")
 
-                        // Proceed to image selection (already on EDT via done())
-                        LogUtils.info("SwingWorker: Delegating image handling...")
-                        ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
+                        // --- NEW LOGIC: If only one image, attach directly, else show selection dialog ---
+                        if (generationParams.imageNum == 1 && imageUrls.size() == 1) {
+                            LogUtils.info("Only one image requested/generated; attaching directly to node.")
+                            // Download and attach the image directly
+                            try {
+                                // Download image bytes
+                                def url = imageUrls[0]
+                                byte[] imageBytes
+                                if (url.startsWith("/")) {
+                                    imageBytes = com.barrymac.freeplane.addons.llm.services.ResourceLoaderService.loadBundledResourceBytes(url)
+                                } else {
+                                    def connection = new URL(url).openConnection()
+                                    connection.connectTimeout = 10000
+                                    connection.readTimeout = 30000
+                                    imageBytes = connection.inputStream.bytes
+                                }
+                                if (imageBytes) {
+                                    String baseName = com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler.sanitizeBaseName(node.text)
+                                    String extension = com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler.getFileExtension(url)
+                                    com.barrymac.freeplane.addons.llm.services.ImageAttachmentHandler.attachImageToNode(node, imageBytes, baseName, extension)
+                                    LogUtils.info("Image attached directly to node (single image flow).")
+                                } else {
+                                    showErrorMessage(ui, "Failed to download the generated image.")
+                                }
+                            } catch (Exception e) {
+                                LogUtils.severe("Error attaching single generated image: ${e.message}", e)
+                                showErrorMessage(ui, "Failed to attach generated image: ${e.message?.split('\n')?.head()}")
+                            }
+                        } else {
+                            // Multiple images: show selection dialog as before
+                            LogUtils.info("Multiple images generated; showing selection dialog.")
+                            ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
+                        }
 
                     } catch (CancellationException e) {
                         // Explicitly caught if worker was cancelled *before* get() was called or if get() throws it
