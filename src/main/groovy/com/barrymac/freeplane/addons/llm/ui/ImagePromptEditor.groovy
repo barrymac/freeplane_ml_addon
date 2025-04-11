@@ -63,7 +63,7 @@ class ImagePromptEditor {
                 boolean usingSavedTemplate = savedTemplate && !savedTemplate.trim().isEmpty()
                 // Check if any param key exists using the full prefixed key
                 // --- MODIFY LINE ---
-                boolean usingSavedParams = config.containsKey("llm.addon.${KEY_STEPS}".toString())
+                boolean usingSavedParams = ConfigManager.getUserProperty(config, KEY_STEPS, null) != null
 
                 String initialHeaderStatus
                 if (usingSavedTemplate && usingSavedParams) {
