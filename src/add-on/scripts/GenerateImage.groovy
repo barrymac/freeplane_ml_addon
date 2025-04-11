@@ -91,10 +91,18 @@ try {
     LogUtils.info("Preparing image prompt...")
     String enhancedPrompt = ""
     def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
-    LogUtils.info("Saved template check - exists: ${!savedTemplate.isEmpty()}")
+    // --- ADD LOGGING ---
+    LogUtils.info("Loaded savedImagePromptTemplate from config: '${savedTemplate}'")
+    // --- END LOGGING ---
+    // --- MODIFY LINE ---
+    LogUtils.info("Saved template check - exists: ${!savedTemplate?.trim().isEmpty()}") // Use safe navigation and trim check
 
-    if (!savedTemplate) {
-        LogUtils.info("No saved template - generating enhancement")
+    // --- MODIFY CONDITION ---
+    if (savedTemplate?.trim().isEmpty()) { // Check if it's null, empty, or whitespace
+    // --- END MODIFY CONDITION ---
+        // --- MODIFY LOG MESSAGE ---
+        LogUtils.info("No valid saved template found - generating enhancement")
+        // --- END MODIFY LOG MESSAGE ---
         def llmProvider = config.getProperty('openai.api_provider', 'openai')
         def llmApiKey = config.getProperty('openai.key', '')
 
@@ -165,7 +173,9 @@ try {
             enhancedPrompt = prompt // Fallback
         }
     } else {
-        LogUtils.info("Using saved template from config")
+        // --- MODIFY LOG MESSAGE ---
+        LogUtils.info("Using saved template from config, skipping LLM enhancement.") // Adjusted log
+        // --- END MODIFY LOG MESSAGE ---
     }
 
     // Prepare initial state for editor
@@ -174,8 +184,12 @@ try {
         seed: new Random().nextInt(Integer.MAX_VALUE)
     ]
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
-    if (savedTemplate?.trim()?.isEmpty()) savedTemplate = null
-    def initialTemplate = savedTemplate ?: "${userPromptTemplate}\n\n${enhancedPrompt}".trim()
+    // --- REPLACE LINE and ADD LOGGING ---
+    boolean useSaved = savedTemplate && !savedTemplate.trim().isEmpty() // More explicit check
+    LogUtils.info("Use saved template? ${useSaved}")
+    def initialTemplate = useSaved ? savedTemplate : "${userPromptTemplate}\n\n${enhancedPrompt}".trim()
+    LogUtils.info("Initial template for editor: '${initialTemplate}'")
+    // --- END REPLACE LINE and LOGGING ---
     def binding = MessageExpander.createBinding(node, null, null, null, null) + [generatedPrompt: enhancedPrompt]
 
     // 4. Show Prompt Editor and Handle Result (Uses the map result now)
