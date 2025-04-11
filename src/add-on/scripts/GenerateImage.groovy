@@ -216,7 +216,7 @@ try {
             // --- SwingWorker Implementation ---
             LogUtils.info("Setting up SwingWorker for Novita API call...")
             SwingWorker<String, Void> worker = null // Declare worker variable here
-            JDialog progressDialog = null
+            JDialog progressDialog = null // Declare progressDialog variable here
 
             // Define the cancellation action
             def cancelAction = {
@@ -286,6 +286,15 @@ try {
                 @Override
                 protected void done() {
                     LogUtils.info("SwingWorker: done() method started.")
+                    // --- MODIFICATION START: Dispose dialog earlier ---
+                    // Dispose the initial progress dialog *before* potentially showing another modal dialog
+                    if (progressDialog != null) {
+                        LogUtils.info("SwingWorker: Disposing initial progress dialog.")
+                        progressDialog.dispose()
+                        // progressDialog = null // Nullify to prevent double disposal in finally (removed as it's local to the outer scope)
+                    }
+                    // --- MODIFICATION END ---
+
                     try {
                         // Check worker's cancelled status first
                         if (isCancelled()) {
@@ -309,6 +318,7 @@ try {
 
                         // Proceed to image selection (already on EDT via done())
                         LogUtils.info("SwingWorker: Delegating image handling...")
+                        // This call might show another modal dialog (image selection)
                         ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
 
                     } catch (CancellationException e) {
@@ -336,8 +346,11 @@ try {
                         LogUtils.severe("SwingWorker: Unexpected error in done() method: ${e.message}", e)
                         showErrorMessage(ui, "An unexpected error occurred: ${e.message?.split('\n')?.head()}")
                     } finally {
-                        LogUtils.info("SwingWorker: Disposing progress dialog.")
-                        progressDialog?.dispose() // Ensure dialog is always closed
+                        // --- MODIFICATION: Remove redundant disposal ---
+                        // The progressDialog is now disposed *before* the try block
+                        // LogUtils.info("SwingWorker: Disposing progress dialog.") // Already disposed above
+                        // progressDialog?.dispose() // Already disposed above
+                        // --- MODIFICATION END ---
                     }
                     LogUtils.info("SwingWorker: done() method finished.")
                 }

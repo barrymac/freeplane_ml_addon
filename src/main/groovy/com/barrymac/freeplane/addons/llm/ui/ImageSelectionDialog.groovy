@@ -14,6 +14,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import javax.swing.AbstractAction
 import javax.swing.JComponent
+import java.util.concurrent.ExecutionException // Import needed
 
 class ImageSelectionDialog {
 
@@ -181,7 +182,7 @@ class ImageSelectionDialog {
      */
     static void handleImageSelection(UITools ui, List<String> imageUrls, def node, def config) {
         try {
-            // Define the downloader within the helper
+            // Define the downloader closure (remains the same)
             Closure<byte[]> downloader = { String url ->
                 try {
                     LogUtils.info("Downloader: Loading image from: ${url}")
@@ -189,47 +190,84 @@ class ImageSelectionDialog {
                         return ResourceLoaderService.loadBundledResourceBytes(url)
                     } else {
                         def connection = new URL(url).openConnection()
-                        connection.connectTimeout = 10000
-                        connection.readTimeout = 30000
+                        connection.connectTimeout = 10000 // 10 seconds
+                        connection.readTimeout = 30000  // 30 seconds
                         return connection.inputStream.bytes
                     }
                 } catch (Exception e) {
-                    LogUtils.severe("Downloader error: ${e.message}")
+                    LogUtils.severe("Downloader error for URL [${url}]: ${e.message}", e) // Add URL to log
                     return null
                 }
             }
 
-            // Show selection dialog and get URL
+            // Show selection dialog and get URL (this is modal, runs on EDT)
             String selectedUrl = showImageSelectionDialog(ui, imageUrls, downloader)
 
             if (selectedUrl) {
-                // Show download progress - Use the updated createProgressDialog
-                // Note: No cancel action needed here as download is typically fast after selection
+                LogUtils.info("User selected image URL: ${selectedUrl}")
+                // --- MODIFICATION START: Download in background ---
+                // Show download progress dialog (non-cancellable for now)
                 def downloadProgress = createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
-                try {
-                    downloadProgress.visible = true // Show the simple progress dialog
-                    byte[] imageBytes = downloader(selectedUrl)
 
-                    if (imageBytes) {
-                        SwingUtilities.invokeLater {
-                            // Attach image
-                            String baseName = ImageAttachmentHandler.sanitizeBaseName(node.text)
-                            String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
-                            ImageAttachmentHandler.attachImageToNode(node, imageBytes, baseName, extension)
-                            ui.showInformationMessage("Image added to node!")
-                        }
-                    } else {
-                        ui.showErrorMessage("Failed to download image")
+                // Use SwingWorker for the download and attachment
+                def downloadWorker = new SwingWorker<byte[], Void>() {
+                    @Override
+                    protected byte[] doInBackground() throws Exception {
+                        LogUtils.info("DownloadWorker: Starting download for selected image in background...")
+                        byte[] imageBytes = downloader(selectedUrl) // Perform download in background
+                        LogUtils.info("DownloadWorker: Download finished. Bytes received: ${imageBytes?.length ?: 0}")
+                        return imageBytes
                     }
-                } finally {
-                    downloadProgress.dispose() // Dispose the simple progress dialog
-                }
+
+                    @Override
+                    protected void done() {
+                        LogUtils.info("DownloadWorker: done() method started.")
+                        try {
+                            byte[] imageBytes = get() // Get result or exception
+
+                            if (imageBytes) {
+                                LogUtils.info("DownloadWorker: Attaching image to node...")
+                                // Attach image (needs to happen on EDT, which done() is)
+                                String baseName = ImageAttachmentHandler.sanitizeBaseName(node.text)
+                                String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
+                                ImageAttachmentHandler.attachImageToNode(node, imageBytes, baseName, extension)
+                                LogUtils.info("DownloadWorker: Image attached successfully.")
+                                ui.showInformationMessage("Image added to node!")
+                            } else {
+                                LogUtils.error("DownloadWorker: Download failed (imageBytes is null).")
+                                ui.showErrorMessage("Failed to download selected image.")
+                            }
+                        } catch (ExecutionException e) {
+                            Throwable cause = e.getCause() ?: e
+                            LogUtils.severe("DownloadWorker: Error during image download/attachment: ${cause.message}", cause)
+                            ui.showErrorMessage("Image download/attachment failed: ${cause.message?.split('\n')?.head()}")
+                        } catch (Exception e) { // Catch other unexpected errors
+                            LogUtils.severe("DownloadWorker: Unexpected error in done(): ${e.message}", e)
+                            ui.showErrorMessage("An unexpected error occurred: ${e.message?.split('\n')?.head()}")
+                        } finally {
+                            LogUtils.info("DownloadWorker: Disposing download progress dialog.")
+                            downloadProgress?.dispose() // Dispose the download dialog here
+                        }
+                        LogUtils.info("DownloadWorker: done() method finished.")
+                    }
+                } // End downloadWorker definition
+
+                // Start the download worker
+                downloadWorker.execute()
+                LogUtils.info("DownloadWorker started.")
+                // Show the modal progress dialog *after* starting the worker
+                downloadProgress.visible = true
+                LogUtils.info("Download progress dialog is now visible.")
+                // --- MODIFICATION END ---
+            } else {
+                LogUtils.info("User cancelled image selection.")
             }
         } catch (Exception e) {
-            LogUtils.severe("Image handling error: ${e.message}", e)
-            ui.showErrorMessage("Image handling failed: ${e.message}")
+            // Catch errors during the setup of handleImageSelection itself
+            LogUtils.severe("Image handling setup error: ${e.message}", e)
+            ui.showErrorMessage("Image handling setup failed: ${e.message}")
         }
-    }
+    } // End handleImageSelection
 
     // --- REPLACED METHOD START ---
     /**
