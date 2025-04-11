@@ -91,18 +91,11 @@ try {
     LogUtils.info("Preparing image prompt...")
     String enhancedPrompt = ""
     def savedTemplate = ConfigManager.getUserProperty(config, 'savedImagePromptTemplate', '')
-    // --- ADD LOGGING ---
     LogUtils.info("Loaded savedImagePromptTemplate from config: '${savedTemplate}'")
-    // --- END LOGGING ---
-    // --- MODIFY LINE ---
     LogUtils.info("Saved template check - exists: ${!savedTemplate?.trim().isEmpty()}") // Use safe navigation and trim check
 
-    // --- MODIFY CONDITION ---
     if (savedTemplate?.trim().isEmpty()) { // Check if it's null, empty, or whitespace
-    // --- END MODIFY CONDITION ---
-        // --- MODIFY LOG MESSAGE ---
         LogUtils.info("No valid saved template found - generating enhancement")
-        // --- END MODIFY LOG MESSAGE ---
         def llmProvider = config.getProperty('openai.api_provider', 'openai')
         def llmApiKey = config.getProperty('openai.key', '')
 
@@ -173,30 +166,26 @@ try {
             enhancedPrompt = prompt // Fallback
         }
     } else {
-        // --- MODIFY LOG MESSAGE ---
         LogUtils.info("Using saved template from config, skipping LLM enhancement.") // Adjusted log
-        // --- END MODIFY LOG MESSAGE ---
     }
 
-    // --- MODIFIED PARAMETER PREPARATION ---
-    // Prepare initial state for editor - Load parameters from config or use defaults
+    // --- MODIFY PARAMETER PREPARATION ---
+    // Prepare initial state for editor - Load parameters from config or use defaults via ConfigManager
     def initialParams = [
-        steps   : config.getProperty('imagegen.steps', '4').toInteger(),
-        width   : config.getProperty('imagegen.width', '256').toInteger(),
-        height  : config.getProperty('imagegen.height', '256').toInteger(),
-        imageNum: config.getProperty('imagegen.imageNum', '4').toInteger(),
+        steps   : ConfigManager.getUserProperty(config, 'imagegenSteps', '4').toInteger(), // Use new key
+        width   : ConfigManager.getUserProperty(config, 'imagegenWidth', '256').toInteger(), // Use new key
+        height  : ConfigManager.getUserProperty(config, 'imagegenHeight', '256').toInteger(), // Use new key
+        imageNum: ConfigManager.getUserProperty(config, 'imagegenImageNum', '4').toInteger(), // Use new key
         seed    : new Random().nextInt(Integer.MAX_VALUE) // Seed is always random
     ]
-    LogUtils.info("Prepared initial parameters for editor: ${initialParams}")
-    // --- END MODIFIED PARAMETER PREPARATION ---
+    LogUtils.info("Prepared initial parameters for editor via ConfigManager: ${initialParams}")
+    // --- END MODIFY PARAMETER PREPARATION ---
 
     String userPromptTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
-    // --- REPLACE LINE and ADD LOGGING ---
     boolean useSaved = savedTemplate && !savedTemplate.trim().isEmpty() // More explicit check
     LogUtils.info("Use saved template? ${useSaved}")
     def initialTemplate = useSaved ? savedTemplate : "${userPromptTemplate}\n\n${enhancedPrompt}".trim()
     LogUtils.info("Initial template for editor: '${initialTemplate}'")
-    // --- END REPLACE LINE and LOGGING ---
     def binding = MessageExpander.createBinding(node, null, null, null, null) + [generatedPrompt: enhancedPrompt]
 
     // 4. Show Prompt Editor and Handle Result (Uses the map result now)
@@ -213,10 +202,8 @@ try {
 
             // Expand the final template provided by the user
             LogUtils.info("Expanding final user template...")
-            // --- USE TEMPLATE DIRECTLY ---
             String finalPrompt = MessageExpander.expandTemplate(finalUserTemplate, binding)
             LogUtils.info("Expanded final prompt: ${finalPrompt.take(100)}...")
-            // --- END REVERT ---
 
 
             // 5. Build Novita Payload
@@ -245,7 +232,6 @@ try {
                 LogUtils.info("User requested cancellation.")
                 if (worker != null && !worker.isDone()) {
                     LogUtils.info("Attempting to cancel SwingWorker (interrupting thread)...")
-                    // --- Rely solely on worker.cancel ---
                     worker.cancel(true) // Pass true to attempt interruption
                 } else {
                     LogUtils.info("Cancellation requested but worker is null or already done.")
@@ -264,9 +250,7 @@ try {
             worker = new SwingWorker<String, Void>() {
                 @Override
                 protected String doInBackground() throws Exception {
-                    // --- LOGGING START 1 ---
                     LogUtils.info("SwingWorker: doInBackground executing on thread: " + Thread.currentThread().getName())
-                    // --- LOGGING END 1 ---
 
                     // Check only for interruption *before* the call
                     if (Thread.currentThread().isInterrupted()) {
@@ -277,13 +261,9 @@ try {
                     LogUtils.info("SwingWorker: Calling Novita API...") // Log right before the call
                     String rawApiResponse
                     try {
-                        // --- LOGGING START 2 ---
                         LogUtils.info("SwingWorker: Entering try block for callNovitaApi...")
-                        // --- LOGGING END 2 ---
                         rawApiResponse = callNovitaApi(payloadMap) // Execute the blocking call
-                        // --- LOGGING START 3 ---
                         LogUtils.info("SwingWorker: callNovitaApi returned successfully.")
-                        // --- LOGGING END 3 ---
                     } catch (InterruptedException e) {
                         // If callNovitaApi itself throws InterruptedException
                         LogUtils.warn("SwingWorker: API call was interrupted (InterruptedException caught).", e)
@@ -308,20 +288,16 @@ try {
                 @Override
                 protected void done() {
                     LogUtils.info("SwingWorker: done() method started.")
-                    // --- MODIFICATION START: Dispose dialog earlier ---
                     // Dispose the initial progress dialog *before* potentially showing another modal dialog
                     if (progressDialog != null) {
                         LogUtils.info("SwingWorker: Disposing initial progress dialog.")
                         progressDialog.dispose()
-                        // progressDialog = null // Nullify to prevent double disposal in finally (removed as it's local to the outer scope)
                     }
-                    // --- MODIFICATION END ---
 
                     try {
                         // Check worker's cancelled status first
                         if (isCancelled()) {
                             LogUtils.warn("SwingWorker: Task was cancelled by user (isCancelled() is true).")
-                            // showInformationMessage(ui, "Image generation cancelled.") // Optional
                             return // Stop processing
                         }
 
@@ -340,20 +316,17 @@ try {
 
                         // Proceed to image selection (already on EDT via done())
                         LogUtils.info("SwingWorker: Delegating image handling...")
-                        // This call might show another modal dialog (image selection)
                         ImageSelectionDialog.handleImageSelection(ui, imageUrls, node, config)
 
                     } catch (CancellationException e) {
                         // Explicitly caught if worker was cancelled *before* get() was called or if get() throws it
                         LogUtils.warn("SwingWorker: Operation cancelled (CancellationException caught).", e)
-                        // showInformationMessage(ui, "Image generation cancelled.") // Optional
                     } catch (ExecutionException e) {
                         Throwable cause = e.getCause() ?: e
                         // Check if the cause was an InterruptedException from doInBackground
                         if (cause instanceof InterruptedException) {
                             LogUtils.warn("SwingWorker: Operation interrupted during execution (InterruptedException cause).", cause)
                             Thread.currentThread().interrupt() // Preserve interrupt status
-                            // showInformationMessage(ui, "Image generation cancelled.") // Optional
                         } else {
                             // Handle other execution errors
                             LogUtils.severe("SwingWorker: Error during API call execution: ${cause.message}", cause)
@@ -363,33 +336,22 @@ try {
                         // If the done() thread itself is interrupted
                         LogUtils.warn("SwingWorker: done() method interrupted.", e)
                         Thread.currentThread().interrupt() // Preserve interrupt status
-                        // showInformationMessage(ui, "Image generation cancelled.") // Optional
                     } catch (Exception e) {
                         LogUtils.severe("SwingWorker: Unexpected error in done() method: ${e.message}", e)
                         showErrorMessage(ui, "An unexpected error occurred: ${e.message?.split('\n')?.head()}")
-                    } finally {
-                        // --- MODIFICATION: Remove redundant disposal ---
-                        // The progressDialog is now disposed *before* the try block
-                        // LogUtils.info("SwingWorker: Disposing progress dialog.") // Already disposed above
-                        // progressDialog?.dispose() // Already disposed above
-                        // --- MODIFICATION END ---
                     }
                     LogUtils.info("SwingWorker: done() method finished.")
                 }
             } // End SwingWorker definition
 
-            // --- MODIFICATION START: Swap order ---
             // Start the worker FIRST
             worker.execute()
             LogUtils.info("SwingWorker started.")
             // THEN show the modal progress dialog
             progressDialog.visible = true
             LogUtils.info("Progress dialog is now visible.")
-            // --- MODIFICATION END ---
 
             break // End of 'Generate' case
-
-        // --- REMOVED 'Save' and 'Reset' cases ---
 
         case 'Cancel':
             LogUtils.info("User cancelled the Image Prompt Editor.")

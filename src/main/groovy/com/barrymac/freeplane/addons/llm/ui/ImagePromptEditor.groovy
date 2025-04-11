@@ -16,15 +16,15 @@ import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessa
 
 class ImagePromptEditor {
 
-    // --- ADDED CONSTANTS ---
-    private static final String KEY_SAVED_TEMPLATE = 'savedImagePromptTemplate'
-    private static final String KEY_STEPS = 'imagegen.steps'
-    private static final String KEY_WIDTH = 'imagegen.width'
-    private static final String KEY_HEIGHT = 'imagegen.height'
-    private static final String KEY_IMG_NUM = 'imagegen.imageNum'
+    // --- MODIFY CONSTANTS ---
+    private static final String KEY_SAVED_TEMPLATE = 'savedImagePromptTemplate' // Keep this as is
+    private static final String KEY_STEPS = 'imagegenSteps' // Changed
+    private static final String KEY_WIDTH = 'imagegenWidth' // Changed
+    private static final String KEY_HEIGHT = 'imagegenHeight' // Changed
+    private static final String KEY_IMG_NUM = 'imagegenImageNum' // Changed
+    // --- END MODIFY CONSTANTS ---
 
     private static final Map DEFAULT_PARAMS = [steps: 4, width: 256, height: 256, imageNum: 4]
-    // --- END ADDED CONSTANTS ---
 
     /**
      * Shows the image prompt editor dialog.
@@ -41,27 +41,28 @@ class ImagePromptEditor {
         def stepsField, widthField, heightField, imageNumField // Declare fields for validation access
         JLabel headerLabel // Declare header label for updating
 
-        // --- MODIFIED PARAMETER LOADING ---
-        // Load saved parameters or use defaults
+        // --- MODIFY PARAMETER LOADING ---
+        // Load saved parameters or use defaults via ConfigManager
         Map params = [
-            steps   : config.getProperty(KEY_STEPS, DEFAULT_PARAMS.steps.toString()).toInteger(),
-            width   : config.getProperty(KEY_WIDTH, DEFAULT_PARAMS.width.toString()).toInteger(),
-            height  : config.getProperty(KEY_HEIGHT, DEFAULT_PARAMS.height.toString()).toInteger(),
-            imageNum: config.getProperty(KEY_IMG_NUM, DEFAULT_PARAMS.imageNum.toString()).toInteger()
+            steps   : ConfigManager.getUserProperty(config, KEY_STEPS, DEFAULT_PARAMS.steps.toString()).toInteger(),
+            width   : ConfigManager.getUserProperty(config, KEY_WIDTH, DEFAULT_PARAMS.width.toString()).toInteger(),
+            height  : ConfigManager.getUserProperty(config, KEY_HEIGHT, DEFAULT_PARAMS.height.toString()).toInteger(),
+            imageNum: ConfigManager.getUserProperty(config, KEY_IMG_NUM, DEFAULT_PARAMS.imageNum.toString()).toInteger()
         ]
-        LogUtils.info("Loaded initial parameters: ${params}")
+        LogUtils.info("Loaded initial parameters via ConfigManager: ${params}")
         // Seed is always random, not saved
         params.seed = new Random().nextInt(Integer.MAX_VALUE)
-        // --- END MODIFIED PARAMETER LOADING ---
+        // --- END MODIFY PARAMETER LOADING ---
 
         try {
             swingBuilder.edt { // Ensure GUI runs on Event Dispatch Thread
 
-                // --- MODIFIED HEADER LABEL LOGIC ---
+                // --- MODIFY HEADER STATUS CHECK ---
                 // Determine initial state for header
                 def savedTemplate = ConfigManager.getUserProperty(config, KEY_SAVED_TEMPLATE, '')
                 boolean usingSavedTemplate = savedTemplate && !savedTemplate.trim().isEmpty()
-                boolean usingSavedParams = config.containsKey(KEY_STEPS) // Check if any param key exists
+                // Check if any param key exists using the full prefixed key
+                boolean usingSavedParams = config.containsKey("llm.addon.${KEY_STEPS}")
 
                 String initialHeaderStatus
                 if (usingSavedTemplate && usingSavedParams) {
@@ -73,7 +74,7 @@ class ImagePromptEditor {
                 } else {
                     initialHeaderStatus = 'System Template & Default Parameters'
                 }
-                // --- END MODIFIED HEADER LABEL LOGIC ---
+                // --- END MODIFY HEADER STATUS CHECK ---
 
                 dialog = swingBuilder.dialog(
                     title: 'Edit Image Generation Parameters',
@@ -88,10 +89,8 @@ class ImagePromptEditor {
                         // 1. Header - Place in NORTH
                         headerLabel = swingBuilder.label( // Assign to variable
                             constraints: BorderLayout.NORTH,
-                            // --- UPDATED HEADER TEXT ---
                             text: "<html><b style=\"font-size:14px\">Edit Image Generation Prompt</b><br>" +
                                   "<small style=\"font-size:11px\">Source: ${initialHeaderStatus}</small></html>",
-                            // --- END UPDATED HEADER TEXT ---
                             border: BorderFactory.createEmptyBorder(5, 5, 5, 5)
                         )
 
@@ -136,7 +135,6 @@ class ImagePromptEditor {
                             swingBuilder.panel(constraints: gbc, border: BorderFactory.createTitledBorder("Generation Parameters")) {
                                 swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
                                 swingBuilder.label(text: 'Steps (4-50):')
-                                // --- MODIFIED PARAMETER FIELDS ---
                                 stepsField = swingBuilder.textField(text: params.steps.toString(), id: 'stepsField')
                                 swingBuilder.label(text: 'Width (256-1024):')
                                 widthField = swingBuilder.textField(text: params.width.toString(), id: 'widthField')
@@ -144,7 +142,6 @@ class ImagePromptEditor {
                                 heightField = swingBuilder.textField(text: params.height.toString(), id: 'heightField')
                                 swingBuilder.label(text: 'Number of Images (1-4):')
                                 imageNumField = swingBuilder.textField(text: params.imageNum.toString(), id: 'imageNumField')
-                                // --- END MODIFIED PARAMETER FIELDS ---
                             }
                         } // End inner GridBagLayout panel
                     } // End outer BorderLayout panel
@@ -190,33 +187,29 @@ class ImagePromptEditor {
                                     return // Stay in dialog
                                 }
 
-                                // 3. Save template and parameters
+                                // 3. Save template and parameters using ConfigManager
                                 ConfigManager.setUserProperty(config, KEY_SAVED_TEMPLATE, templateToSave)
-                                config.setProperty(KEY_STEPS, currentSteps.toString())
-                                config.setProperty(KEY_WIDTH, currentWidth.toString())
-                                config.setProperty(KEY_HEIGHT, currentHeight.toString())
-                                config.setProperty(KEY_IMG_NUM, currentImageNum.toString())
+                                // --- MODIFY SAVING ---
+                                ConfigManager.setUserProperty(config, KEY_STEPS, currentSteps.toString())
+                                ConfigManager.setUserProperty(config, KEY_WIDTH, currentWidth.toString())
+                                ConfigManager.setUserProperty(config, KEY_HEIGHT, currentHeight.toString())
+                                ConfigManager.setUserProperty(config, KEY_IMG_NUM, currentImageNum.toString())
+                                // --- END MODIFY SAVING ---
                                 // No need to call config.save() - Freeplane handles it
 
-                                LogUtils.info("Saved template and parameters.")
+                                LogUtils.info("Saved template and parameters via ConfigManager.")
 
                                 // 4. Update header
                                 headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
                                             '<small style="font-size:11px">Source: User-saved Template & Parameters</small></html>'
 
-                                // --- REMOVED CONFIRMATION DIALOG ---
-
-                                // --- ADDED UI FIELD UPDATE ---
                                 // 6. Update UI fields with saved values
                                 stepsField.text = currentSteps.toString()
                                 widthField.text = currentWidth.toString()
                                 heightField.text = currentHeight.toString()
                                 imageNumField.text = currentImageNum.toString()
                                 LogUtils.info("Updated UI fields after saving.")
-                                // --- END ADDED UI FIELD UPDATE ---
 
-                                // --- DO NOT DISPOSE DIALOG ---
-                                // --- DO NOT SET resultMap ---
                             } catch (IllegalArgumentException e) {
                                 showError(dialog, e.message) // Show validation error
                             } catch (Exception e) {
@@ -235,17 +228,19 @@ class ImagePromptEditor {
 
                             if (confirm == JOptionPane.YES_OPTION) {
                                 try {
-                                    // 1. Load and save default template
+                                    // 1. Load and save default template using ConfigManager
                                     def defaultTemplate = ResourceLoaderService.loadTextResource('/imageUserPrompt.txt')
                                     ConfigManager.setUserProperty(config, KEY_SAVED_TEMPLATE, defaultTemplate)
 
-                                    // 2. Save default parameters
-                                    config.setProperty(KEY_STEPS, DEFAULT_PARAMS.steps.toString())
-                                    config.setProperty(KEY_WIDTH, DEFAULT_PARAMS.width.toString())
-                                    config.setProperty(KEY_HEIGHT, DEFAULT_PARAMS.height.toString())
-                                    config.setProperty(KEY_IMG_NUM, DEFAULT_PARAMS.imageNum.toString())
+                                    // 2. Save default parameters using ConfigManager
+                                    // --- MODIFY SAVING ---
+                                    ConfigManager.setUserProperty(config, KEY_STEPS, DEFAULT_PARAMS.steps.toString())
+                                    ConfigManager.setUserProperty(config, KEY_WIDTH, DEFAULT_PARAMS.width.toString())
+                                    ConfigManager.setUserProperty(config, KEY_HEIGHT, DEFAULT_PARAMS.height.toString())
+                                    ConfigManager.setUserProperty(config, KEY_IMG_NUM, DEFAULT_PARAMS.imageNum.toString())
+                                    // --- END MODIFY SAVING ---
 
-                                    LogUtils.info("Reset template and parameters to default.")
+                                    LogUtils.info("Reset template and parameters to default via ConfigManager.")
 
                                     // 3. Update UI elements
                                     promptArea.text = defaultTemplate
@@ -258,10 +253,6 @@ class ImagePromptEditor {
                                     headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
                                                 '<small style="font-size:11px">Source: System Template & Default Parameters</small></html>'
 
-                                    // --- REMOVED CONFIRMATION DIALOG ---
-
-                                    // --- DO NOT DISPOSE DIALOG ---
-                                    // --- DO NOT SET resultMap ---
                                 } catch (Exception e) {
                                     LogUtils.severe("Reset failed: ${e.message}", e)
                                     showError(dialog, "Failed to reset: ${e.message}")
@@ -299,9 +290,7 @@ class ImagePromptEditor {
                 }
 
                 dialog.rootPane.defaultButton = generateButton
-                // --- MODIFIED DIALOG SIZE ---
                 dialog.preferredSize = new Dimension(1000, 900) // Increased height
-                // --- END MODIFIED DIALOG SIZE ---
                 dialog.pack()
                 dialog.setLocationRelativeTo(ui.currentFrame)
                 dialog.visible = true // Show the modal dialog
