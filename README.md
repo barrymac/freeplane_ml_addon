@@ -36,10 +36,11 @@ Analyze relationships between two connected nodes using structured comparisons:
    - Select from common types (Pros/Cons, Strengths/Weaknesses etc.) from the dropdown.
    - Or enter a custom comparison type (e.g., "Cost vs Benefits") directly into the box.
 
-The add-on will:
+The add-on can:
 - Query the LLM to analyze both nodes based on your comparison type using a dedicated prompt.
 - Add structured results as child nodes under each of the selected nodes.
 - Save any newly entered custom comparison types for quick reuse in the dropdown next time.
+- Potentially compare model outputs
 
 ### Setup
 Install add-on using the LLM-AddOn-v0.4.0.addon.mm file. Other files are used for development only.
@@ -105,7 +106,7 @@ Check-list before starting
 - Added "Compare Connected Nodes" feature for analyzing node relationships using a dedicated prompt and custom comparison types.
 ### v0.3.6
 - **Quick Prompt Shortcut**: Use `Ctrl+Alt+G` to instantly generate content using your saved settings
-- **Direct API Access**: Choose between OpenAI and OpenRouter providers
+- **Direct API Access**: Choose between OpenRouter or OpenAI
 
 To modify saved settings:
 1. Go to **LLM > Configure Prompts & Model**
@@ -128,8 +129,7 @@ Using that default template LLM will be asked to generate ideas related to the s
 Prompt and feature suggestions are very welcome!
 
 ### Work in progress / future release
-- [x] Add preferences to set GPT parameters
-- [x] Add comparative analysis between connected nodes (v0.4.0)
+- [] Better prompt engineering for image generation 
 
 For other feature ideas check the [project roadmap](docs/ROADMAP.md)
 
