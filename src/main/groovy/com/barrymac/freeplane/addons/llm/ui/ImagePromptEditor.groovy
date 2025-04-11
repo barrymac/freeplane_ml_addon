@@ -131,18 +131,34 @@ class ImagePromptEditor {
                                 }
                             }
 
-                            // 4. Parameters Panel
+                            // 4. Parameters Panel (now with sliders)
                             gbc.gridy++; gbc.weighty = 0.0;
                             swingBuilder.panel(constraints: gbc, border: BorderFactory.createTitledBorder("Generation Parameters")) {
                                 swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
+                                // Steps slider
                                 swingBuilder.label(text: 'Steps (4-50):')
-                                stepsField = swingBuilder.textField(text: params.steps.toString(), id: 'stepsField')
+                                stepsField = swingBuilder.slider(
+                                    minimum: 4, maximum: 50, value: params.steps, majorTickSpacing: 10, minorTickSpacing: 1,
+                                    paintTicks: true, paintLabels: true, snapToTicks: true, id: 'stepsField'
+                                )
+                                // Width slider
                                 swingBuilder.label(text: 'Width (256-1024):')
-                                widthField = swingBuilder.textField(text: params.width.toString(), id: 'widthField')
+                                widthField = swingBuilder.slider(
+                                    minimum: 256, maximum: 1024, value: params.width, majorTickSpacing: 256, minorTickSpacing: 64,
+                                    paintTicks: true, paintLabels: true, snapToTicks: true, id: 'widthField'
+                                )
+                                // Height slider
                                 swingBuilder.label(text: 'Height (256-1024):')
-                                heightField = swingBuilder.textField(text: params.height.toString(), id: 'heightField')
+                                heightField = swingBuilder.slider(
+                                    minimum: 256, maximum: 1024, value: params.height, majorTickSpacing: 256, minorTickSpacing: 64,
+                                    paintTicks: true, paintLabels: true, snapToTicks: true, id: 'heightField'
+                                )
+                                // Image number slider
                                 swingBuilder.label(text: 'Number of Images (1-4):')
-                                imageNumField = swingBuilder.textField(text: params.imageNum.toString(), id: 'imageNumField')
+                                imageNumField = swingBuilder.slider(
+                                    minimum: 1, maximum: 4, value: params.imageNum, majorTickSpacing: 1, minorTickSpacing: 1,
+                                    paintTicks: true, paintLabels: true, snapToTicks: true, id: 'imageNumField'
+                                )
                             }
                         } // End inner GridBagLayout panel
                     } // End outer BorderLayout panel
@@ -152,11 +168,11 @@ class ImagePromptEditor {
                         // --- Generate Button ---
                         generateButton = swingBuilder.button(text: 'Generate', actionPerformed: {
                             try {
-                                // Validate and update params map from fields before returning
-                                params.steps = validateNumberField(stepsField, 4, 50, "Steps")
-                                params.width = validateNumberField(widthField, 256, 1024, "Width")
-                                params.height = validateNumberField(heightField, 256, 1024, "Height")
-                                params.imageNum = validateNumberField(imageNumField, 1, 4, "Image Count")
+                                // Get params from sliders (no validation needed)
+                                params.steps = stepsField.value
+                                params.width = widthField.value
+                                params.height = heightField.value
+                                params.imageNum = imageNumField.value
 
                                 def currentPrompt = promptArea.text.trim()
                                 if (!currentPrompt) {
@@ -167,7 +183,7 @@ class ImagePromptEditor {
                                 params.seed = new Random().nextInt(Integer.MAX_VALUE)
                                 resultMap = [action: 'Generate', prompt: currentPrompt, params: params]
                                 dialog.dispose()
-                            } catch (IllegalArgumentException e) {
+                            } catch (Exception e) {
                                 showError(dialog, e.message) // Stay in dialog
                             }
                         })
@@ -175,11 +191,11 @@ class ImagePromptEditor {
                         // --- MODIFIED Save Template Button ---
                         swingBuilder.button(text: 'Save Template', actionPerformed: {
                             try {
-                                // 1. Validate parameters first
-                                def currentSteps = validateNumberField(stepsField, 4, 50, "Steps")
-                                def currentWidth = validateNumberField(widthField, 256, 1024, "Width")
-                                def currentHeight = validateNumberField(heightField, 256, 1024, "Height")
-                                def currentImageNum = validateNumberField(imageNumField, 1, 4, "Image Count")
+                                // Get params from sliders (no validation needed)
+                                def currentSteps = stepsField.value
+                                def currentWidth = widthField.value
+                                def currentHeight = heightField.value
+                                def currentImageNum = imageNumField.value
 
                                 // 2. Validate prompt
                                 def templateToSave = promptArea.text.trim()
@@ -190,12 +206,10 @@ class ImagePromptEditor {
 
                                 // 3. Save template and parameters using ConfigManager
                                 ConfigManager.setUserProperty(config, KEY_SAVED_TEMPLATE, templateToSave)
-                                // --- MODIFY SAVING ---
                                 ConfigManager.setUserProperty(config, KEY_STEPS, currentSteps.toString())
                                 ConfigManager.setUserProperty(config, KEY_WIDTH, currentWidth.toString())
                                 ConfigManager.setUserProperty(config, KEY_HEIGHT, currentHeight.toString())
                                 ConfigManager.setUserProperty(config, KEY_IMG_NUM, currentImageNum.toString())
-                                // --- END MODIFY SAVING ---
                                 // No need to call config.save() - Freeplane handles it
 
                                 LogUtils.info("Saved template and parameters via ConfigManager.")
@@ -205,14 +219,12 @@ class ImagePromptEditor {
                                             '<small style="font-size:11px">Source: User-saved Template & Parameters</small></html>'
 
                                 // 6. Update UI fields with saved values
-                                stepsField.text = currentSteps.toString()
-                                widthField.text = currentWidth.toString()
-                                heightField.text = currentHeight.toString()
-                                imageNumField.text = currentImageNum.toString()
+                                stepsField.value = currentSteps
+                                widthField.value = currentWidth
+                                heightField.value = currentHeight
+                                imageNumField.value = currentImageNum
                                 LogUtils.info("Updated UI fields after saving.")
 
-                            } catch (IllegalArgumentException e) {
-                                showError(dialog, e.message) // Show validation error
                             } catch (Exception e) {
                                 LogUtils.severe("Error saving template/params: ${e.message}", e)
                                 showError(dialog, "Failed to save: ${e.message}")
@@ -234,21 +246,19 @@ class ImagePromptEditor {
                                     ConfigManager.setUserProperty(config, KEY_SAVED_TEMPLATE, defaultTemplate)
 
                                     // 2. Save default parameters using ConfigManager
-                                    // --- MODIFY SAVING ---
                                     ConfigManager.setUserProperty(config, KEY_STEPS, DEFAULT_PARAMS.steps.toString())
                                     ConfigManager.setUserProperty(config, KEY_WIDTH, DEFAULT_PARAMS.width.toString())
                                     ConfigManager.setUserProperty(config, KEY_HEIGHT, DEFAULT_PARAMS.height.toString())
                                     ConfigManager.setUserProperty(config, KEY_IMG_NUM, DEFAULT_PARAMS.imageNum.toString())
-                                    // --- END MODIFY SAVING ---
 
                                     LogUtils.info("Reset template and parameters to default via ConfigManager.")
 
                                     // 3. Update UI elements
                                     promptArea.text = defaultTemplate
-                                    stepsField.text = DEFAULT_PARAMS.steps.toString()
-                                    widthField.text = DEFAULT_PARAMS.width.toString()
-                                    heightField.text = DEFAULT_PARAMS.height.toString()
-                                    imageNumField.text = DEFAULT_PARAMS.imageNum.toString()
+                                    stepsField.value = DEFAULT_PARAMS.steps
+                                    widthField.value = DEFAULT_PARAMS.width
+                                    heightField.value = DEFAULT_PARAMS.height
+                                    imageNumField.value = DEFAULT_PARAMS.imageNum
 
                                     // 4. Update header
                                     headerLabel.text = '<html><b style="font-size:14px">Edit Image Generation Prompt</b><br>' +
@@ -269,6 +279,12 @@ class ImagePromptEditor {
                         })
                     }
                 } // End dialog definition
+
+                // Add change listeners to sliders for auto-save
+                stepsField.addChangeListener { ConfigManager.setUserProperty(config, KEY_STEPS, stepsField.value.toString()) }
+                widthField.addChangeListener { ConfigManager.setUserProperty(config, KEY_WIDTH, widthField.value.toString()) }
+                heightField.addChangeListener { ConfigManager.setUserProperty(config, KEY_HEIGHT, heightField.value.toString()) }
+                imageNumField.addChangeListener { ConfigManager.setUserProperty(config, KEY_IMG_NUM, imageNumField.value.toString()) }
 
                 // Add keyboard bindings AFTER dialog is fully constructed
                 dialog.rootPane.with {
@@ -305,17 +321,7 @@ class ImagePromptEditor {
         return resultMap
     }
 
-    private static int validateNumberField(textField, min, max, fieldName) {
-        try {
-            def value = textField.text.toInteger()
-            if (value < min || value > max) {
-                throw new IllegalArgumentException("${fieldName} must be between ${min}-${max}")
-            }
-            return value
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid number for ${fieldName}: '${textField.text}'")
-        }
-    }
+    // No longer needed: validateNumberField
 
     private static void showError(dialog, message) {
         JOptionPane.showMessageDialog(dialog, message, "Input Error", JOptionPane.ERROR_MESSAGE)
