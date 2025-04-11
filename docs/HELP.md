@@ -42,6 +42,6 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 
 **Configuration:**
 
-*   API keys (Novita, OpenAI/OpenRouter) are stored in your Freeplane user properties (`user.properties` file).
+*   API keys (Novita, OpenRouter) are stored in your Freeplane user properties (`user.properties` file).
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
