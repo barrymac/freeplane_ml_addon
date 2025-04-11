@@ -234,8 +234,7 @@ class ImageSelectionDialog {
                                 String extension = ImageAttachmentHandler.getFileExtension(selectedUrl)
                                 ImageAttachmentHandler.attachImageToNode(node, imageBytes, baseName, extension)
                                 LogUtils.info("DownloadWorker: Image attached successfully.")
-                                // --- MODIFIED CALL ---
-                                showInformationMessage(ui, "Image added to node!")
+                                // showInformationMessage(ui, "Image added to node!") // REMOVED AS REQUESTED
                             } else {
                                 LogUtils.error("DownloadWorker: Download failed (imageBytes is null).")
                                 // --- MODIFIED CALL ---
