@@ -230,12 +230,14 @@ try {
     }
 
     // Create the cancellable progress dialog
-    progressDialog = ImageSelectionDialog.createCancellableProgressDialog(
+    // --- FIX START: Correct the method name ---
+    progressDialog = ImageSelectionDialog.createProgressDialog( // Changed from createCancellableProgressDialog
             ui,
             "Generating Image",
             "Creating images with Novita.ai...",
             cancelAction // Pass the closure
     )
+    // --- FIX END ---
 
     // Define the SwingWorker
     def worker = new SwingWorker<String, Void>() {
