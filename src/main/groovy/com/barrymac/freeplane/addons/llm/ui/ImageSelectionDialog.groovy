@@ -10,6 +10,10 @@ import javax.swing.*
 import java.awt.*
 import java.util.List
 import javax.swing.SwingUtilities
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
+import javax.swing.AbstractAction
+import javax.swing.JComponent
 
 class ImageSelectionDialog {
 
@@ -199,10 +203,11 @@ class ImageSelectionDialog {
             String selectedUrl = showImageSelectionDialog(ui, imageUrls, downloader)
             
             if (selectedUrl) {
-                // Show download progress
+                // Show download progress - Use the updated createProgressDialog
+                // Note: No cancel action needed here as download is typically fast after selection
                 def downloadProgress = createProgressDialog(ui, "Downloading Image", "Downloading selected image...")
                 try {
-                    downloadProgress.visible = true
+                    downloadProgress.visible = true // Show the simple progress dialog
                     byte[] imageBytes = downloader(selectedUrl)
                     
                     if (imageBytes) {
@@ -217,7 +222,7 @@ class ImageSelectionDialog {
                         ui.showErrorMessage("Failed to download image")
                     }
                 } finally {
-                    downloadProgress.dispose()
+                    downloadProgress.dispose() // Dispose the simple progress dialog
                 }
             }
         } catch (Exception e) {
@@ -226,26 +231,59 @@ class ImageSelectionDialog {
         }
     }
 
+    // --- REPLACED METHOD START ---
     /**
-     * Creates a simple progress dialog
-     * 
-     * @param ui The Freeplane UI object
+     * Creates a progress dialog with an optional Cancel button.
+     * @param ui Freeplane UI object (UITools)
      * @param title Dialog title
      * @param message Message to display
-     * @return The created dialog
+     * @param cancelAction (Optional) Closure to execute when Cancel is clicked or Escape is pressed.
+     * @return The created JDialog instance.
      */
-    static JDialog createProgressDialog(UITools ui, String title, String message) {
-        new SwingBuilder().dialog(
-            title: title,
-            modal: true,
-            owner: ui.currentFrame,
-            defaultCloseOperation: WindowConstants.DO_NOTHING_ON_CLOSE
-        ) {
-            label(text: message, horizontalAlignment: JLabel.CENTER, border: BorderFactory.createEmptyBorder(10, 20, 10, 20))
-        }.with {
-            pack()
-            setLocationRelativeTo(ui.currentFrame)
-            it
+    static JDialog createProgressDialog(UITools ui, String title, String message, Closure cancelAction = null) {
+        def dialog
+        def swingBuilder = new SwingBuilder() // Need to instantiate SwingBuilder here
+        swingBuilder.edt { // Ensure UI creation happens on EDT
+            dialog = swingBuilder.dialog(
+                title: title,
+                modal: true, // Keep it modal to block user interaction with main window
+                owner: ui.currentFrame,
+                defaultCloseOperation: WindowConstants.DO_NOTHING_ON_CLOSE // Prevent closing via 'X' button
+            ) {
+                borderLayout()
+                panel(constraints: BorderLayout.CENTER, border: BorderFactory.createEmptyBorder(20, 20, 20, 20)) {
+                    boxLayout(axis: BoxLayout.Y_AXIS)
+                    label(text: message, alignmentX: Component.CENTER_ALIGNMENT)
+                    // Add an indeterminate progress bar for better visual feedback
+                    panel(alignmentX: Component.CENTER_ALIGNMENT, border: BorderFactory.createEmptyBorder(10, 0, 0, 0)) { // Panel for progress bar with top margin
+                        progressBar(indeterminate: true, alignmentX: Component.CENTER_ALIGNMENT)
+                    }
+                }
+                // Add Cancel button only if cancelAction is provided
+                if (cancelAction) {
+                    panel(constraints: BorderLayout.SOUTH, layout: new FlowLayout(FlowLayout.CENTER)) {
+                        button(text: 'Cancel', actionPerformed: { cancelAction() })
+                    }
+                    // Add Escape key binding to the dialog's root pane
+                    // Ensure dialog is assigned before accessing rootPane
+                    dialog.rootPane.with {
+                        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancelProgressAction")
+                        getActionMap().put("cancelProgressAction", new AbstractAction() {
+                            void actionPerformed(ActionEvent e) {
+                                cancelAction()
+                            }
+                        })
+                    }
+                }
+            }
+            dialog.pack()
+            // Ensure minimum width for better layout
+            dialog.minimumSize = new Dimension(300, dialog.preferredSize.height)
+            dialog.setLocationRelativeTo(ui.currentFrame)
+            // DO NOT set visible here - the caller (SwingWorker setup) will do it
         }
+        return dialog
     }
+    // --- REPLACED METHOD END ---
 }
