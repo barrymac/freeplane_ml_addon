@@ -64,6 +64,9 @@ def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty
 
 freeplane {
     freeplaneDirectory = freeplaneBasePath
+    // Freeplane user settings root WITHOUT the version suffix —
+    // packageAddon needs it to find installed add-ons (devtools).
+    userDirectory = System.getenv('FREEPLANE_USER_DIR') ?: "${System.getProperty('user.home')}/.config/freeplane"
     addonSourceDirectory = 'src/add-on'
 }
 
