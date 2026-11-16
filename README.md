@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.8.1.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.8.2.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.8.2
+- **Resilient dynamic queries**: query surfaces are opened directly and retried a small bounded number of times while the search index warms or the source is busy. Errors now explain the situation honestly instead of referring to removed settings.
+
 ### v0.8.1
 - **Map-location discovery**: no neurOS location or scope configuration tool. A map inside a neurOS knowledge surface or watched workspace discovers its own context from `README.cartridge` and the workspace's `*_KNOWLEDGE` link.
 - **Scope follows the open map**: ordinary Freeplane hyperlinks to maps in other knowledge scopes work naturally; searches in the newly opened map use that map's scope.

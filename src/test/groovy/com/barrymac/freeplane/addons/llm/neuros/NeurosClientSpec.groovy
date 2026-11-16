@@ -78,6 +78,20 @@ class NeurosClientSpec extends Specification {
         hits[0].displayName == 'Late'
     }
 
+    def "search gives an honest not-ready message instead of referring to removed settings"() {
+        given:
+        def source = openSource()
+
+        when:
+        NeurosClient.search(source, 'no answer has been prepared', 5)
+
+        then:
+        def problem = thrown(IOException)
+        problem.message.contains('search index')
+        problem.message.contains('Try again shortly')
+        !problem.message.contains('settings')
+    }
+
     def "search reports a busy source in human language, not a raw transport error"() {
         given:
         def source = openSource()
@@ -88,7 +102,8 @@ class NeurosClientSpec extends Specification {
 
         then:
         def problem = thrown(IOException)
-        problem.message.contains('busy or unavailable')
+        problem.message.contains('busy')
+        problem.message.contains('search index')
     }
 
     def "search refuses an unopened source and an empty question"() {

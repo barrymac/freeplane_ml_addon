@@ -1,5 +1,9 @@
 # History
 
+## v0.8.2 — 2026-11-16
+- Open dynamic query surfaces directly with bounded retries.
+- Replaced misleading configuration errors with honest warming/busy messages.
+
 ## v0.8.1 — 2026-11-16
 - Replaced the neurOS configuration dialog with automatic map-location discovery.
 - Scope now follows the map opened through ordinary Freeplane hyperlinks.

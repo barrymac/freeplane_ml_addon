@@ -25,26 +25,7 @@ class NeurosClient {
         if (!question?.trim()) throw new IllegalArgumentException('Empty search question.')
 
         File resultFile = source.searchPath(question)
-        if (!resultFile.exists()) {
-            // Dynamic knowledge surfaces can be transiently unavailable during
-            // substrate churn. One bounded retry, then a loud refusal.
-            sleep 250
-            if (!resultFile.exists()) {
-                throw new IOException(
-                        'The knowledge source could not answer this question. ' +
-                                'Check the location and scope in the neurOS knowledge settings.')
-            }
-        }
-
-        String text
-        try {
-            text = resultFile.getText('UTF-8').trim()
-        } catch (IOException sourceProblem) {
-            throw new IOException(
-                    'The knowledge source is busy or unavailable right now. ' +
-                            'Try again shortly, or check the neurOS knowledge settings.',
-                    sourceProblem)
-        }
+        String text = readQueryResult(resultFile)
         if (!text || text.startsWith(QUERY_EMPTY)) {
             return []           // projections warming — honest empty answer
         }
@@ -126,6 +107,32 @@ class NeurosClient {
             sleep(500)
         }
         return result
+    }
+
+    /**
+     * Opens the dynamic query surface directly instead of relying on exists().
+     * Some neurOS surfaces create the query answer only when it is opened, and
+     * a stat/open can be transiently refused while the substrate is warming or
+     * busy. Retry a small fixed number of times, then report honestly.
+     */
+    private static String readQueryResult(File resultFile) {
+        Exception lastProblem = null
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                return resultFile.getText('UTF-8').trim()
+            } catch (FileNotFoundException notReady) {
+                lastProblem = notReady
+            } catch (IOException busy) {
+                lastProblem = busy
+            }
+            if (attempt < 2) {
+                sleep 400
+            }
+        }
+        throw new IOException(
+                'The knowledge source could not answer this question right now. It may still ' +
+                        'be preparing its search index or be busy. Try again shortly.',
+                lastProblem)
     }
 
     private static List<SearchHit> parseSearchResults(String text, int limit) {
