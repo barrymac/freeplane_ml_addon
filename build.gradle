@@ -79,3 +79,28 @@ jar {
     from sourceSets.main.resources
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+// Freeplane compiles add-on scripts only when a user invokes them, so a
+// packaging-only build can ship scripts that fail at runtime. Compile every
+// script against the real Freeplane installation before test/package runs.
+tasks.register('compileAddonScripts', JavaExec) {
+    dependsOn jar
+    classpath = files(
+            fileTree(freeplaneBasePath) { include '**/*.jar' },
+            tasks.jar.outputs.files
+    )
+    mainClass = 'org.codehaus.groovy.tools.FileSystemCompiler'
+    def outputDirectory = layout.buildDirectory.dir('addonScriptClasses').get().asFile
+    args(['-d', outputDirectory.absolutePath] +
+            fileTree('src/add-on/scripts') { include '*.groovy' }.files)
+}
+
+tasks.named('check') {
+    dependsOn 'compileAddonScripts'
+}
+
+afterEvaluate {
+    tasks.named('packageAddon') {
+        dependsOn 'compileAddonScripts'
+    }
+}

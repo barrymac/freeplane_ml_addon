@@ -75,7 +75,7 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="18" RULE="ON_BRANCH_CREATION"/>
 <attribute_layout NAME_WIDTH="112.61538 pt" VALUE_WIDTH="333.23076 pt"/>
 <attribute NAME="name" VALUE="promptLlmAddOn"/>
-<attribute NAME="version" VALUE="v0.7.0"/>
+<attribute NAME="version" VALUE="v0.8.0"/>
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>
@@ -249,9 +249,9 @@
 <attribute NAME="addons.${name}.quickPrompt" VALUE="Quick Prompt (Ctrl+Alt+G)"/>
 <attribute NAME="addons.${name}.compareConnectedNodes" VALUE="Compare Connected Nodes"/>
 <attribute NAME="addons.${name}.generateImage" VALUE="Generate Image"/>
-<attribute NAME="addons.${name}.neurosConfigure" VALUE="Configure neurOS"/>
-<attribute NAME="addons.${name}.neurosSearch" VALUE="neurOS: Search Knowledge from Node"/>
-<attribute NAME="addons.${name}.neurosPushCard" VALUE="neurOS: Push Branch as Card"/>
+<attribute NAME="addons.${name}.neurosConfigure" VALUE="Configure neurOS Knowledge"/>
+<attribute NAME="addons.${name}.neurosSearch" VALUE="Search neurOS Knowledge"/>
+<attribute NAME="addons.${name}.neurosPushCard" VALUE="Save Branch to neurOS"/>
 </node>
 </node>
 <node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1744150100002">

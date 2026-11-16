@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.7.0.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.8.0.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,13 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.8.0
+- **Map-scoped neurOS knowledge**: every map stores its own knowledge location, explicitly chosen scope and write destination. A new map starts unconnected, and operations never widen beyond the current scope without confirmation.
+- **Context-rich search**: one semantic query combines the selected node with bounded ancestor, child and note context for substantially more precise recall — never one query per neighbour.
+- **Human-first results**: search results show readable titles, types and an open-source link; identifiers and implementation paths stay behind the scenes.
+- **Transport-neutral sources and destinations**: any filesystem path exposing the standard neurOS read surfaces works, including local daemon mounts and writable network filesystems. The interface talks about knowledge locations, never transports.
+- **Safe resource defaults**: bounded results, context budgets and confirmation waits, with loud validation rather than silent fallbacks.
+
 ### v0.7.0
 - **neurOS Bridge (opt-in)**: connect the add-on to a [neurOS](https://github.com/barrymac) knowledge mount — the filesystem surface of a personal knowledge substrate.
   - `LLM > Configure neurOS`: set the mount path, watched workspace path, result limit and card directory. Nothing is configured by default; features refuse loudly until configured.
@@ -142,30 +149,27 @@ Prompt and feature suggestions are very welcome!
 
 For other feature ideas check the [project roadmap](docs/ROADMAP.md)
 
-## neurOS bridge (opt-in)
+## neurOS knowledge (opt-in, per map)
 
-The neurOS features connect this add-on to a neurOS knowledge mount — a live
-FUSE filesystem over a personal knowledge substrate, where every workspace
-write is auto-ingested and every directory read is a graph query.
+The neurOS features connect a map to one scope of a [neurOS](https://github.com/barrymac)
+knowledge source. Settings belong to the map itself: a new map starts unconnected,
+and no scope or destination is guessed from another map.
 
-Both features are **opt-in and disabled until configured**:
+1. `LLM > Configure neurOS Knowledge` — choose the map's knowledge location,
+   its explicitly selected scope, an optional write destination and safe result
+   limits. The location can be a scoped surface or a global multi-scope surface;
+   in the latter case you choose the scope yourself.
+2. `LLM > Search neurOS Knowledge` — send one context-rich query to the map's
+   current scope. Results arrive as a readable branch; each result links to its
+   source material without exposing identifiers.
+3. `LLM > Save Branch to neurOS` — save a selected branch to the map's write
+   destination as a work-graph card. Saving confirms the destination first and
+   reports availability honestly.
 
-1. `LLM > Configure neurOS` — enter the mount path (the FUSE root, e.g.
-   `/mnt/neuros/software/<scope>`) and the watched workspace path (the plain
-   directory the mount ingests from). Both must be set; the features refuse
-   with instructions otherwise. No defaults are guessed.
-2. `LLM > neurOS: Search Knowledge from Node` — the selected node's text
-   seeds a semantic query against the mount's corpus; hits come back as a
-   tagged branch (`neuros:search` / `neuros:hit`), each note carrying the
-   hit's uuid and on-mount read path.
-3. `LLM > neurOS: Push Branch as Card` — the selected branch is written into
-   the watched workspace as a `.card.md` work-graph card (initial state
-   `Backlog`), auto-ingested within seconds; the node is tagged
-   `neuros:card` and its note records the card's uuid for later
-   `[[card:...]]` wiring.
-
-Without a neurOS mount the add-on behaves exactly as before — the three menu
-items simply explain what is missing.
+The interface is transport-neutral and domain-agnostic: it never mentions the
+filesystem technology behind a knowledge location and never hardcodes entity
+types, relationship names or scopes. Without a configured connection the
+features explain exactly what is missing.
 
 ## Building from source
 

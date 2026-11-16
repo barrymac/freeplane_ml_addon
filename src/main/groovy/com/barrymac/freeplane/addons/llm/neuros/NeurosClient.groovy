@@ -1,74 +1,73 @@
 package com.barrymac.freeplane.addons.llm.neuros
 
 /**
- * Filesystem client for a neurOS mount (the by-query/search, ingest-status
- * and workspace-write surfaces of neuros-vfs).
+ * Filesystem client for ONE scoped neurOS knowledge source.
  *
- * All methods take explicit base paths — the class holds no state and no
- * Freeplane objects, so it is directly unit-testable against temp
- * directories that mimic the mount layout.
+ * All reads go through KnowledgeSource, so every operation is pinned to the
+ * map's current scope. Writes go to an explicitly configured destination; this
+ * class never infers a write target from a read location.
  */
 class NeurosClient {
 
-    /** Marker returned by a mount whose projections are still warming. */
+    /** Marker returned by a source whose semantic projections are still warming. */
     static final String QUERY_EMPTY = '# QUERY_EMPTY'
 
     /**
-     * Semantic search against a mount: reads <mountPath>/search/<question>.
+     * Semantic search within the source's current scope.
      *
-     * @param mountPath the mount root (e.g. /mnt/neuros/software/<scope>)
-     * @param question  free-text question; '/' is neutralised
+     * @param source   the map's open knowledge source
+     * @param question free-text question; '/' is neutralised
      * @param limit     maximum number of hits returned (<= 0 → no cap)
      * @return list of hits (possibly empty), never null
      */
-    static List<SearchHit> search(String mountPath, String question, int limit = 0) {
-        if (!mountPath) throw new IllegalArgumentException('mount path is not configured')
-        if (!question?.trim()) throw new IllegalArgumentException('empty search question')
+    static List<SearchHit> search(KnowledgeSource source, String question, int limit = 0) {
+        if (source == null) throw new IllegalArgumentException('No knowledge source is open.')
+        if (!question?.trim()) throw new IllegalArgumentException('Empty search question.')
 
-        String safeQuestion = question.trim().replace('/', ' ')
-        File resultFile = new File(mountPath, "search/${safeQuestion}")
+        File resultFile = source.searchPath(question)
         if (!resultFile.exists()) {
-            throw new IOException(
-                    "No search surface at ${resultFile.path} — is '${mountPath}' a live neurOS mount?")
+            // Dynamic knowledge surfaces can be transiently unavailable during
+            // substrate churn. One bounded retry, then a loud refusal.
+            sleep 250
+            if (!resultFile.exists()) {
+                throw new IOException(
+                        'The knowledge source could not answer this question. ' +
+                                'Check the location and scope in the neurOS knowledge settings.')
+            }
         }
 
-        String text = resultFile.getText('UTF-8').trim()
+        String text
+        try {
+            text = resultFile.getText('UTF-8').trim()
+        } catch (IOException sourceProblem) {
+            throw new IOException(
+                    'The knowledge source is busy or unavailable right now. ' +
+                            'Try again shortly, or check the neurOS knowledge settings.',
+                    sourceProblem)
+        }
         if (!text || text.startsWith(QUERY_EMPTY)) {
             return []           // projections warming — honest empty answer
         }
-
-        List<SearchHit> hits = []
-        def seen = [] as Set
-        text.readLines().each { line ->
-            if (!line.trim()) return
-            def cols = line.split('\t')
-            if (cols.length < 3) return
-            def hit = new SearchHit(displayName: cols[0]?.trim(), uuid: cols[1]?.trim(), subtype: cols[2]?.trim())
-            if (!hit.uuid || seen.contains(hit.uuid)) return
-            seen << hit.uuid
-            hits << hit
-        }
-        if (limit > 0 && hits.size() > limit) {
-            hits = hits[0..<limit]
-        }
-        return hits
+        return parseSearchResults(text, limit)
     }
 
     /**
-     * Writes a card file into the mount's watched workspace (inotify
-     * auto-ingest picks it up within ~1-3s).
+     * Writes a file into the map's explicitly configured write destination.
      *
-     * @param workspacePath the workspace root watched by the mount
-     * @param relativeDir  subdirectory (created if missing; '' = root)
-     * @param fileName     e.g. '<uuid>-<slug>.card.md'
-     * @param content      the card body
+     * @param destinationPath the configured destination root
+     * @param relativeDir     subdirectory (created if missing; '' = root)
+     * @param fileName        e.g. '<uuid>-<slug>.card.md'
+     * @param content         file body
      * @return the written file
      */
-    static File writeCard(String workspacePath, String relativeDir, String fileName, String content) {
-        if (!workspacePath) throw new IllegalArgumentException('workspace path is not configured')
-        File dir = relativeDir ? new File(workspacePath, relativeDir) : new File(workspacePath)
+    static File writeCard(String destinationPath, String relativeDir,
+                          String fileName, String content) {
+        if (!destinationPath) {
+            throw new IllegalArgumentException('No write destination is configured.')
+        }
+        File dir = relativeDir ? new File(destinationPath, relativeDir) : new File(destinationPath)
         if (!dir.exists() && !dir.mkdirs()) {
-            throw new IOException("Could not create card directory ${dir.path}")
+            throw new IOException("Could not create the write folder '${dir.path}'.")
         }
         File target = new File(dir, fileName)
         target.setText(content, 'UTF-8')
@@ -76,13 +75,39 @@ class NeurosClient {
     }
 
     /**
-     * Polls <mountPath>/ingest-status/<fileName> until the substrate reports
-     * the file VISIBLE (indexed + projected) or the timeout expires.
+     * Confirms a write using whatever availability surface the source exposes.
+     * No transport is assumed: if the source provides an ingest status surface
+     * it is polled; otherwise the saved file itself is the honest confirmation.
+     *
+     * @return [saved: boolean, available: boolean, status: String, method: String]
+     */
+    static Map confirmWrite(KnowledgeSource source, File written,
+                            int timeoutSeconds = 15) {
+        if (source == null) throw new IllegalArgumentException('No knowledge source is open.')
+        boolean saved = written != null && written.isFile() && written.canRead()
+        if (!saved) {
+            return [saved: false, available: false, status: 'NOT_SAVED', method: 'file']
+        }
+        if (!source.hasIngestStatusSurface()) {
+            return [saved: true, available: false, status: 'SAVED', method: 'file']
+        }
+        Map ingest = waitForIngest(source, written.name, timeoutSeconds)
+        return [saved       : true,
+                available   : ingest.visible,
+                status      : ingest.status,
+                method      : 'availability-surface',
+                identifier  : ingest.uuid]
+    }
+
+    /**
+     * Polls the source's availability surface until a written file is VISIBLE
+     * or the timeout expires.
      *
      * @return map [visible: boolean, uuid: String?, status: String]
      */
-    static Map waitForIngest(String mountPath, String fileName, int timeoutSeconds = 10) {
-        File statusFile = new File(mountPath, "ingest-status/${fileName}")
+    static Map waitForIngest(KnowledgeSource source, String fileName, int timeoutSeconds = 10) {
+        if (source == null) throw new IllegalArgumentException('No knowledge source is open.')
+        File statusFile = source.ingestStatusPath(fileName)
         long deadline = System.currentTimeMillis() + (timeoutSeconds * 1000L)
         Map result = [visible: false, uuid: null, status: 'PENDING']
         while (System.currentTimeMillis() < deadline) {
@@ -101,6 +126,25 @@ class NeurosClient {
             sleep(500)
         }
         return result
+    }
+
+    private static List<SearchHit> parseSearchResults(String text, int limit) {
+        List<SearchHit> hits = []
+        Set<String> seen = new HashSet<>()
+        text.readLines().each { line ->
+            if (!line.trim()) return
+            def cols = line.split('\t')
+            if (cols.length < 3) return
+            def hit = new SearchHit(displayName: cols[0]?.trim(),
+                    uuid: cols[1]?.trim(), subtype: cols[2]?.trim())
+            if (!hit.uuid || seen.contains(hit.uuid)) return
+            seen << hit.uuid
+            hits << hit
+        }
+        if (limit > 0 && hits.size() > limit) {
+            hits = hits[0..<limit]
+        }
+        return hits
     }
 
     private static String matchGroup(String text, String regex) {

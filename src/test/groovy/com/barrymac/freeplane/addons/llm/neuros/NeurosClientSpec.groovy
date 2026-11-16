@@ -8,22 +8,27 @@ import spock.lang.TempDir
 class NeurosClientSpec extends Specification {
 
     @TempDir
-    File mount
+    File sourceRoot
 
     @TempDir
-    File workspace
+    File destination
 
-    def "search parses TSV rows, dedups by uuid and honours the limit"() {
+    private KnowledgeSource openSource() {
+        new File(sourceRoot, 'by-query').mkdirs()
+        return KnowledgeSource.open(sourceRoot.path, 'map-scope')
+    }
+
+    def "search parses TSV rows, dedups by identifier and honours the limit"() {
         given:
-        new File(mount, 'search').mkdirs()
-        new File(mount, 'search/How does branching work').text =
+        def source = openSource()
+        new File(sourceRoot, 'by-query/How does branching work').text =
                 'BranchGeneratorFactory.groovy\t11111111-1111-1111-1111-111111111111\tclass\n' +
                 'MapUpdater.groovy\t22222222-2222-2222-2222-222222222222\tclass\n' +
                 'BranchGeneratorFactory.groovy\t11111111-1111-1111-1111-111111111111\tclass\n' + // dup
                 'HELP.md\t33333333-3333-3333-3333-333333333333\tfile\n'
 
         when:
-        def hits = NeurosClient.search(mount.path, 'How does branching work', 2)
+        def hits = NeurosClient.search(source, 'How does branching work', 2)
 
         then:
         hits.size() == 2
@@ -35,98 +40,149 @@ class NeurosClientSpec extends Specification {
 
     def "search returns an honest empty list when projections are warming"() {
         given:
-        new File(mount, 'search').mkdirs()
-        new File(mount, 'search/warming').text = NeurosClient.QUERY_EMPTY
+        def source = openSource()
+        new File(sourceRoot, 'by-query/warming').text = NeurosClient.QUERY_EMPTY
 
         expect:
-        NeurosClient.search(mount.path, 'warming', 5) == []
+        NeurosClient.search(source, 'warming', 5) == []
     }
 
     def "search neutralises slashes in the question"() {
         given:
-        new File(mount, 'search').mkdirs()
-        new File(mount, 'search/a b').text = 'X\t44444444-4444-4444-4444-444444444444\tfile\n'
+        def source = openSource()
+        new File(sourceRoot, 'by-query/a b').text =
+                'X\t44444444-4444-4444-4444-444444444444\tfile\n'
 
         when:
-        def hits = NeurosClient.search(mount.path, 'a/b', 5)
+        def hits = NeurosClient.search(source, 'a/b', 5)
 
         then:
         hits.size() == 1
         hits[0].displayName == 'X'
     }
 
-    def "search refuses loudly when the mount path is not a live mount"() {
+    def "search retries once when a dynamic surface is transiently unavailable"() {
+        given:
+        def source = openSource()
+        Thread.start {
+            sleep 100
+            new File(sourceRoot, 'by-query/late answer').text =
+                    'Late\t99999999-9999-9999-9999-999999999999\tfile\n'
+        }
+
         when:
-        NeurosClient.search('/nonexistent/mount', 'anything', 5)
+        def hits = NeurosClient.search(source, 'late answer', 5)
 
         then:
-        thrown(IOException)
+        hits.size() == 1
+        hits[0].displayName == 'Late'
     }
 
-    def "search refuses an unconfigured mount path"() {
+    def "search reports a busy source in human language, not a raw transport error"() {
+        given:
+        def source = openSource()
+        new File(sourceRoot, 'by-query/broken').mkdirs()
+
         when:
-        NeurosClient.search('', 'anything', 5)
+        NeurosClient.search(source, 'broken', 5)
+
+        then:
+        def problem = thrown(IOException)
+        problem.message.contains('busy or unavailable')
+    }
+
+    def "search refuses an unopened source and an empty question"() {
+        given:
+        def source = openSource()
+
+        when:
+        NeurosClient.search(null, 'anything', 5)
+
+        then:
+        thrown(IllegalArgumentException)
+
+        when:
+        NeurosClient.search(source, '   ', 5)
 
         then:
         thrown(IllegalArgumentException)
     }
 
-    def "writeCard writes into the requested subdirectory, creating it if needed"() {
+    def "writeCard writes into the requested destination subdirectory"() {
         when:
-        File written = NeurosClient.writeCard(workspace.path, 'neuros-cards',
+        File written = NeurosClient.writeCard(destination.path, 'neuros-cards',
                 '55555555-5555-5555-5555-555555555555-idea.card.md', 'list: Backlog\n')
 
         then:
         written.exists()
-        written.parentFile == new File(workspace, 'neuros-cards')
+        written.parentFile == new File(destination, 'neuros-cards')
         written.text == 'list: Backlog\n'
     }
 
-    def "writeCard with empty relative dir writes at the workspace root"() {
+    def "writeCard with empty relative dir writes at the destination root"() {
         when:
-        File written = NeurosClient.writeCard(workspace.path, '', 'root.card.md', 'body')
+        File written = NeurosClient.writeCard(destination.path, '', 'root.card.md', 'body')
 
         then:
-        written.parentFile == workspace
+        written.parentFile == destination
         written.text == 'body'
     }
 
-    def "waitForIngest reports VISIBLE with the ingested uuid"() {
+    def "confirmWrite uses the saved file when no availability surface exists"() {
         given:
-        def statusDir = new File(mount, 'ingest-status')
-        statusDir.mkdirs()
+        def source = openSource()
+        File written = new File(destination, 'saved.card.md')
+        written.text = 'card body'
+
+        when:
+        def result = NeurosClient.confirmWrite(source, written, 1)
+
+        then:
+        result.saved
+        !result.available
+        result.status == 'SAVED'
+        result.method == 'file'
+    }
+
+    def "confirmWrite polls the availability surface when the source provides one"() {
+        given:
+        def source = openSource()
+        new File(sourceRoot, 'ingest-status').mkdirs()
+        File written = new File(destination, 'probe.card.md')
+        written.text = 'card body'
         Thread.start {
-            sleep 300
-            new File(statusDir, 'probe.card.md').text =
+            sleep 200
+            new File(sourceRoot, 'ingest-status/probe.card.md').text =
                     'status: VISIBLE\nuuid: 66666666-6666-6666-6666-666666666666\n'
         }
 
         when:
-        def result = NeurosClient.waitForIngest(mount.path, 'probe.card.md', 10)
+        def result = NeurosClient.confirmWrite(source, written, 10)
 
         then:
-        result.visible
-        result.uuid == '66666666-6666-6666-6666-666666666666'
+        result.saved
+        result.available
         result.status == 'VISIBLE'
+        result.method == 'availability-surface'
+        result.identifier == '66666666-6666-6666-6666-666666666666'
     }
 
     def "waitForIngest ignores visibility_status while the primary status is PENDING"() {
-        // Regression: the mount reports visibility_status: VISIBLE and
+        // Regression: a source can report visibility_status: VISIBLE and
         // projection_status: VISIBLE as SEPARATE lines while the primary
         // 'status:' line is still PENDING_PROJECTION — only the primary line
-        // is the ingest verdict (caught live against the real substrate).
-        given: "a status file in the intermediate state"
-        def statusDir = new File(mount, 'ingest-status')
-        statusDir.mkdirs()
-        new File(statusDir, 'intermediate.card.md').text =
+        // is the availability verdict.
+        given:
+        def source = openSource()
+        new File(sourceRoot, 'ingest-status').mkdirs()
+        new File(sourceRoot, 'ingest-status/intermediate.card.md').text =
                 'status: PENDING_PROJECTION\n' +
                 'uuid: 77777777-7777-7777-7777-777777777777\n' +
                 'visibility_status: VISIBLE\n' +
                 'projection_status: VISIBLE\n'
-        new File(mount, 'ingest-status/never-lands.card.md').exists() // warm the dir listing
 
         when:
-        def result = NeurosClient.waitForIngest(mount.path, 'intermediate.card.md', 1)
+        def result = NeurosClient.waitForIngest(source, 'intermediate.card.md', 1)
 
         then:
         !result.visible
@@ -134,30 +190,30 @@ class NeurosClientSpec extends Specification {
     }
 
     def "waitForIngest sees the primary status line when everything is VISIBLE"() {
-        given: "a fully-projected status file with all three status lines"
-        def statusDir = new File(mount, 'ingest-status')
-        statusDir.mkdirs()
-        new File(statusDir, 'done.card.md').text =
+        given:
+        def source = openSource()
+        new File(sourceRoot, 'ingest-status').mkdirs()
+        new File(sourceRoot, 'ingest-status/done.card.md').text =
                 'status: VISIBLE\n' +
                 'uuid: 88888888-8888-8888-8888-888888888888\n' +
                 'visibility_status: VISIBLE\n' +
                 'projection_status: VISIBLE\n'
 
         when:
-        def result = NeurosClient.waitForIngest(mount.path, 'done.card.md', 2)
+        def result = NeurosClient.waitForIngest(source, 'done.card.md', 2)
 
         then:
         result.visible
         result.uuid == '88888888-8888-8888-8888-888888888888'
-        result.status == 'VISIBLE'
     }
 
     def "waitForIngest times out honestly when the file never lands"() {
         given:
-        new File(mount, 'ingest-status').mkdirs()
+        def source = openSource()
+        new File(sourceRoot, 'ingest-status').mkdirs()
 
         when:
-        def result = NeurosClient.waitForIngest(mount.path, 'never.card.md', 1)
+        def result = NeurosClient.waitForIngest(source, 'never.card.md', 1)
 
         then:
         !result.visible

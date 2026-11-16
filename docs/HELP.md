@@ -46,47 +46,50 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Bridge (v0.7.0, opt-in)
+## neurOS Knowledge (v0.8.0, opt-in, per map)
 
-The neurOS bridge connects Freeplane to a neurOS knowledge mount — a live
-FUSE filesystem over a personal knowledge substrate. It is entirely opt-in:
-until you configure it, the menu items only explain what is missing, and no
-defaults are guessed.
+The neurOS features connect one Freeplane map to one explicitly chosen scope of
+a neurOS knowledge source. A new map starts unconnected; every connection
+setting belongs to the map, and no scope or destination is inherited or guessed.
 
-### Configuration (`LLM > Configure neurOS`)
+### Configuration (`LLM > Configure neurOS Knowledge`)
 
-*   **Mount path** — the FUSE root of your mount, e.g.
-    `/mnt/neuros/software/<scope>`. Must contain a live mount (the dialog
-    checks for `search/` or `README.cartridge`).
-*   **Workspace path** — the watched directory the mount ingests from (the
-    plain workspace of the scope). Cards are written here.
-*   **Search results limit** — maximum hits attached per search (default 5).
-*   **Card directory** — subdirectory of the workspace for pushed cards
-    (default `neuros-cards`).
+*   **Knowledge location** — a filesystem path that exposes the standard neurOS
+    read surfaces. It can be a scoped surface or a global multi-scope surface.
+*   **Knowledge scope** — the scope this map works in. On a global surface you
+    choose it yourself; the add-on never picks the first available scope.
+*   **Write destination** — optional. Needed only for saving branches; a map
+    can be search-only.
+*   **Card folder** — the relative folder inside the write destination where
+    saved branches are placed (default `neuros-cards`).
+*   **Search results** — maximum results per question (default 5, maximum 25).
+*   **Availability wait** — how long saving waits for the source to confirm a
+    new card is available (default 15 seconds, maximum 60).
 
-All four are stored in your Freeplane user properties, prefixed
-`llm.addon.neuros.`.
+Settings are stored in the map itself. Invalid or unsafe values are refused
+with a clear message; nothing falls back silently.
 
-### Searching (`LLM > neurOS: Search Knowledge from Node`)
+### Searching (`LLM > Search neurOS Knowledge`)
 
-1.  Select a node — its text seeds the query (edit it in the dialog if you
-    want a different phrasing).
-2.  The mount's semantic search surface (`search/<question>`) is queried.
-3.  Results appear as a tagged branch; each hit node's note carries the
-    hit's uuid, subtype and on-mount read path (`by-id/<uuid>`).
+1.  Select a node. Its text becomes the primary question, which you can edit.
+2.  Optionally include bounded map context — parent titles, immediate child
+    titles and the node's note — to make one precise query. The dialog shows
+    the exact query before you search.
+3.  Results appear as a readable branch. Each result carries a link to its
+    source material; identifiers and implementation paths are not shown.
 
-Right after a fresh mount the semantic projections may still be warming —
+The search always stays inside the map's current knowledge scope and issues
+exactly one semantic query.
+
+Right after connecting a new source, the semantic index may still be warming —
 an empty result usually means "retry in a minute", and the add-on says so.
 
-### Pushing a branch as a card (`LLM > neurOS: Push Branch as Card`)
+### Saving a branch (`LLM > Save Branch to neurOS`)
 
 1.  Select a node (its children come along as an outline).
-2.  Confirm the push — the card is written as `<uuid>-<slug>.card.md` into
-    the configured card directory, in the initial `Backlog` list state.
-3.  The add-on waits for the substrate to ingest the file (up to 15s) and
-    reports the ingest status and the new card's uuid.
-4.  The source node is tagged `neuros:card`; its note records the uuid so
-    you can wire `[[card:<uuid>]]` edges later.
-
-On strict (state-machine enforcing) mounts, `Backlog` is the legal initial
-state, so pushed cards are accepted as-is.
+2.  Confirm the destination. The branch is written into the configured write
+    destination as a work-graph card.
+3.  The add-on confirms availability using whatever surface the source
+    provides and reports honestly when availability is still unconfirmed.
+4.  The source node is tagged `neurOS card` and links to its source material
+    without exposing an identifier in the map.
