@@ -1,5 +1,10 @@
 # History
 
+## v0.9.1 — 2026-11-16
+- Added right-click node context-menu browsing through `node_popup_scripting`.
+- Added the `Ctrl+Alt+B` browse accelerator and preserved it in packaged installs.
+- Shared the browse implementation between top-menu and context-menu actions.
+
 ## v0.9.0 — 2026-11-16
 - Added the lazy Knowledge Catalog and Browse mode (`LLM > Browse neurOS Knowledge`).
 - Dynamic surface roots, primitive types, MIME routing and door capabilities from live cartridge metadata.

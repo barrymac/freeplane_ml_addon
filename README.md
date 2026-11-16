@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.0.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.1.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,10 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.1
+- **Node context-menu browsing**: right-click any node and choose Browse neurOS Knowledge to expand it directly.
+- **Keyboard accelerator**: `Ctrl+Alt+B` invokes Browse on the selected node.
+
 ### v0.9.0
 - **Lazy Knowledge Catalog and Browse mode**: `LLM > Browse neurOS Knowledge` discovers the current cartridge's surface roots, primitive types, MIME routing and door capabilities from live metadata — never hardcoded types.
 - **Bounded expansion**: selecting a surface or type loads one page of entries; Load more appends the next page. Truncation is reported honestly.
