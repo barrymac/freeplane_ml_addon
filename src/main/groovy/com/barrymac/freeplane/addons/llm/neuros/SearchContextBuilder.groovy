@@ -35,13 +35,13 @@ class SearchContextBuilder {
         }
 
         int ancestorLimit = nonNegative(options.ancestorLimit,
-                MapKnowledgeSettings.DEFAULT_ANCESTOR_LIMIT)
+                NeurosLimits.DEFAULT_ANCESTOR_LIMIT)
         int childLimit = nonNegative(options.childLimit,
-                MapKnowledgeSettings.DEFAULT_CHILD_LIMIT)
+                NeurosLimits.DEFAULT_CHILD_LIMIT)
         int noteLimit = nonNegative(options.noteLimit,
-                MapKnowledgeSettings.DEFAULT_NOTE_LIMIT)
+                NeurosLimits.DEFAULT_NOTE_LIMIT)
         int totalLimit = positive(options.totalLimit,
-                MapKnowledgeSettings.DEFAULT_CONTEXT_LIMIT)
+                NeurosLimits.DEFAULT_CONTEXT_LIMIT)
 
         List<String> contextLines = []
         Set<String> contextSeen = new LinkedHashSet<>()

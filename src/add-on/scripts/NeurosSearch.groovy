@@ -11,7 +11,8 @@ import javax.swing.event.*
 import java.awt.*
 
 // neurOS bridge imports
-import com.barrymac.freeplane.addons.llm.neuros.MapKnowledgeSettings
+import com.barrymac.freeplane.addons.llm.neuros.KnowledgeContext
+import com.barrymac.freeplane.addons.llm.neuros.NeurosLimits
 import com.barrymac.freeplane.addons.llm.neuros.KnowledgeSource
 import com.barrymac.freeplane.addons.llm.neuros.NeurosClient
 import com.barrymac.freeplane.addons.llm.neuros.SearchContextBuilder
@@ -20,15 +21,6 @@ import com.barrymac.freeplane.addons.llm.ui.UiHelper
 LogUtils.info("NeurosSearch script started.")
 
 try {
-    // --- This map's connection and scope ---
-    MapKnowledgeSettings settings = MapKnowledgeSettings.load(c.selected?.map?.storage)
-    String readProblem = settings.missingForRead()
-    if (readProblem) {
-        UiHelper.showErrorMessage(ui, readProblem)
-        return
-    }
-    KnowledgeSource source = settings.openSource()
-
     // --- Selected node ---
     def node = c.selected
     if (node == null) {
@@ -36,25 +28,34 @@ try {
         return
     }
 
+    // --- Discover this map's own knowledge context from its location ---
+    KnowledgeContext knowledgeContext = KnowledgeContext.discover(node.map.file)
+    if (!knowledgeContext.isEnabled()) {
+        UiHelper.showInformationMessage(ui, knowledgeContext.reason)
+        return
+    }
+    NeurosLimits limits = NeurosLimits.load(node.map.storage)
+    KnowledgeSource source = knowledgeContext.source
+
     // --- Bounded map context (one query, never one query per neighbour) ---
     List<String> ancestors = []
-    if (settings.ancestorLimit > 0) {
+    if (limits.ancestorLimit > 0) {
         def parent = node.parent
-        while (parent != null && ancestors.size() < settings.ancestorLimit) {
+        while (parent != null && ancestors.size() < limits.ancestorLimit) {
             ancestors.add(0, SearchContextBuilder.titleFragment(parent.text ?: ''))
             parent = parent.parent
         }
     }
     List<String> children = (node.children ?: [])
             .findAll { !isGeneratedResult(it) }
-            .take(settings.childLimit)
+            .take(limits.childLimit)
             .collect { SearchContextBuilder.titleFragment(it.text ?: '') }
     String note = node.note ? node.note.plain : ''
 
     String initialQuestion = (node.text ?: '').trim()
     JTextField questionField = new JTextField(initialQuestion, 42)
     JCheckBox contextBox = new JCheckBox('Include map context for greater precision',
-            settings.useContext)
+            limits.useContext)
     JTextArea preview = new JTextArea(7, 46)
     preview.editable = false
     preview.lineWrap = true
@@ -65,7 +66,7 @@ try {
             return questionField.text.trim()
         }
         return SearchContextBuilder.build(questionField.text, ancestors, children, note,
-                settings.contextOptions())
+                limits.contextOptions())
     }
     Closure refreshPreview = { ->
         try {
@@ -124,7 +125,7 @@ try {
 
     // --- One search, current scope only ---
     LogUtils.info("NeurosSearch: searching current knowledge scope with a context-rich query.")
-    List hits = NeurosClient.search(source, question, settings.resultsLimit)
+    List hits = NeurosClient.search(source, question, limits.resultsLimit)
 
     if (hits.isEmpty()) {
         UiHelper.showInformationMessage(ui,

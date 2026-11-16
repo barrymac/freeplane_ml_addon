@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.8.0.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.8.1.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,11 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.8.1
+- **Map-location discovery**: no neurOS location or scope configuration tool. A map inside a neurOS knowledge surface or watched workspace discovers its own context from `README.cartridge` and the workspace's `*_KNOWLEDGE` link.
+- **Scope follows the open map**: ordinary Freeplane hyperlinks to maps in other knowledge scopes work naturally; searches in the newly opened map use that map's scope.
+- **Clear enablement**: maps in plain directories simply hear that neurOS is not enabled; nothing asks for a mount path or guesses a default.
+
 ### v0.8.0
 - **Map-scoped neurOS knowledge**: every map stores its own knowledge location, explicitly chosen scope and write destination. A new map starts unconnected, and operations never widen beyond the current scope without confirmation.
 - **Context-rich search**: one semantic query combines the selected node with bounded ancestor, child and note context for substantially more precise recall — never one query per neighbour.
@@ -151,25 +156,31 @@ For other feature ideas check the [project roadmap](docs/ROADMAP.md)
 
 ## neurOS knowledge (opt-in, per map)
 
-The neurOS features connect a map to one scope of a [neurOS](https://github.com/barrymac)
-knowledge source. Settings belong to the map itself: a new map starts unconnected,
-and no scope or destination is guessed from another map.
+The neurOS features discover their connection from the map itself. There is no
+neurOS location or scope configuration tool.
 
-1. `LLM > Configure neurOS Knowledge` — choose the map's knowledge location,
-   its explicitly selected scope, an optional write destination and safe result
-   limits. The location can be a scoped surface or a global multi-scope surface;
-   in the latter case you choose the scope yourself.
-2. `LLM > Search neurOS Knowledge` — send one context-rich query to the map's
-   current scope. Results arrive as a readable branch; each result links to its
-   source material without exposing identifiers.
-3. `LLM > Save Branch to neurOS` — save a selected branch to the map's write
-   destination as a work-graph card. Saving confirms the destination first and
-   reports availability honestly.
+A map is enabled when either:
+
+- it lives inside a neurOS knowledge surface with `README.cartridge`, or
+- it is in a watched workspace with a valid `*_KNOWLEDGE` link to one.
+
+Otherwise, the search and save actions simply explain that neurOS is not
+enabled for this map.
+
+1. `LLM > Search neurOS Knowledge` — send one context-rich query to the current
+   map's own scope. Results arrive as a readable branch; each result links to
+   its source material without exposing identifiers.
+2. `LLM > Save Branch to neurOS` — save a selected branch to the workspace
+   discovered from the map. Saving confirms the destination first and reports
+   availability honestly.
+
+Following an ordinary Freeplane hyperlink to a map in another knowledge scope
+switches the effective scope when that map opens. No manual cross-scope setup
+is required for map-to-map navigation.
 
 The interface is transport-neutral and domain-agnostic: it never mentions the
 filesystem technology behind a knowledge location and never hardcodes entity
-types, relationship names or scopes. Without a configured connection the
-features explain exactly what is missing.
+types, relationship names or scopes.
 
 ## Building from source
 

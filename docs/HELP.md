@@ -46,28 +46,31 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.8.0, opt-in, per map)
+## neurOS Knowledge (v0.8.1, opt-in, per map)
 
-The neurOS features connect one Freeplane map to one explicitly chosen scope of
-a neurOS knowledge source. A new map starts unconnected; every connection
-setting belongs to the map, and no scope or destination is inherited or guessed.
+The neurOS features discover their connection from the current map's location.
+There is no neurOS location or scope configuration tool.
 
-### Configuration (`LLM > Configure neurOS Knowledge`)
+A map is enabled when it is inside a neurOS knowledge surface with
+`README.cartridge`, or in a watched workspace with a valid `*_KNOWLEDGE` link to
+one. A map in a plain directory simply hears that neurOS is not enabled for it.
 
-*   **Knowledge location** — a filesystem path that exposes the standard neurOS
-    read surfaces. It can be a scoped surface or a global multi-scope surface.
-*   **Knowledge scope** — the scope this map works in. On a global surface you
-    choose it yourself; the add-on never picks the first available scope.
-*   **Write destination** — optional. Needed only for saving branches; a map
-    can be search-only.
-*   **Card folder** — the relative folder inside the write destination where
-    saved branches are placed (default `neuros-cards`).
+The map's scope is read from the knowledge source itself. Following an ordinary
+Freeplane hyperlink to a map in another scope therefore works naturally: the
+newly opened map searches its own scope.
+
+Optional per-map safety budgets (stored in the map) include:
+
+*   **Card folder** — relative folder inside the write destination (default
+    `neuros-cards`).
 *   **Search results** — maximum results per question (default 5, maximum 25).
-*   **Availability wait** — how long saving waits for the source to confirm a
-    new card is available (default 15 seconds, maximum 60).
+*   **Availability wait** — how long saving waits for availability (default 15
+    seconds, maximum 60).
+*   **Map context** — bounded ancestor, child and note budgets used to make one
+    precise query.
 
-Settings are stored in the map itself. Invalid or unsafe values are refused
-with a clear message; nothing falls back silently.
+Invalid or unsafe values are refused with a clear message; nothing falls back
+silently.
 
 ### Searching (`LLM > Search neurOS Knowledge`)
 
@@ -87,8 +90,8 @@ an empty result usually means "retry in a minute", and the add-on says so.
 ### Saving a branch (`LLM > Save Branch to neurOS`)
 
 1.  Select a node (its children come along as an outline).
-2.  Confirm the destination. The branch is written into the configured write
-    destination as a work-graph card.
+2.  Confirm the destination. The branch is written into the workspace
+    discovered from the map as a work-graph card.
 3.  The add-on confirms availability using whatever surface the source
     provides and reports honestly when availability is still unconfirmed.
 4.  The source node is tagged `neurOS card` and links to its source material

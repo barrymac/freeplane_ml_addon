@@ -1,21 +1,13 @@
 package com.barrymac.freeplane.addons.llm.neuros
 
 /**
- * neurOS knowledge settings for ONE Freeplane map.
+ * Conservative, optional per-map limits for neurOS operations.
  *
- * Source, scope, write destination and resource limits are stored in the map's
- * own storage — never in a global default. A new map therefore starts
- * unconnected and must be connected deliberately. No value is guessed from the
- * previous map, the current mount layout, or a hardcoded project.
- *
- * Numeric defaults are intentionally conservative and bounded so a map cannot
- * turn one user action into an unbounded set of substrate reads.
+ * These are safety budgets only. Knowledge location and scope are NOT settings:
+ * they are discovered from the map's own location by KnowledgeContext.
  */
-class MapKnowledgeSettings {
+class NeurosLimits {
 
-    static final String LOCATION_KEY = 'neuros.knowledge_location'
-    static final String SCOPE_KEY = 'neuros.knowledge_scope'
-    static final String WRITE_DESTINATION_KEY = 'neuros.write_destination'
     static final String CARD_FOLDER_KEY = 'neuros.card_folder'
     static final String RESULTS_LIMIT_KEY = 'neuros.results_limit'
     static final String WRITE_WAIT_KEY = 'neuros.write_wait_seconds'
@@ -40,9 +32,6 @@ class MapKnowledgeSettings {
     static final int MAX_CONTEXT_LIMIT = 4000
     static final String DEFAULT_CARD_FOLDER = 'neuros-cards'
 
-    String knowledgeLocation = ''
-    String scope = ''
-    String writeDestination = ''
     String cardFolder = DEFAULT_CARD_FOLDER
     int resultsLimit = DEFAULT_RESULTS_LIMIT
     int writeWaitSeconds = DEFAULT_WRITE_WAIT_SECONDS
@@ -52,14 +41,11 @@ class MapKnowledgeSettings {
     int noteLimit = DEFAULT_NOTE_LIMIT
     int contextLimit = DEFAULT_CONTEXT_LIMIT
 
-    static MapKnowledgeSettings load(def storage) {
+    static NeurosLimits load(def storage) {
         if (storage == null) {
-            throw new IllegalArgumentException('This map has no storage for neurOS knowledge settings.')
+            throw new IllegalArgumentException('This map has no storage for neurOS limits.')
         }
-        return new MapKnowledgeSettings(
-                knowledgeLocation: text(storage, LOCATION_KEY),
-                scope: text(storage, SCOPE_KEY),
-                writeDestination: text(storage, WRITE_DESTINATION_KEY),
+        return new NeurosLimits(
                 cardFolder: optionalText(storage, CARD_FOLDER_KEY, DEFAULT_CARD_FOLDER),
                 resultsLimit: optionalInt(storage, RESULTS_LIMIT_KEY,
                         DEFAULT_RESULTS_LIMIT, 1, MAX_RESULTS_LIMIT),
@@ -77,92 +63,32 @@ class MapKnowledgeSettings {
         )
     }
 
-    static void save(def storage, MapKnowledgeSettings settings) {
-        if (storage == null) {
-            throw new IllegalArgumentException('This map has no storage for neurOS knowledge settings.')
-        }
-        validate(settings)
-        storage[LOCATION_KEY] = settings.knowledgeLocation
-        storage[SCOPE_KEY] = settings.scope
-        storage[WRITE_DESTINATION_KEY] = settings.writeDestination ?: null
-        storage[CARD_FOLDER_KEY] = settings.cardFolder
-        storage[RESULTS_LIMIT_KEY] = Integer.toString(settings.resultsLimit)
-        storage[WRITE_WAIT_KEY] = Integer.toString(settings.writeWaitSeconds)
-        storage[USE_CONTEXT_KEY] = Boolean.toString(settings.useContext)
-        storage[ANCESTOR_LIMIT_KEY] = Integer.toString(settings.ancestorLimit)
-        storage[CHILD_LIMIT_KEY] = Integer.toString(settings.childLimit)
-        storage[NOTE_LIMIT_KEY] = Integer.toString(settings.noteLimit)
-        storage[CONTEXT_LIMIT_KEY] = Integer.toString(settings.contextLimit)
-    }
-
-    static void validate(MapKnowledgeSettings settings) {
-        if (!settings.knowledgeLocation?.trim()) {
-            throw new IllegalArgumentException('Choose a knowledge location for this map.')
-        }
-        if (!settings.scope?.trim()) {
-            throw new IllegalArgumentException('Choose the knowledge scope for this map.')
-        }
-        if (settings.writeDestination?.trim()) {
-            File destination = new File(settings.writeDestination.trim())
-            if (!destination.isDirectory() || !destination.canWrite()) {
-                throw new IOException(
-                        "The write destination is not a writable directory: '${destination.path}'.")
-            }
-        }
-        settings.cardFolder = normalizeCardFolder(settings.cardFolder)
-        if (settings.resultsLimit < 1 || settings.resultsLimit > MAX_RESULTS_LIMIT) {
+    static void validate(NeurosLimits limits) {
+        limits.cardFolder = normalizeCardFolder(limits.cardFolder)
+        if (limits.resultsLimit < 1 || limits.resultsLimit > MAX_RESULTS_LIMIT) {
             throw new IllegalArgumentException(
                     "Search results must be between 1 and ${MAX_RESULTS_LIMIT}.")
         }
-        if (settings.writeWaitSeconds < 1 || settings.writeWaitSeconds > MAX_WRITE_WAIT_SECONDS) {
+        if (limits.writeWaitSeconds < 1 || limits.writeWaitSeconds > MAX_WRITE_WAIT_SECONDS) {
             throw new IllegalArgumentException(
                     "The confirmation wait must be between 1 and ${MAX_WRITE_WAIT_SECONDS} seconds.")
         }
-        if (settings.ancestorLimit < 0 || settings.ancestorLimit > MAX_ANCESTOR_LIMIT) {
+        if (limits.ancestorLimit < 0 || limits.ancestorLimit > MAX_ANCESTOR_LIMIT) {
             throw new IllegalArgumentException(
                     "The ancestor context limit must be between 0 and ${MAX_ANCESTOR_LIMIT}.")
         }
-        if (settings.childLimit < 0 || settings.childLimit > MAX_CHILD_LIMIT) {
+        if (limits.childLimit < 0 || limits.childLimit > MAX_CHILD_LIMIT) {
             throw new IllegalArgumentException(
                     "The child context limit must be between 0 and ${MAX_CHILD_LIMIT}.")
         }
-        if (settings.noteLimit < 0 || settings.noteLimit > MAX_NOTE_LIMIT) {
+        if (limits.noteLimit < 0 || limits.noteLimit > MAX_NOTE_LIMIT) {
             throw new IllegalArgumentException(
                     "The note context limit must be between 0 and ${MAX_NOTE_LIMIT} characters.")
         }
-        if (settings.contextLimit < 200 || settings.contextLimit > MAX_CONTEXT_LIMIT) {
+        if (limits.contextLimit < 200 || limits.contextLimit > MAX_CONTEXT_LIMIT) {
             throw new IllegalArgumentException(
                     "The total context limit must be between 200 and ${MAX_CONTEXT_LIMIT} characters.")
         }
-    }
-
-    /** Loud refusal when read features are not configured for this map. */
-    String missingForRead() {
-        List missing = []
-        if (!knowledgeLocation?.trim()) missing << 'knowledge location'
-        if (!scope?.trim()) missing << 'knowledge scope'
-        if (missing) {
-            return "This map is not connected to neurOS knowledge yet " +
-                    "(${missing.join(' and ')} missing).\n" +
-                    "Open 'LLM > Configure neurOS Knowledge' and connect it first."
-        }
-        return null
-    }
-
-    /** Loud refusal when write features are not configured for this map. */
-    String missingForWrite() {
-        if (!writeDestination?.trim()) {
-            return 'This map has no neurOS write destination.\n' +
-                    "Open 'LLM > Configure neurOS Knowledge' and choose a write destination " +
-                    'to enable saving branches.'
-        }
-        return null
-    }
-
-    KnowledgeSource openSource() {
-        String readProblem = missingForRead()
-        if (readProblem) throw new IllegalArgumentException(readProblem)
-        return KnowledgeSource.open(knowledgeLocation, scope)
     }
 
     Map contextOptions() {

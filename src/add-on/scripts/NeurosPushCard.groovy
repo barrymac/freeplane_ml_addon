@@ -9,7 +9,8 @@ import org.freeplane.core.util.LogUtils
 import javax.swing.*
 
 // neurOS bridge imports
-import com.barrymac.freeplane.addons.llm.neuros.MapKnowledgeSettings
+import com.barrymac.freeplane.addons.llm.neuros.KnowledgeContext
+import com.barrymac.freeplane.addons.llm.neuros.NeurosLimits
 import com.barrymac.freeplane.addons.llm.neuros.KnowledgeSource
 import com.barrymac.freeplane.addons.llm.neuros.NeurosClient
 import com.barrymac.freeplane.addons.llm.neuros.CardBuilder
@@ -26,35 +27,35 @@ Map branchData(def n) {
 }
 
 try {
-    // --- This map's connection, scope and write destination ---
+    // --- Discover this map's knowledge context and write destination ---
     def node = c.selected
     if (node == null) {
         UiHelper.showInformationMessage(ui, "Please select a node first.")
         return
     }
-    MapKnowledgeSettings settings = MapKnowledgeSettings.load(node.map.storage)
-
-    String readProblem = settings.missingForRead()
-    if (readProblem) {
-        UiHelper.showErrorMessage(ui, readProblem)
+    KnowledgeContext knowledgeContext = KnowledgeContext.discover(node.map.file)
+    if (!knowledgeContext.isEnabled()) {
+        UiHelper.showInformationMessage(ui, knowledgeContext.reason)
         return
     }
-    String writeProblem = settings.missingForWrite()
-    if (writeProblem) {
-        UiHelper.showErrorMessage(ui, writeProblem)
+    if (!knowledgeContext.canWrite()) {
+        UiHelper.showInformationMessage(ui,
+                'neurOS knowledge is available for this map, but its location does not ' +
+                        'provide a writable workspace for saving branches.')
         return
     }
-    KnowledgeSource source = settings.openSource()
+    NeurosLimits limits = NeurosLimits.load(node.map.storage)
+    KnowledgeSource source = knowledgeContext.source
 
     String title = (node.text ?: '').split('\n')[0].trim() ?: 'Untitled card'
-    String destinationName = new File(settings.writeDestination).name
+    String destinationName = new File(knowledgeContext.writeDestination).name
 
     // --- Confirm the exact save ---
     int confirm = JOptionPane.showConfirmDialog(ui.currentFrame,
             "Save this branch to neurOS?\n\n" +
                     "Title: ${title}\n" +
                     "${source.description()}\n" +
-                    "Destination: ${destinationName}/${settings.cardFolder}\n" +
+                    "Destination: ${destinationName}/${limits.cardFolder}\n" +
                     "Children: ${(node.children ?: []).size()}",
             'Save Branch to neurOS', JOptionPane.OK_CANCEL_OPTION)
     if (confirm != JOptionPane.OK_OPTION) {
@@ -69,12 +70,12 @@ try {
     String uuid = (content =~ /\[\[card:([0-9a-fA-F-]+)\]\]/)[0][1]
     String fileName = CardBuilder.fileName(uuid, title)
 
-    File written = NeurosClient.writeCard(settings.writeDestination,
-            settings.cardFolder, fileName, content)
+    File written = NeurosClient.writeCard(knowledgeContext.writeDestination,
+            limits.cardFolder, fileName, content)
     LogUtils.info("NeurosPushCard: wrote a card to the configured destination.")
 
     // --- Confirm using whatever availability surface the source provides ---
-    Map confirmation = NeurosClient.confirmWrite(source, written, settings.writeWaitSeconds)
+    Map confirmation = NeurosClient.confirmWrite(source, written, limits.writeWaitSeconds)
 
     // --- Mark the source node without exposing identifiers ---
     node.tags.add('neurOS card')
