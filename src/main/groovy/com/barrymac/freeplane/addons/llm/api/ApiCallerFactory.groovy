@@ -108,8 +108,8 @@ class ApiCallerFactory {
 
         // Add provider-specific headers
         if (provider == ApiProvider.OPENROUTER) {
-            headers["HTTP-Referer"] = "https://github.com/barrymac/freeplane_openai_addon"
-            headers["X-Title"] = "Freeplane GPT AddOn"
+            headers["HTTP-Referer"] = "https://github.com/barrymac/freeplane_ml_addon"
+            headers["X-Title"] = "Freeplane LLM AddOn"
         } else if (provider == ApiProvider.NOVITA) {
             // Novita uses Bearer token in Authorization header, already set above
             // Content-Type is already set to application/json

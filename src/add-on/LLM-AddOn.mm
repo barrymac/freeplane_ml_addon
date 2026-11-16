@@ -75,7 +75,7 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="18" RULE="ON_BRANCH_CREATION"/>
 <attribute_layout NAME_WIDTH="112.61538 pt" VALUE_WIDTH="333.23076 pt"/>
 <attribute NAME="name" VALUE="promptLlmAddOn"/>
-<attribute NAME="version" VALUE="v0.6.0"/>
+<attribute NAME="version" VALUE="v0.7.0"/>
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>
@@ -83,7 +83,7 @@
 <attribute NAME="downloadUrl" VALUE="https://${homepage}/releases/download/${version}/LLM-AddOn-${version}.addon.mm"/>
 <attribute NAME="changelogUrl" VALUE="https://${homepage}/commits/main"/>
 <attribute NAME="addonsMenu" VALUE="/menu_bar/LLM"/>
-<attribute NAME="updateUrl" VALUE="https://raw.githubusercontent.com/barrymac/freeplane_openai_addon/release/version.properties"/>
+<attribute NAME="updateUrl" VALUE="https://raw.githubusercontent.com/barrymac/freeplane_ml_addon/release/version.properties"/>
 <richcontent TYPE="NOTE">
 <html>
   <head>
@@ -249,6 +249,9 @@
 <attribute NAME="addons.${name}.quickPrompt" VALUE="Quick Prompt (Ctrl+Alt+G)"/>
 <attribute NAME="addons.${name}.compareConnectedNodes" VALUE="Compare Connected Nodes"/>
 <attribute NAME="addons.${name}.generateImage" VALUE="Generate Image"/>
+<attribute NAME="addons.${name}.neurosConfigure" VALUE="Configure neurOS"/>
+<attribute NAME="addons.${name}.neurosSearch" VALUE="neurOS: Search Knowledge from Node"/>
+<attribute NAME="addons.${name}.neurosPushCard" VALUE="neurOS: Push Branch as Card"/>
 </node>
 </node>
 <node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1744150100002">
@@ -272,6 +275,9 @@
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/QuickPrompt.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/CompareConnectedNodes.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/GenerateImage.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosConfigure.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosSearch.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPushCard.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn-icon.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/lib/Exceptions.groovy"/>
@@ -443,6 +449,42 @@
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_exec_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_network_restriction" VALUE="true"/>
+</node>
+<node TEXT="NeurosConfigure.groovy" ID="ID_NEUROS_CONFIGURE" CREATED="1786920000000" MODIFIED="1786920000000">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosConfigure"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE=""/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="false"/>
+</node>
+<node TEXT="NeurosSearch.groovy" ID="ID_NEUROS_SEARCH" CREATED="1786920000001" MODIFIED="1786920000001">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosSearch"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE=""/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="false"/>
+</node>
+<node TEXT="NeurosPushCard.groovy" ID="ID_NEUROS_PUSH" CREATED="1786920000002" MODIFIED="1786920000002">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosPushCard"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE=""/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="false"/>
 </node>
 </node>
 <node TEXT="lib" POSITION="bottom_or_right" ID="ID_1845190577" CREATED="1685111823978" MODIFIED="1742834860055">

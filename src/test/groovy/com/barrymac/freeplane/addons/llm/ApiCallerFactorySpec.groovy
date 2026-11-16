@@ -1,26 +1,29 @@
 package com.barrymac.freeplane.addons.llm
 
 // Add these imports:
-import com.barrymac.freeplane.addons.llm.mock.LoggerTest
 import com.barrymac.freeplane.addons.llm.mock.UITest
+import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 // Keep existing imports
 import com.barrymac.freeplane.addons.llm.mock.MockHttpURLConnection
+import org.freeplane.core.util.LogUtils
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.awt.*
 
 class ApiCallerFactorySpec extends Specification {
-    def mockLogger = Mock(LoggerTest)
     def mockUi = Mock(UITest)
     def apiCaller
 
     def setup() {
+        // Absorb LogUtils calls (real Freeplane logging is not initialised in tests)
+        GroovyMock(LogUtils, global: true)
+
         // Mock Desktop browsing (prevent actual browser launches)
         Desktop.metaClass.static.browse = { URI uri -> /* no-op */ }
 
         apiCaller = ApiCallerFactory.createApiCaller(
-                [logger: mockLogger, ui: mockUi]
+                [ui: mockUi]
         )
     }
 
@@ -42,20 +45,15 @@ class ApiCallerFactorySpec extends Specification {
         mockConn.getRequestProperty("Authorization") == "Bearer fake-key"
 
         if (provider == "openrouter") {
-            assert mockConn.getRequestProperty("HTTP-Referer") == "https://github.com/barrymac/freeplane_openai_addon"
-            assert mockConn.getRequestProperty("X-Title") == "Freeplane GPT AddOn"
+            assert mockConn.getRequestProperty("HTTP-Referer") == "https://github.com/barrymac/freeplane_ml_addon"
+            assert mockConn.getRequestProperty("X-Title") == "Freeplane LLM AddOn"
         }
 
         and: "Verify response handling"
         result == expectedResponse
-        1 * mockLogger.info("API Call to {} ({}) - Response Code: {}", provider, expectedUrl, statusCode) // This log always happens
-
         if (statusCode == 200) {
-            // Updated line: Match format string and truncated argument
-            1 * mockLogger.info("{} response: {}...", provider, responseBody.take(200))
             0 * mockUi.errorMessage(_)
         } else {
-            0 * mockLogger.info("{} response: {}", _, _) // Specifically check response log isn't called
             1 * mockUi.errorMessage(expectedError)
         }
 
@@ -78,8 +76,7 @@ class ApiCallerFactorySpec extends Specification {
 
         then: "Verify error handling"
         result == ""
-        1 * mockLogger.warn("Exception during API call to {}: {}", "openai", "Connection timeout")
-        1 * mockUi.errorMessage("Network or processing error during API call: Connection timeout")
+        1 * mockUi.errorMessage("LLM AddOn Error: API call failed: Connection timeout")
     }
 
     def "make_api_call handles unsupported provider"() {

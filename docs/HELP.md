@@ -45,3 +45,48 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   API keys (Novita, OpenRouter) are stored in your Freeplane user properties (`user.properties` file).
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
+
+## neurOS Bridge (v0.7.0, opt-in)
+
+The neurOS bridge connects Freeplane to a neurOS knowledge mount — a live
+FUSE filesystem over a personal knowledge substrate. It is entirely opt-in:
+until you configure it, the menu items only explain what is missing, and no
+defaults are guessed.
+
+### Configuration (`LLM > Configure neurOS`)
+
+*   **Mount path** — the FUSE root of your mount, e.g.
+    `/mnt/neuros/software/<scope>`. Must contain a live mount (the dialog
+    checks for `search/` or `README.cartridge`).
+*   **Workspace path** — the watched directory the mount ingests from (the
+    plain workspace of the scope). Cards are written here.
+*   **Search results limit** — maximum hits attached per search (default 5).
+*   **Card directory** — subdirectory of the workspace for pushed cards
+    (default `neuros-cards`).
+
+All four are stored in your Freeplane user properties, prefixed
+`llm.addon.neuros.`.
+
+### Searching (`LLM > neurOS: Search Knowledge from Node`)
+
+1.  Select a node — its text seeds the query (edit it in the dialog if you
+    want a different phrasing).
+2.  The mount's semantic search surface (`search/<question>`) is queried.
+3.  Results appear as a tagged branch; each hit node's note carries the
+    hit's uuid, subtype and on-mount read path (`by-id/<uuid>`).
+
+Right after a fresh mount the semantic projections may still be warming —
+an empty result usually means "retry in a minute", and the add-on says so.
+
+### Pushing a branch as a card (`LLM > neurOS: Push Branch as Card`)
+
+1.  Select a node (its children come along as an outline).
+2.  Confirm the push — the card is written as `<uuid>-<slug>.card.md` into
+    the configured card directory, in the initial `Backlog` list state.
+3.  The add-on waits for the substrate to ingest the file (up to 15s) and
+    reports the ingest status and the new card's uuid.
+4.  The source node is tagged `neuros:card`; its note records the uuid so
+    you can wire `[[card:<uuid>]]` edges later.
+
+On strict (state-machine enforcing) mounts, `Backlog` is the legal initial
+state, so pushed cards are accepted as-is.

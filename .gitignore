@@ -4,3 +4,5 @@
 .aider*
 /build/
 /.gradle/
+# neurOS FUSE-mount symlinks (managed by neuros-vfs hooks)
+*_KNOWLEDGE

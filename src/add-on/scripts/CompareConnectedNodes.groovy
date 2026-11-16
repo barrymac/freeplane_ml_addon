@@ -6,6 +6,7 @@ import com.barrymac.freeplane.addons.llm.ApiConfig // Needed for type hint
 
 // API related classes
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.api.ModelCompatibility
 
 // Map related classes
 import com.barrymac.freeplane.addons.llm.maps.NodeTagger
@@ -109,6 +110,7 @@ try {
             // --- Generate Comparative Dimension with Validation ---
             def dimensionData = DimensionGenerator.generateDimension(
                 make_api_call.curry(apiConfig.provider, apiConfig.apiKey),
+                apiConfig.provider,
                 apiConfig.model,
                 messages.dimensionSystemTemplate, 
                 comparisonType
@@ -243,6 +245,8 @@ try {
             // --- Prepare Initial Payloads ---
             // Use response_format for OpenAI JSON mode where possible
             def responseFormat = (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "json_object"] : null
+            def compatParams = ModelCompatibility.chatParams(apiConfig.provider, apiConfig.model,
+                apiConfig.temperature, apiConfig.maxTokens)
 
             Map<String, Object> sourcePayloadMap = [
                 'model': apiConfig.model,
@@ -250,10 +254,8 @@ try {
                     [role: 'system', content: sourceSystemPrompt],
                     [role: 'user', content: sourceUserPrompt]
                 ],
-                'temperature': apiConfig.temperature,
-                'max_tokens': apiConfig.maxTokens,
                 'response_format': responseFormat
-            ].findAll { key, value -> value != null }
+            ] + compatParams
 
             Map<String, Object> targetPayloadMap = [
                 'model': apiConfig.model,
@@ -261,10 +263,11 @@ try {
                     [role: 'system', content: targetSystemPrompt],
                     [role: 'user', content: targetUserPrompt]
                 ],
-                'temperature': apiConfig.temperature,
-                'max_tokens': apiConfig.maxTokens,
                 'response_format': responseFormat
-            ].findAll { key, value -> value != null }
+            ] + compatParams
+
+            sourcePayloadMap = sourcePayloadMap.findAll { key, value -> value != null }
+            targetPayloadMap = targetPayloadMap.findAll { key, value -> value != null }
 
             // --- Call APIs using the Retry Helper ---
             UiHelper.updateDialogMessageThreadSafe(dialog, "Requesting analysis for '${sourceNode.text}'...")

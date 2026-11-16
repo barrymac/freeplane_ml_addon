@@ -7,22 +7,26 @@ import org.freeplane.core.util.LogUtils
  */
 //@CompileStatic
 class ConfigManager {
-    // Define default models directly in code
+    // Default model list, refreshed 2026-11 against live provider catalogues
+    // (OpenRouter rankings + OpenAI model index). Users can always override
+    // via the 'openai.available_models' property (newline-separated).
     static final List<String> DEFAULT_MODELS = [
-            'meta-llama/llama-3.2-1b-instruct',
-            'deepseek/deepseek-r1-zero:free',
-            'deepseek/deepseek-r1',
-            'anthropic/claude-3-opus',
-            'anthropic/claude-3-sonnet',
-            'anthropic/claude-3-haiku',
-            'openai/o3-mini',
-            'openai/o3-mini-high',
-            'google/gemini-2.5-pro-exp-03-25:free',
-            'google/gemini-pro',
-            'meta-llama/llama-3-70b-instruct',
-            'gpt-3.5-turbo',
-            'gpt-4'
+            // OpenRouter top-ranked (verified IDs, Nov 2026)
+            'deepseek/deepseek-v4.1-flash-20260910',
+            'z-ai/glm-5.3-flash-20260826',
+            'deepseek/deepseek-v4-flash-20260731',
+            // OpenAI current line (Responses-era ids also valid on chat completions)
+            'gpt-6-astra',
+            'gpt-6.1-sol',
+            'gpt-6.1-terra',
+            'gpt-6-luna',
+            'gpt-5.6-sol',
+            'gpt-5.4-mini',
+            'gpt-oss-120b'
     ]
+
+    /** First entry of DEFAULT_MODELS — the out-of-the-box choice. */
+    static final String DEFAULT_MODEL = DEFAULT_MODELS[0]
 
     /**
      * Loads base configuration from Freeplane config
@@ -33,7 +37,7 @@ class ConfigManager {
     static ApiConfig loadBaseConfig(def config) {
         try {
             def provider = config.getProperty('openai.api_provider', 'openrouter')
-            def model = config.getProperty('openai.gpt_model', 'gpt-4')
+            def model = config.getProperty('openai.gpt_model', DEFAULT_MODEL)
             def maxTokens = config.getProperty('openai.max_response_length', 2000) as int
             def temperature = config.getProperty('openai.temperature', 0.7) as double
 
@@ -45,7 +49,7 @@ class ConfigManager {
 
             return new ApiConfig(
                     provider: provider,
-                    apiKey: config.getProperty('openai.key', ''),
+                    apiKey: config.getProperty('openai.key', '') ?: '',
                     model: model,
                     maxTokens: maxTokens,
                     temperature: temperature,
@@ -57,7 +61,7 @@ class ConfigManager {
             return new ApiConfig(
                     provider: 'openrouter',
                     apiKey: '',
-                    model: 'gpt-4',
+                    model: DEFAULT_MODEL,
                     maxTokens: 2000,
                     temperature: 0.7,
                     availableModels: DEFAULT_MODELS

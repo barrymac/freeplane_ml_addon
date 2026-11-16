@@ -24,15 +24,16 @@ dependencies {
 //    )
 
     testImplementation(
-            platform('org.junit:junit-bom:5.10.2'),
-            platform("org.spockframework:spock-bom:2.3-groovy-4.0"),
+            platform('org.junit:junit-bom:5.14.4'),
+            platform("org.spockframework:spock-bom:2.5-groovy-4.0"),
             "org.hamcrest:hamcrest-core:2.2",
             'org.freeplane:gradle-freeplane-plugin:0.8',
-            "org.spockframework:spock-core:2.3-groovy-4.0"
+            "org.spockframework:spock-core:2.5-groovy-4.0"
     )
 
     testRuntimeOnly(
             'org.junit.jupiter:junit-jupiter-engine',
+            'org.junit.platform:junit-platform-launcher',
             'net.bytebuddy:byte-buddy:1.14.12',
             "org.objenesis:objenesis:3.4",
     )
@@ -58,7 +59,7 @@ test {
     }
 }
 
-def freeplaneVersion = "1.12.9"
+def freeplaneVersion = "1.12.11"
 def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty('user.home')}/bin/freeplane-${freeplaneVersion}/"
 
 freeplane {

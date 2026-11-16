@@ -35,13 +35,13 @@ class ResponseParserSpec extends Specification {
                                    Easy setup
                                    Cons:
                                    Expensive
-                                   """                                                                            | ["Pros": ["Good performance", "Easy setup"], "Cons": ["Expensive"]]
+                                   """                                                                            | ["Analysis": ["Pros:", "Good performance", "Easy setup", "Cons:", "Expensive"]] // headings w/o bullets → raw-text fallback (v0.4.0+ semantics: only bulleted points count)
         "mixed bullets/no bullets" | """
                                    Mixed Bag:
                                    - Bulleted item
                                    Just a line
                                    * Another bullet
-                                   """                                                                            | ["Mixed Bag": ["Bulleted item", "Just a line", "Another bullet"]]
+                                   """                                                                            | ["Mixed Bag": ["Bulleted item", "Another bullet"]] // plain (non-bullet) lines are ignored under a heading
         "empty input"            | ""                                                                             | [:]
         "whitespace input"       | "   \n  \t "                                                                   | [:]
         "no categories"          | """
@@ -67,7 +67,7 @@ class ResponseParserSpec extends Specification {
         "only category headers"  | """
                                    Header 1:
                                    Header 2:
-                                   """                                                                            | [:] // No points, so empty map
+                                   """                                                                            | ["Analysis": ["Header 1:", "Header 2:"]] // headings with no points are filtered → raw-text fallback
         "complex points"         | """
                                    Analysis:
                                    - Point one; contains semicolon

@@ -12,6 +12,7 @@ import com.barrymac.freeplane.addons.llm.prompts.MessageExpander
 // Utility imports
 import com.barrymac.freeplane.addons.llm.utils.JsonUtils
 import com.barrymac.freeplane.addons.llm.ui.UiHelper
+import com.barrymac.freeplane.addons.llm.api.ModelCompatibility
 
 // Map operation imports
 import com.barrymac.freeplane.addons.llm.maps.NodeOperations
@@ -80,10 +81,11 @@ try {
         Map<String, Object> payload = [
             'model'      : apiConfig.model,
             'messages'   : messagesList,
-            'temperature': apiConfig.temperature,
-            'max_tokens' : apiConfig.maxTokens,
             'response_format': (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "text"] : null
-        ].findAll { key, value -> value != null }
+        ] + ModelCompatibility.chatParams(apiConfig.provider, apiConfig.model,
+            apiConfig.temperature, apiConfig.maxTokens)
+
+        payload = payload.findAll { key, value -> value != null }
 
         LogUtils.info("QuickPrompt: Sending payload: ${payload}")
 

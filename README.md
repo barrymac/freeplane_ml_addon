@@ -12,17 +12,15 @@
 
 Communicator window
 
-Communicator window
-
-![screenshot communicator](images/ChatGptCommunicator.png)
+![screenshot communicator](src/add-on/images/ChatGptCommunicator.png)
 -----------
 
 Prompt sent
-![screenshot question](images/ChatGptQuestion.png)
+![screenshot question](src/add-on/images/ChatGptQuestion.png)
 
 -----------
 Response returned
-![screenshotanswer](images/ChatGptAnswer.png)
+![screenshotanswer](src/add-on/images/ChatGptAnswer.png)
 
 ## Compare Connected Nodes (v0.4.0+)
 Analyze relationships between two connected nodes using structured comparisons:
@@ -43,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.4.0.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.7.0.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -79,6 +77,16 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.7.0
+- **neurOS Bridge (opt-in)**: connect the add-on to a [neurOS](https://github.com/barrymac) knowledge mount — the filesystem surface of a personal knowledge substrate.
+  - `LLM > Configure neurOS`: set the mount path, watched workspace path, result limit and card directory. Nothing is configured by default; features refuse loudly until configured.
+  - `LLM > neurOS: Search Knowledge from Node`: semantic search of the mount's corpus using the selected node as the query; results are attached as a tagged branch with uuid notes.
+  - `LLM > neurOS: Push Branch as Card`: push the selected branch into the mount's workspace as a work-graph card (`.card.md`), auto-ingested by the substrate, with the ingest uuid recorded back on the node.
+- **Model catalogue refresh (Nov 2026)**: current OpenRouter and OpenAI models; add your own via the existing model list editor.
+- **Modern OpenAI parameter compatibility**: newer OpenAI models (gpt-5+/gpt-6*/o-series) get `max_completion_tokens` and no `temperature`, so they work without API errors; classic models and OpenRouter keep the legacy parameters.
+- **Toolchain refresh**: Gradle wrapper 8.14.3, Spock 2.5, JUnit BOM 5.14.4; test suite revived (74 green).
+- Auto-update URL and OpenRouter attribution headers now point at this repository.
+
 ### v0.6.0
 - **Image Generation**: Added a new feature to generate images based on node content using the Novita.ai API.
   - Accessed via `Tools > LLM AddOn > Generate Image`.
@@ -130,8 +138,44 @@ Prompt and feature suggestions are very welcome!
 
 ### Work in progress / future release
 - [] Better prompt engineering for image generation 
+- [] neurOS bridge: pull cards by label into a map (board → mind map direction)
 
 For other feature ideas check the [project roadmap](docs/ROADMAP.md)
+
+## neurOS bridge (opt-in)
+
+The neurOS features connect this add-on to a neurOS knowledge mount — a live
+FUSE filesystem over a personal knowledge substrate, where every workspace
+write is auto-ingested and every directory read is a graph query.
+
+Both features are **opt-in and disabled until configured**:
+
+1. `LLM > Configure neurOS` — enter the mount path (the FUSE root, e.g.
+   `/mnt/neuros/software/<scope>`) and the watched workspace path (the plain
+   directory the mount ingests from). Both must be set; the features refuse
+   with instructions otherwise. No defaults are guessed.
+2. `LLM > neurOS: Search Knowledge from Node` — the selected node's text
+   seeds a semantic query against the mount's corpus; hits come back as a
+   tagged branch (`neuros:search` / `neuros:hit`), each note carrying the
+   hit's uuid and on-mount read path.
+3. `LLM > neurOS: Push Branch as Card` — the selected branch is written into
+   the watched workspace as a `.card.md` work-graph card (initial state
+   `Backlog`), auto-ingested within seconds; the node is tagged
+   `neuros:card` and its note records the card's uuid for later
+   `[[card:...]]` wiring.
+
+Without a neurOS mount the add-on behaves exactly as before — the three menu
+items simply explain what is missing.
+
+## Building from source
+
+```bash
+./gradlew test          # JDK 17–23 (the freeplane toolchain predates JDK 24)
+./gradlew packageAddon  # JDK 17 (Freeplane 1.12.x launcher uses the Security Manager)
+```
+
+`FREEPLANE_HOME` may point at your Freeplane installation; the default is
+`~/bin/freeplane-<version>` per `build.gradle`.
 
 ## Tagging
 All AI-generated branches are automatically tagged with:

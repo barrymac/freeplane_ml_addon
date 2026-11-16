@@ -10,16 +10,15 @@ class DimensionGenerator {
         String pole2
     }
 
-    static DimensionData generateDimension(Closure apiCall, String model, String systemTemplate, String comparisonType) {
+    static DimensionData generateDimension(Closure apiCall, String provider, String model,
+                                           String systemTemplate, String comparisonType) {
         def dimensionPayload = [
                 'model'      : model,
                 'messages'   : [
                         [role: 'system', content: systemTemplate],
                         [role: 'user', content: "Create a focused comparative dimension for analyzing: ${comparisonType}"]
                 ],
-                'temperature': 0.2,
-                'max_tokens' : 100
-        ]
+        ] + com.barrymac.freeplane.addons.llm.api.ModelCompatibility.chatParams(provider, model, 0.2, 100)
 
         LogUtils.info("Generating comparative dimension for: ${comparisonType}")
 

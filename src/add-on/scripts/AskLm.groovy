@@ -11,6 +11,7 @@ import com.barrymac.freeplane.addons.llm.prompts.MessageExpander // Needed for e
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException // Needed for API error handling
 import com.barrymac.freeplane.addons.llm.utils.JsonUtils // Needed for response parsing
 import com.barrymac.freeplane.addons.llm.ui.UiHelper // Still needed for error/info messages
+import com.barrymac.freeplane.addons.llm.api.ModelCompatibility // Model-era parameter compatibility
 import com.barrymac.freeplane.addons.llm.maps.NodeOperations // Needed for adding branch
 import com.barrymac.freeplane.addons.llm.maps.NodeTagger // Still needed for tagging
 import com.barrymac.freeplane.addons.llm.prompts.MessageFileHandler // Needed for loading/saving messages
@@ -115,11 +116,12 @@ try {
             Map<String, Object> payload = [
                     'model'      : dialogResult.model,
                     'messages'   : messagesList,
-                    'temperature': dialogResult.temperature,
-                    'max_tokens' : dialogResult.maxTokens,
                     // Add response_format based on provider/model from result map
                     'response_format': (dialogResult.provider == 'openai' && dialogResult.model.toString().contains("gpt")) ? [type: "text"] : null
-            ].findAll { key, value -> value != null } // Filter out null values
+            ] + ModelCompatibility.chatParams(dialogResult.provider, dialogResult.model.toString(),
+                    dialogResult.temperature, dialogResult.maxTokens)
+
+            payload = payload.findAll { key, value -> value != null } // Filter out null values
 
             LogUtils.info("AskLm Script: Sending payload: ${payload}")
 
