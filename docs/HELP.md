@@ -46,7 +46,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.8.3, opt-in, per map)
+## neurOS Knowledge (v0.9.0, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -86,6 +86,22 @@ exactly one semantic query.
 
 Right after connecting a new source, the semantic index may still be warming —
 an empty result usually means "retry in a minute", and the add-on says so.
+
+### Browsing (`LLM > Browse neurOS Knowledge`)
+
+1.  Select any node in an enabled map and invoke **Browse neurOS Knowledge**.
+    The add-on creates a lazy catalog from the current cartridge's metadata:
+    knowledge surfaces, primitive types, door capabilities and supported MIME
+    content.
+2.  Select a **knowledge surface** or **knowledge type** and invoke Browse
+    again. The add-on lists one bounded page of entries (default 25).
+3.  If more entries are available, select **Load more entries…** and invoke
+    Browse again to append the next page. Entries open source material through
+    their links; identifiers are not shown in titles.
+
+Browsing performs no semantic search and does not recursively download the
+corpus. If a source is still preparing its metadata, the add-on says so rather
+than inventing a catalog.
 
 ### Saving a branch (`LLM > Save Branch to neurOS`)
 

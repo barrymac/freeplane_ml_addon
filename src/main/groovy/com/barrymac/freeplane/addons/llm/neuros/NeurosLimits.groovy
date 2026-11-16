@@ -16,6 +16,7 @@ class NeurosLimits {
     static final String CHILD_LIMIT_KEY = 'neuros.context.child_limit'
     static final String NOTE_LIMIT_KEY = 'neuros.context.note_limit'
     static final String CONTEXT_LIMIT_KEY = 'neuros.context.total_limit'
+    static final String BROWSE_LIMIT_KEY = 'neuros.browse_limit'
 
     static final int DEFAULT_RESULTS_LIMIT = 5
     static final int MAX_RESULTS_LIMIT = 25
@@ -30,6 +31,8 @@ class NeurosLimits {
     static final int MAX_NOTE_LIMIT = 2000
     static final int DEFAULT_CONTEXT_LIMIT = 1800
     static final int MAX_CONTEXT_LIMIT = 4000
+    static final int DEFAULT_BROWSE_LIMIT = 25
+    static final int MAX_BROWSE_LIMIT = 100
     static final String DEFAULT_CARD_FOLDER = 'neuros-cards'
 
     String cardFolder = DEFAULT_CARD_FOLDER
@@ -40,6 +43,7 @@ class NeurosLimits {
     int childLimit = DEFAULT_CHILD_LIMIT
     int noteLimit = DEFAULT_NOTE_LIMIT
     int contextLimit = DEFAULT_CONTEXT_LIMIT
+    int browseLimit = DEFAULT_BROWSE_LIMIT
 
     static NeurosLimits load(def storage) {
         if (storage == null) {
@@ -59,7 +63,9 @@ class NeurosLimits {
                 noteLimit: optionalInt(storage, NOTE_LIMIT_KEY,
                         DEFAULT_NOTE_LIMIT, 0, MAX_NOTE_LIMIT),
                 contextLimit: optionalInt(storage, CONTEXT_LIMIT_KEY,
-                        DEFAULT_CONTEXT_LIMIT, 200, MAX_CONTEXT_LIMIT)
+                        DEFAULT_CONTEXT_LIMIT, 200, MAX_CONTEXT_LIMIT),
+                browseLimit: optionalInt(storage, BROWSE_LIMIT_KEY,
+                        DEFAULT_BROWSE_LIMIT, 1, MAX_BROWSE_LIMIT)
         )
     }
 
@@ -88,6 +94,10 @@ class NeurosLimits {
         if (limits.contextLimit < 200 || limits.contextLimit > MAX_CONTEXT_LIMIT) {
             throw new IllegalArgumentException(
                     "The total context limit must be between 200 and ${MAX_CONTEXT_LIMIT} characters.")
+        }
+        if (limits.browseLimit < 1 || limits.browseLimit > MAX_BROWSE_LIMIT) {
+            throw new IllegalArgumentException(
+                    "The browse page size must be between 1 and ${MAX_BROWSE_LIMIT}.")
         }
     }
 

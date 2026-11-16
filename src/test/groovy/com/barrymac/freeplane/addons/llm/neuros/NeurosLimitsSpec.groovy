@@ -15,6 +15,7 @@ class NeurosLimitsSpec extends Specification {
         limits.writeWaitSeconds == NeurosLimits.DEFAULT_WRITE_WAIT_SECONDS
         limits.useContext
         limits.cardFolder == NeurosLimits.DEFAULT_CARD_FOLDER
+        limits.browseLimit == NeurosLimits.DEFAULT_BROWSE_LIMIT
     }
 
     def "optional limits are stored per map and are never inherited by another map"() {

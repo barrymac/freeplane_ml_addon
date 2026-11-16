@@ -1,0 +1,21 @@
+@startuml
+title Lazy Knowledge Catalog and Browse Mode
+rectangle "Freeplane map\nKnowledgeContext.groovy" as MAP #FFF2CC
+rectangle "Live cartridge metadata\nKnowledgeCatalog.groovy" as CAT #FFF2CC
+rectangle "Bounded listing page\nKnowledgeListing.groovy" as PAGE #D5E8D4
+rectangle "Browse command\nNeurosBrowse.groovy" as UI #FFF4CC
+rectangle "neurOS read surfaces\nby-tag / by-id" as SRC #D5E8D4
+rectangle "Operator\nreadable titles, no UUIDs" as USER #FFF2CC
+
+MAP --> CAT : discovers map scope
+CAT --> UI : surfaces, types, MIME, doors
+UI --> PAGE : one explicit expansion
+PAGE --> SRC : bounded listing, no per-entry stat
+SRC --> CAT : cartridge supplies vocabulary
+PAGE --> UI : page + source links
+UI --> USER : lazy readable branches
+USER --> UI : select, expand, load more
+CAT --> PAGE : dynamic listing path
+MAP --> UI : current map boundary
+UI --> CAT : refresh catalog on request
+@enduml

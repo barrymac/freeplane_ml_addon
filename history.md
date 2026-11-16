@@ -1,5 +1,11 @@
 # History
 
+## v0.9.0 — 2026-11-16
+- Added the lazy Knowledge Catalog and Browse mode (`LLM > Browse neurOS Knowledge`).
+- Dynamic surface roots, primitive types, MIME routing and door capabilities from live cartridge metadata.
+- Bounded pages with Load more, explicit truncation, and no per-entry stat storm.
+- Architecture: `docs/diagrams/01-neuros-knowledge-catalog.puml`.
+
 ## v0.8.3 — 2026-11-16
 - Enable saving on scoped writable network surfaces detected from the live mount table.
 - Keep scoped FUSE knowledge surfaces search-only unless a watched workspace supplies the destination.

@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.8.3.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.0.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,12 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.0
+- **Lazy Knowledge Catalog and Browse mode**: `LLM > Browse neurOS Knowledge` discovers the current cartridge's surface roots, primitive types, MIME routing and door capabilities from live metadata — never hardcoded types.
+- **Bounded expansion**: selecting a surface or type loads one page of entries; Load more appends the next page. Truncation is reported honestly.
+- **Network-safe listings**: no per-entry `stat` storm on dynamic mounts, and no semantic query during browsing.
+- **Human-readable results**: identifiers are stripped from titles, with declared subtypes used as readable fallbacks.
+
 ### v0.8.3
 - **Scoped writable network surfaces**: maps on writable 9P mounts now get a write destination even when they do not use the global `/scopes/<scope>` layout. Scoped FUSE knowledge surfaces remain search-only unless reached through a watched workspace.
 
@@ -173,10 +179,13 @@ A map is enabled when either:
 Otherwise, the search and save actions simply explain that neurOS is not
 enabled for this map.
 
-1. `LLM > Search neurOS Knowledge` — send one context-rich query to the current
+1. `LLM > Browse neurOS Knowledge` — create a lazy catalog from the live
+   cartridge. Select a surface or type and invoke Browse again to expand one
+   bounded page; use Load more for subsequent pages.
+2. `LLM > Search neurOS Knowledge` — send one context-rich query to the current
    map's own scope. Results arrive as a readable branch; each result links to
    its source material without exposing identifiers.
-2. `LLM > Save Branch to neurOS` — save a selected branch to the workspace
+3. `LLM > Save Branch to neurOS` — save a selected branch to the workspace
    discovered from the map. Saving confirms the destination first and reports
    availability honestly.
 
