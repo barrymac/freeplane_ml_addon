@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.8.2.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.8.3.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.8.3
+- **Scoped writable network surfaces**: maps on writable 9P mounts now get a write destination even when they do not use the global `/scopes/<scope>` layout. Scoped FUSE knowledge surfaces remain search-only unless reached through a watched workspace.
+
 ### v0.8.2
 - **Resilient dynamic queries**: query surfaces are opened directly and retried a small bounded number of times while the search index warms or the source is busy. Errors now explain the situation honestly instead of referring to removed settings.
 

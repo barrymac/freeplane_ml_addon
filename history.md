@@ -1,5 +1,9 @@
 # History
 
+## v0.8.3 — 2026-11-16
+- Enable saving on scoped writable network surfaces detected from the live mount table.
+- Keep scoped FUSE knowledge surfaces search-only unless a watched workspace supplies the destination.
+
 ## v0.8.2 — 2026-11-16
 - Open dynamic query surfaces directly with bounded retries.
 - Replaced misleading configuration errors with honest warming/busy messages.
