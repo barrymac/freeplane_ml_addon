@@ -43,6 +43,31 @@ that neurOS is not enabled for the current map.
 
 ---
 
+## Screenshots
+
+### LLM workflow
+
+**Communicator window**
+
+![LLM communicator window](src/add-on/images/ChatGptCommunicator.png)
+
+**Prompt sent from a node**
+
+![Prompt sent from a node](src/add-on/images/ChatGptQuestion.png)
+
+**Generated response returned as a branch**
+
+![Generated response branch](src/add-on/images/ChatGptAnswer.png)
+
+**API provider setup**
+
+![API provider setup](src/add-on/images/openAI-Setup.jpg)
+
+### neurOS knowledge exploration
+
+NeurOS browse, preview and knowledge-graph screenshots will be added here.
+Screen-capture demos are also published at https://onticfabric.com/.
+
 ## Prerequisites
 
 - **Freeplane** 1.11.3 or newer. Tested with Freeplane 1.12.11.
