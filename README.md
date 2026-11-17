@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.12.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.13.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.13
+- **Reliable default folding**: use Freeplane's explicit `setFolded(true)` API for All knowledge types and Supported content; older catalog branches retain their previous expanded state and should be recreated.
+
 ### v0.9.12
 - **Correct source previews**: prefer the browsed listing file over canonical by-id links when it is readable, so task previews show actual Markdown content even when by-id is missing or belongs to another scope.
 - Direct source reads no longer fall back to displaying the filename as if it were content.

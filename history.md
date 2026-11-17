@@ -1,5 +1,8 @@
 # History
 
+## v0.9.13 — 2026-11-17
+- Use explicit setFolded(true) for default-collapsed catalog sections.
+
 ## v0.9.12 — 2026-11-17
 - Prefer the actual listing file for source previews and stop falling back to filename-only previews.
 - Handle dynamic mounts where isFile()/by-id can be unavailable despite a readable listing file.

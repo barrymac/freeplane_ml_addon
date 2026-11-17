@@ -111,7 +111,7 @@ class NeurosBrowseAction {
 
         if (catalog.knowledgeTypes) {
             def types = root.createChild('All knowledge types')
-            types.folded = true
+            types.setFolded(true)
             catalog.knowledgeTypes.each { type ->
                 def child = types.createChild(type)
                 child.tags.add('neurOS type')
@@ -132,7 +132,7 @@ class NeurosBrowseAction {
 
         if (catalog.contentTypes) {
             def content = root.createChild('Supported content')
-            content.folded = true
+            content.setFolded(true)
             catalog.contentTypes.each { contentType ->
                 def child = content.createChild(contentType.displayName())
                 child.tags.add('neurOS content-type')
