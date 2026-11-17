@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.3.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.4.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.4
+- **Warm-up tolerant discovery**: `cartridge-contract` is accepted as an enablement marker alongside `README.cartridge`, and a 9P mount's `aname` supplies scope while `watcher-status` is unavailable.
+
 ### v0.9.3
 - **On-demand content preview**: `LLM > Preview neurOS Content` or right-click → Preview neurOS Content.
 - **Native Markdown rendering** through Freeplane's own Markdown plugin, with the source primed into the note for rollover rendering.
@@ -187,7 +190,8 @@ neurOS location or scope configuration tool.
 
 A map is enabled when either:
 
-- it lives inside a neurOS knowledge surface with `README.cartridge`, or
+- it lives inside a neurOS knowledge surface with `README.cartridge` or
+  `cartridge-contract`, or
 - it is in a watched workspace with a valid `*_KNOWLEDGE` link to one.
 
 Otherwise, the search and save actions simply explain that neurOS is not

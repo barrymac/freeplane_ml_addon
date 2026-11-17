@@ -1,5 +1,9 @@
 # History
 
+## v0.9.4 — 2026-11-17
+- Accept `cartridge-contract` as an enablement marker while `README.cartridge` is warming.
+- Fall back to the 9P mount's `aname` for scope while `watcher-status` is unavailable.
+
 ## v0.9.3 — 2026-11-16
 - Added on-demand Markdown and PlantUML previews in Swing dialogs.
 - Markdown notes are primed for Freeplane's native rollover renderer.

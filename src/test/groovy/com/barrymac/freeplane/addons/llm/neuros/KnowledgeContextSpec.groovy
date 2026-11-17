@@ -134,6 +134,33 @@ class KnowledgeContextSpec extends Specification {
         context.reason.contains('more than one')
     }
 
+    def "a contract-only knowledge surface is recognized during cartridge warmup"() {
+        given:
+        File surface = new File(root, 'warming')
+        surface.mkdirs()
+        new File(surface, 'by-query').mkdirs()
+        new File(surface, 'cartridge-contract').text = '{}'
+        File map = mapIn(surface)
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        !context.enabled
+        context.reason.contains('not ready')
+        !context.reason.contains('not enabled for this map')
+    }
+
+    def "the mount attachment name supplies scope while watcher status is unavailable"() {
+        given:
+        String mounts = '773 33 0:144 / /mnt/neuros-9p-mss1/freeplane rw,relatime ' +
+                '- 9p 192.168.8.150 rw,uname=barry,aname=freeplane_ml_addon,access=client\n'
+        File directory = new File('/mnt/neuros-9p-mss1/freeplane')
+
+        expect:
+        KnowledgeContext.scopeFromMountInfo(mounts, directory) == 'freeplane_ml_addon'
+    }
+
     def "a scoped writable network surface is detected from its mount, not its scope layout"() {
         given:
         String mounts = '36 29 0:33 / /mnt/neuros-9p-mss1/freeplane rw,relatime ' +

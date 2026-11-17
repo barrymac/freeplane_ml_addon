@@ -46,14 +46,15 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.3, opt-in, per map)
+## neurOS Knowledge (v0.9.4, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
 
 A map is enabled when it is inside a neurOS knowledge surface with
-`README.cartridge`, or in a watched workspace with a valid `*_KNOWLEDGE` link to
-one. A map in a plain directory simply hears that neurOS is not enabled for it.
+`README.cartridge` or `cartridge-contract`, or in a watched workspace with a
+valid `*_KNOWLEDGE` link to one. A map in a plain directory simply hears that
+neurOS is not enabled for it.
 
 The map's scope is read from the knowledge source itself. Following an ordinary
 Freeplane hyperlink to a map in another scope therefore works naturally: the

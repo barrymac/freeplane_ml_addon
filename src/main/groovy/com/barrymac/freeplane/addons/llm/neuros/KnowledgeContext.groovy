@@ -109,11 +109,12 @@ class KnowledgeContext {
         return new KnowledgeContext(null, null, reason)
     }
 
-    /** The cartridge README is the explicit enablement marker. */
+    /** The cartridge README or contract is the explicit enablement marker. */
     private static boolean isKnowledgeSurface(File directory) {
-        return directory.isDirectory() &&
-                new File(directory, 'README.cartridge').isFile() &&
-                new File(directory, 'by-query').isDirectory()
+        if (!directory.isDirectory()) return false
+        boolean cartridgePresent = new File(directory, 'README.cartridge').isFile() ||
+                new File(directory, 'cartridge-contract').isFile()
+        return cartridgePresent && new File(directory, 'by-query').isDirectory()
     }
 
     /** Generic workspace discovery, independent of mount/ontology naming. */
@@ -128,13 +129,50 @@ class KnowledgeContext {
 
     private static String readScope(File surfaceRoot) {
         File status = new File(surfaceRoot, 'watcher-status')
-        if (!status.isFile() || !status.canRead()) return null
+        if (status.isFile() && status.canRead()) {
+            try {
+                def matcher = (status.getText('UTF-8') =~ /(?m)^scope:\s*(\S+)\s*$/)
+                if (matcher.find()) return matcher.group(1)
+            } catch (Exception ignored) {
+                // Fall through to the mount's declared attachment name.
+            }
+        }
+        return scopeFromMount(surfaceRoot)
+    }
+
+    /** Fallback while watcher-status is absent or not yet readable. */
+    private static String scopeFromMount(File directory) {
+        File mountInfo = new File('/proc/self/mountinfo')
+        if (!mountInfo.isFile() || !mountInfo.canRead()) return null
         try {
-            def matcher = (status.getText('UTF-8') =~ /(?m)^scope:\s*(\S+)\s*$/)
-            return matcher.find() ? matcher.group(1) : null
+            return scopeFromMountInfo(mountInfo.getText('UTF-8'), directory)
         } catch (Exception ignored) {
             return null
         }
+    }
+
+    /** Package-visible for deterministic mount-option tests. */
+    static String scopeFromMountInfo(String mountInfoText, File directory) {
+        if (!mountInfoText || directory == null) return null
+        String path = directory.absoluteFile.path
+        String bestScope = null
+        int bestLength = -1
+        mountInfoText.readLines().each { line ->
+            List<String> fields = line.split(' ').toList()
+            int separator = fields.indexOf('-')
+            if (separator < 2 || fields.size() <= separator + 3) return
+            String mountPoint = unescapeMountPath(fields[4])
+            if (path == mountPoint || path.startsWith(mountPoint + '/') ||
+                    (mountPoint == '/' && path.startsWith('/'))) {
+                if (mountPoint.length() > bestLength) {
+                    bestLength = mountPoint.length()
+                    String options = fields[separator + 3]
+                    def matcher = (options =~ /(?:^|,)aname=([^,]+)/)
+                    bestScope = matcher.find() ? matcher.group(1) : null
+                }
+            }
+        }
+        return bestScope
     }
 
     /**
