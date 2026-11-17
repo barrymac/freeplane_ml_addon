@@ -1,5 +1,8 @@
 # History
 
+## v0.9.18 — 2026-11-17
+- Use canonical refs/heads/main raw URL for update checks.
+
 ## v0.9.17 — 2026-11-17
 - Sanitized public tracked content and removed generated neurOS card artifacts.
 - Added https://onticfabric.com/ as the demos and project-updates link.
