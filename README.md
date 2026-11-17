@@ -43,7 +43,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.19.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.20.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -79,6 +79,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.20
+- **Deterministic update asset**: use `releases/latest/download/version.txt`, which GitHub serves reliably; `version.properties` under the latest-download path returns 404 despite existing as an asset.
+
 ### v0.9.19
 - **Release-asset update channel**: update checks use `releases/latest/download/version.properties`, avoiding GitHub raw branch caching entirely. `version.properties` is attached to every release.
 

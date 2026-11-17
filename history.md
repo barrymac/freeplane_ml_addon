@@ -1,5 +1,8 @@
 # History
 
+## v0.9.20 — 2026-11-17
+- Use `latest/download/version.txt` for the update asset because GitHub's latest-download route returns 404 for `version.properties`.
+
 ## v0.9.19 — 2026-11-17
 - Use the latest-release version.properties asset for update checks.
 

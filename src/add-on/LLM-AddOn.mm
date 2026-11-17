@@ -75,7 +75,7 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="18" RULE="ON_BRANCH_CREATION"/>
 <attribute_layout NAME_WIDTH="112.61538 pt" VALUE_WIDTH="333.23076 pt"/>
 <attribute NAME="name" VALUE="promptLlmAddOn"/>
-<attribute NAME="version" VALUE="v0.9.19"/>
+<attribute NAME="version" VALUE="v0.9.20"/>
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>
@@ -83,7 +83,7 @@
 <attribute NAME="downloadUrl" VALUE="https://${homepage}/releases/download/${version}/LLM-AddOn-${version}.addon.mm"/>
 <attribute NAME="changelogUrl" VALUE="https://${homepage}/commits/main"/>
 <attribute NAME="addonsMenu" VALUE="/menu_bar/LLM"/>
-<attribute NAME="updateUrl" VALUE="https://github.com/barrymac/freeplane_ml_addon/releases/latest/download/version.properties"/>
+<attribute NAME="updateUrl" VALUE="https://github.com/barrymac/freeplane_ml_addon/releases/latest/download/version.txt"/>
 <richcontent TYPE="NOTE">
 <html>
   <head>
