@@ -1,5 +1,11 @@
 # History
 
+## v0.9.15 — 2026-11-17
+- Add an explicit post-population collapse pass for default-collapsed sections.
+
+## v0.9.14 — 2026-11-17
+- Apply default folding after children are created so new catalogs stay collapsed.
+
 ## v0.9.13 — 2026-11-17
 - Use explicit setFolded(true) for default-collapsed catalog sections.
 

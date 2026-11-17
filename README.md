@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.13.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.15.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,12 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.15
+- **Post-population collapse**: after the full catalog is built, All knowledge types and Supported content are explicitly collapsed as a final step.
+
+### v0.9.14
+- **Fold after child creation**: All knowledge types and Supported content are collapsed after their children are populated, so child creation cannot reset the default state.
+
 ### v0.9.13
 - **Reliable default folding**: use Freeplane's explicit `setFolded(true)` API for All knowledge types and Supported content; older catalog branches retain their previous expanded state and should be recreated.
 

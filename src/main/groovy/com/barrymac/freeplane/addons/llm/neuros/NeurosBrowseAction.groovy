@@ -111,7 +111,6 @@ class NeurosBrowseAction {
 
         if (catalog.knowledgeTypes) {
             def types = root.createChild('All knowledge types')
-            types.setFolded(true)
             catalog.knowledgeTypes.each { type ->
                 def child = types.createChild(type)
                 child.tags.add('neurOS type')
@@ -119,6 +118,7 @@ class NeurosBrowseAction {
                         'Select this node and choose Browse neurOS Knowledge to list entries.'
                 child.link.file = source.path("by-tag/${type}")
             }
+            types.setFolded(true)
         }
 
         if (catalog.doorCapabilities) {
@@ -132,16 +132,26 @@ class NeurosBrowseAction {
 
         if (catalog.contentTypes) {
             def content = root.createChild('Supported content')
-            content.setFolded(true)
             catalog.contentTypes.each { contentType ->
                 def child = content.createChild(contentType.displayName())
                 child.tags.add('neurOS content-type')
                 child.note = contentType.description()
             }
+            content.setFolded(true)
         }
 
         if (catalog.warnings) {
             root.note += '\n\nNotes: ' + catalog.warnings.join(' ')
+        }
+
+        // Final post-population pass: child creation can reset fold state, so
+        // enforce the default-collapsed sections only after every child exists.
+        collapseDefaultSections(root)
+    }
+
+    private static void collapseDefaultSections(def root) {
+        ['All knowledge types', 'Supported content'].each { label ->
+            root.children.find { (it.text ?: '') == label }?.setFolded(true)
         }
     }
 
