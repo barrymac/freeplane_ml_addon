@@ -65,8 +65,16 @@ that neurOS is not enabled for the current map.
 
 ### neurOS knowledge exploration
 
-NeurOS browse, preview and knowledge-graph screenshots will be added here.
-Screen-capture demos are also published at https://onticfabric.com/.
+**A minimal map in a neurOS-enabled local workspace**
+
+![neurOS 9P safe test map](docs/images/neuros-9p-safe-test-map.png)
+
+**Curated knowledge surfaces, state-aware task entries and an embedded PlantUML preview**
+
+![neurOS knowledge catalog](docs/images/neuros-knowledge-catalog.png)
+
+Screen-capture demos and project updates are also published at
+https://onticfabric.com/.
 
 ## Prerequisites
 
