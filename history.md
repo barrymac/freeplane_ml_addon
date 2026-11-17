@@ -1,5 +1,10 @@
 # History
 
+## v0.9.2 — 2026-11-16
+- Changed the browse accelerator to `Ctrl+Alt+I` after checking shortcut tables.
+- Result activation now opens source material instead of recursively creating catalogs.
+- Metadata entries no longer create nested catalogs.
+
 ## v0.9.1 — 2026-11-16
 - Added right-click node context-menu browsing through `node_popup_scripting`.
 - Added the `Ctrl+Alt+B` browse accelerator and preserved it in packaged installs.

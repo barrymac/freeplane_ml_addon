@@ -3,6 +3,8 @@ package com.barrymac.freeplane.addons.llm.neuros
 import org.freeplane.core.util.LogUtils
 import com.barrymac.freeplane.addons.llm.ui.UiHelper
 
+import java.awt.Desktop
+
 /**
  * Shared implementation for the top-menu and node-context-menu browse actions.
  * The catalog is lazy: invoking on a surface/type/load-more node expands one
@@ -28,6 +30,15 @@ class NeurosBrowseAction {
             KnowledgeSource source = knowledgeContext.source
             def storage = node.map.storage
 
+            if (hasTag(node, 'neurOS result')) {
+                openResultSource(node, ui)
+                return
+            }
+            if (hasTag(node, 'neurOS content-type') || hasTag(node, 'neurOS door-capability')) {
+                UiHelper.showInformationMessage(ui,
+                        node.note ?: 'This is metadata advertised by the knowledge source.')
+                return
+            }
             if (hasTag(node, 'neurOS load-more')) {
                 expandListing(node, source, limits, storage, true, ui)
                 return
@@ -50,6 +61,29 @@ class NeurosBrowseAction {
         } catch (Exception e) {
             LogUtils.severe("Error in NeurosBrowse action: ${e.message}", e)
             UiHelper.showErrorMessage(ui, "Browse neurOS Knowledge Error: ${e.message}")
+        }
+    }
+
+    /** Open a result's source instead of recursively creating another catalog. */
+    private static void openResultSource(def node, def ui) {
+        File source = node.link?.file
+        if (source == null) {
+            UiHelper.showInformationMessage(ui,
+                    'This knowledge entry has no source link. Try opening its parent listing.')
+            return
+        }
+        try {
+            if (Desktop.isDesktopSupported() &&
+                    Desktop.desktop.isSupported(Desktop.Action.BROWSE)) {
+                Desktop.desktop.browse(source.toURI())
+            } else {
+                UiHelper.showInformationMessage(ui,
+                        'Open the source using the link on this node.')
+            }
+        } catch (Exception problem) {
+            LogUtils.warn("Could not open neurOS source material: ${problem.message}")
+            UiHelper.showErrorMessage(ui,
+                    'The source could not be opened right now. The knowledge source may be busy.')
         }
     }
 

@@ -75,7 +75,7 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="18" RULE="ON_BRANCH_CREATION"/>
 <attribute_layout NAME_WIDTH="112.61538 pt" VALUE_WIDTH="333.23076 pt"/>
 <attribute NAME="name" VALUE="promptLlmAddOn"/>
-<attribute NAME="version" VALUE="v0.9.1"/>
+<attribute NAME="version" VALUE="v0.9.2"/>
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>
@@ -458,7 +458,7 @@
 <attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosBrowse"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
-<attribute NAME="keyboardShortcut" VALUE="control alt B"/>
+<attribute NAME="keyboardShortcut" VALUE="control alt I"/>
 <attribute NAME="execute_scripts_without_asking" VALUE="true"/>
 <attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="true"/>
