@@ -32,8 +32,8 @@ the add-on can:
   knowledge types, doors and supported content. Metadata sections are collapsed
   by default; listing pages are bounded and refreshed on demand.
 - **Preview neurOS Content** (`Ctrl+Alt+P`) — native Markdown rendering and
-  on-demand PlantUML previews. Rendered diagrams are cached, embedded in the map
-  and made available to Freeplane rollovers.
+  on-demand PlantUML previews. Rendered Markdown and diagrams are cached,
+  embedded in the map, and made available to Freeplane rollovers.
 - **Save Branch to neurOS** — save a branch as a work-graph card to the local
   watched workspace discovered from the map.
 

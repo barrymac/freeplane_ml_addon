@@ -42,15 +42,19 @@ class NeurosPreviewAction {
             if (plantUml) {
                 BufferedImage image = PlantumlRenderer.renderPng(source,
                         limits.plantumlCommand, limits.plantumlTimeoutSeconds)
-                File cached = cachePreview(config, source, image)
+                File cached = cachePreview(config, source, image, 'plantuml')
                 LogUtils.info("NeurosPreview: cached PlantUML preview at ${cached.path}")
-                primePreviewNote(node, cached)
+                primePreviewNote(node, cached, 'Diagram preview')
                 LogUtils.info('NeurosPreview: primed note for PlantUML rollover.')
                 showImage(ui, image, node.text ?: 'PlantUML preview')
             } else {
                 String html = markdownToHtml(source)
+                BufferedImage image = MarkdownImageRenderer.renderHtml(html)
+                File cached = cachePreview(config, source, image, 'markdown')
+                LogUtils.info("NeurosPreview: cached Markdown preview at ${cached.path}")
                 primeMarkdownNote(node, source)
-                LogUtils.info('NeurosPreview: primed note for Markdown rollover.')
+                primePreviewNote(node, cached, 'Markdown preview')
+                LogUtils.info('NeurosPreview: primed note for Markdown rollover and embedding.')
                 showHtml(ui, html, node.text ?: 'Markdown preview')
             }
             LogUtils.info('NeurosPreview: dialog displayed.')
@@ -103,8 +107,9 @@ class NeurosPreviewAction {
         return new String(data, 0, Math.max(count, 0), 'UTF-8')
     }
 
-    /** Cache a rendered PNG so later rollovers do not invoke PlantUML again. */
-    private static File cachePreview(def config, String source, BufferedImage image) {
+    /** Cache a rendered PNG so later rollovers do not invoke a renderer again. */
+    private static File cachePreview(def config, String source, BufferedImage image,
+                                     String prefix) {
         if (!config?.freeplaneUserDirectory) {
             throw new IOException('Cannot locate the add-on preview cache.')
         }
@@ -115,7 +120,7 @@ class NeurosPreviewAction {
         }
         MessageDigest digest = MessageDigest.getInstance('SHA-256')
         String key = digest.digest(source.getBytes('UTF-8')).encodeHex().toString()
-        File cached = new File(directory, "plantuml-${key}.png")
+        File cached = new File(directory, "${prefix}-${key}.png")
         if (!cached.isFile()) {
             ImageIO.write(image, 'png', cached)
         }
@@ -132,8 +137,8 @@ class NeurosPreviewAction {
     }
 
     /** Prime a Markdown image preview for subsequent rollovers. */
-    private static void primePreviewNote(def node, File cached) {
-        String preview = "![Diagram preview](${cached.toURI().toString()})"
+    private static void primePreviewNote(def node, File cached, String label) {
+        String preview = "![${label}](${cached.toURI().toString()})"
         String existing = (node.note ?: '').toString()
         if (!existing.contains(cached.toURI().toString())) {
             node.note = existing ? existing + '\n\n' + preview : preview

@@ -1,5 +1,9 @@
 # History
 
+## v0.9.22 — 2026-11-17
+- Render Markdown preview HTML to a cached PNG and attach it as an embedded external object.
+- Keep Markdown source in the note for native rollover; both dialog and map preview are available.
+
 ## v0.9.21 — 2026-11-17
 - Strip CARD-<uuid>- prefix from browsed card filenames.
 - Add the five-card relationship-wave doctrine set and validated diagram.
