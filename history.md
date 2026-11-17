@@ -1,5 +1,8 @@
 # History
 
+## v0.9.6 — 2026-11-17
+- Added preview lifecycle diagnostics: source type, cache path, note priming and dialog display.
+
 ## v0.9.5 — 2026-11-17
 - Direct knowledge-surface maps are read-only for branch saving; local watched workspaces are required for writes.
 - Removed mount-type write detection rather than working around 9P lock semantics.

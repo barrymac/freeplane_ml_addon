@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.5.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.6.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.6
+- **Preview diagnostics**: log source type, render success, cache path, note priming and dialog display through Freeplane's standard `LogUtils` files.
+
 ### v0.9.5
 - **Safe editing guardrail**: direct maps on knowledge surfaces are search/browse/preview only. Saving branches requires a local watched workspace with a `*_KNOWLEDGE` link, so the add-on does not encourage lock-sensitive `.mm` editing on network mounts.
 

@@ -30,18 +30,24 @@ class NeurosPreviewAction {
                 return
             }
             NeurosLimits limits = NeurosLimits.load(node.map.storage)
+            boolean plantUml = isPlantUml(source)
+            LogUtils.info("NeurosPreview: source type=${plantUml ? 'PlantUML' : 'Markdown'}")
 
-            if (isPlantUml(source)) {
+            if (plantUml) {
                 BufferedImage image = PlantumlRenderer.renderPng(source,
                         limits.plantumlCommand, limits.plantumlTimeoutSeconds)
                 File cached = cachePreview(config, source, image)
+                LogUtils.info("NeurosPreview: cached PlantUML preview at ${cached.path}")
                 primePreviewNote(node, cached)
+                LogUtils.info('NeurosPreview: primed note for PlantUML rollover.')
                 showImage(ui, image, node.text ?: 'PlantUML preview')
             } else {
                 String html = markdownToHtml(source)
                 primeMarkdownNote(node, source)
+                LogUtils.info('NeurosPreview: primed note for Markdown rollover.')
                 showHtml(ui, html, node.text ?: 'Markdown preview')
             }
+            LogUtils.info('NeurosPreview: dialog displayed.')
         } catch (Exception problem) {
             LogUtils.severe("Error in NeurosPreview action: ${problem.message}", problem)
             UiHelper.showErrorMessage(ui, "Preview neurOS Content Error: ${problem.message}")
