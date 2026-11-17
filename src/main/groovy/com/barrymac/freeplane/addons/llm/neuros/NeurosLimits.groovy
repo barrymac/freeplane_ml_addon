@@ -17,6 +17,8 @@ class NeurosLimits {
     static final String NOTE_LIMIT_KEY = 'neuros.context.note_limit'
     static final String CONTEXT_LIMIT_KEY = 'neuros.context.total_limit'
     static final String BROWSE_LIMIT_KEY = 'neuros.browse_limit'
+    static final String PLANTUML_COMMAND_KEY = 'neuros.plantuml.command'
+    static final String PLANTUML_TIMEOUT_KEY = 'neuros.plantuml.timeout_seconds'
 
     static final int DEFAULT_RESULTS_LIMIT = 5
     static final int MAX_RESULTS_LIMIT = 25
@@ -33,6 +35,9 @@ class NeurosLimits {
     static final int MAX_CONTEXT_LIMIT = 4000
     static final int DEFAULT_BROWSE_LIMIT = 25
     static final int MAX_BROWSE_LIMIT = 100
+    static final String DEFAULT_PLANTUML_COMMAND = 'plantuml'
+    static final int DEFAULT_PLANTUML_TIMEOUT_SECONDS = 15
+    static final int MAX_PLANTUML_TIMEOUT_SECONDS = 60
     static final String DEFAULT_CARD_FOLDER = 'neuros-cards'
 
     String cardFolder = DEFAULT_CARD_FOLDER
@@ -44,6 +49,8 @@ class NeurosLimits {
     int noteLimit = DEFAULT_NOTE_LIMIT
     int contextLimit = DEFAULT_CONTEXT_LIMIT
     int browseLimit = DEFAULT_BROWSE_LIMIT
+    String plantumlCommand = DEFAULT_PLANTUML_COMMAND
+    int plantumlTimeoutSeconds = DEFAULT_PLANTUML_TIMEOUT_SECONDS
 
     static NeurosLimits load(def storage) {
         if (storage == null) {
@@ -65,7 +72,11 @@ class NeurosLimits {
                 contextLimit: optionalInt(storage, CONTEXT_LIMIT_KEY,
                         DEFAULT_CONTEXT_LIMIT, 200, MAX_CONTEXT_LIMIT),
                 browseLimit: optionalInt(storage, BROWSE_LIMIT_KEY,
-                        DEFAULT_BROWSE_LIMIT, 1, MAX_BROWSE_LIMIT)
+                        DEFAULT_BROWSE_LIMIT, 1, MAX_BROWSE_LIMIT),
+                plantumlCommand: optionalText(storage, PLANTUML_COMMAND_KEY,
+                        DEFAULT_PLANTUML_COMMAND),
+                plantumlTimeoutSeconds: optionalInt(storage, PLANTUML_TIMEOUT_KEY,
+                        DEFAULT_PLANTUML_TIMEOUT_SECONDS, 1, MAX_PLANTUML_TIMEOUT_SECONDS)
         )
     }
 
@@ -98,6 +109,14 @@ class NeurosLimits {
         if (limits.browseLimit < 1 || limits.browseLimit > MAX_BROWSE_LIMIT) {
             throw new IllegalArgumentException(
                     "The browse page size must be between 1 and ${MAX_BROWSE_LIMIT}.")
+        }
+        if (!limits.plantumlCommand?.trim()) {
+            throw new IllegalArgumentException('The PlantUML command cannot be empty.')
+        }
+        if (limits.plantumlTimeoutSeconds < 1 ||
+                limits.plantumlTimeoutSeconds > MAX_PLANTUML_TIMEOUT_SECONDS) {
+            throw new IllegalArgumentException(
+                    "The PlantUML timeout must be between 1 and ${MAX_PLANTUML_TIMEOUT_SECONDS} seconds.")
         }
     }
 

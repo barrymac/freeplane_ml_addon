@@ -10,6 +10,9 @@ plugins {
 
 apply plugin: 'org.freeplane.gradle-freeplane-plugin'
 
+def freeplaneVersion = "1.12.11"
+def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty('user.home')}/bin/freeplane-${freeplaneVersion}/"
+
 repositories {
     mavenCentral()
 }
@@ -37,6 +40,16 @@ dependencies {
             'net.bytebuddy:byte-buddy:1.14.12',
             "org.objenesis:objenesis:3.4",
     )
+
+    // Freeplane's own Markdown renderer; used for previews and note tooltips.
+    // The jar is supplied by the installed Freeplane Markdown plugin, not
+    // bundled into the add-on.
+    compileOnly fileTree("${freeplaneBasePath}/plugins/org.freeplane.plugin.markdown/lib") {
+        include '*.jar'
+    }
+    testImplementation fileTree("${freeplaneBasePath}/plugins/org.freeplane.plugin.markdown/lib") {
+        include '*.jar'
+    }
 }
 
 sourceSets {
@@ -58,9 +71,6 @@ test {
         events "passed", "skipped", "failed"
     }
 }
-
-def freeplaneVersion = "1.12.11"
-def freeplaneBasePath = System.getenv('FREEPLANE_HOME') ?: "${System.getProperty('user.home')}/bin/freeplane-${freeplaneVersion}/"
 
 freeplane {
     freeplaneDirectory = freeplaneBasePath

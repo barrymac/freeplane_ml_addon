@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.2.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.3.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,12 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.3
+- **On-demand content preview**: `LLM > Preview neurOS Content` or right-click → Preview neurOS Content.
+- **Native Markdown rendering** through Freeplane's own Markdown plugin, with the source primed into the note for rollover rendering.
+- **PlantUML preview** via the `plantuml` CLI, with bounded input/output, a timeout and cached PNGs. The preview note contains a Markdown image so later rollovers do not re-render the diagram.
+- Process execution is enabled only for the two preview scripts; search, browse and save remain execution-disabled.
+
 ### v0.9.2
 - **Intelligent Inquiry shortcut**: `Ctrl+Alt+I` (verified against default and user shortcut tables).
 - **No recursive catalogs**: invoking Browse on a result opens its source material instead of nesting another catalog. Metadata entries show their descriptions instead of expanding.
@@ -193,7 +199,9 @@ enabled for this map.
 2. `LLM > Search neurOS Knowledge` — send one context-rich query to the current
    map's own scope. Results arrive as a readable branch; each result links to
    its source material without exposing identifiers.
-3. `LLM > Save Branch to neurOS` — save a selected branch to the workspace
+3. `LLM > Preview neurOS Content` — render Markdown natively or PlantUML through
+   the CLI on demand, with cached PNGs for later rollovers.
+4. `LLM > Save Branch to neurOS` — save a selected branch to the workspace
    discovered from the map. Saving confirms the destination first and reports
    availability honestly.
 

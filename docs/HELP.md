@@ -46,7 +46,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.2, opt-in, per map)
+## neurOS Knowledge (v0.9.3, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -104,6 +104,22 @@ an empty result usually means "retry in a minute", and the add-on says so.
 Browsing performs no semantic search and does not recursively download the
 corpus. If a source is still preparing its metadata, the add-on says so rather
 than inventing a catalog.
+
+### Previewing content (`LLM > Preview neurOS Content` or right-click)
+
+Select a knowledge entry or a node containing Markdown or PlantUML and invoke
+**Preview neurOS Content**.
+
+*   **Markdown** is rendered directly by Freeplane's own Markdown plugin. The
+    source is also primed into the note so subsequent rollovers use Freeplane's
+    native Markdown rendering.
+*   **PlantUML** is rendered once through the `plantuml` command on `PATH` and
+    shown in a Swing dialog. The PNG is cached and a Markdown image preview is
+    added to the note so later rollovers do not re-render it.
+
+PlantUML input and output are bounded and the process has a timeout. Process
+execution is enabled only for the preview actions; search, browse and save do
+not execute external commands.
 
 ### Saving a branch (`LLM > Save Branch to neurOS`)
 

@@ -1,5 +1,11 @@
 # History
 
+## v0.9.3 — 2026-11-16
+- Added on-demand Markdown and PlantUML previews in Swing dialogs.
+- Markdown notes are primed for Freeplane's native rollover renderer.
+- PlantUML PNGs are cached and inserted as Markdown previews for later rollovers.
+- Process execution is limited to the preview actions.
+
 ## v0.9.2 — 2026-11-16
 - Changed the browse accelerator to `Ctrl+Alt+I` after checking shortcut tables.
 - Result activation now opens source material instead of recursively creating catalogs.
