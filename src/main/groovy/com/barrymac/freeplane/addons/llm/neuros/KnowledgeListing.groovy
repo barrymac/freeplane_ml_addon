@@ -52,7 +52,7 @@ class KnowledgeListing {
     private static KnowledgeEntry toEntry(File file, String subtype) {
         String title = file.name
         String uuid = null
-        def matcher = (title =~ /^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-?(.+)$/)
+        def matcher = (title =~ /^(?:CARD-)?([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})-?(.+)$/)
         if (matcher.find()) {
             uuid = matcher.group(1)
             title = matcher.group(2)

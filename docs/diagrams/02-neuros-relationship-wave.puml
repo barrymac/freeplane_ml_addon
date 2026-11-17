@@ -1,0 +1,26 @@
+@startuml
+title neurOS Relationship Exploration Wave
+rectangle "Publish screenshot tour\n[[card:fe5ecc8b-d0ca-4075-83f5-fd1746112178]]\nREADME.md" as PUB #FFF2CC
+rectangle "Automatic visible-hit connectors\n[[card:2ca53842-dad9-4559-8b25-1c179dc076f9]]\nNeurosClient.groovy" as AUTO #D5E8D4
+rectangle "Bounded relationship expansion\n[[card:0f65c7c1-64de-4d96-a0ef-87b89f3a6cfe]]\nNeurosBrowseAction.groovy" as EXPAND #D5E8D4
+rectangle "Lazy door navigation\n[[card:5036a147-543e-41f2-8d52-daf6f1e19030]]\nKnowledgeContext.groovy" as DOOR #FFF4CC
+rectangle "Bounded mesh inspector\n[[card:c4262631-47c7-44a9-be90-5df6ef33f132]]\nKnowledgeListing.groovy" as MESH #FFF4CC
+rectangle "Browse catalog\nKnowledgeCatalog.groovy" as CATALOG #D5E8D4
+rectangle "Search results\nNeurosClient.groovy" as SEARCH #D5E8D4
+rectangle "Scope boundary\nKnowledgeContext.groovy" as SCOPE #FFF2CC
+
+AUTO --> EXPAND : blocks
+EXPAND --> DOOR : blocks
+EXPAND --> MESH : blocks
+PUB --> AUTO : depends-on
+PUB --> DOOR : documents
+CATALOG --> AUTO : supplies stable identities
+CATALOG --> SEARCH : shares entries
+SEARCH --> AUTO : supplies visible hits
+SEARCH --> EXPAND : source entities
+AUTO --> CATALOG : reuses visible nodes
+DOOR --> EXPAND : depends-on
+MESH --> EXPAND : depends-on
+SCOPE --> DOOR : confirms boundary crossing
+SCOPE --> EXPAND : enforces current scope
+@enduml

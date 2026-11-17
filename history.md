@@ -1,5 +1,9 @@
 # History
 
+## v0.9.21 — 2026-11-17
+- Strip CARD-<uuid>- prefix from browsed card filenames.
+- Add the five-card relationship-wave doctrine set and validated diagram.
+
 ## v0.9.20 — 2026-11-17
 - Use `latest/download/version.txt` for the update asset because GitHub's latest-download route returns 404 for `version.properties`.
 

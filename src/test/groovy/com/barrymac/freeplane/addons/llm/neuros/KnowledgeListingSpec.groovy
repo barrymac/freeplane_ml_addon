@@ -53,6 +53,8 @@ class KnowledgeListingSpec extends Specification {
         plain.text = 'plain'
         String uuidOnlyId = '22222222-2222-2222-2222-222222222222'
         new File(typeDir, "${uuidOnlyId}.card.md").text = 'uuid only'
+        String rootCardId = '44444444-4444-4444-4444-444444444444'
+        new File(typeDir, "CARD-${rootCardId}-root-created.card.md").text = 'root card'
 
         when:
         def page = KnowledgeListing.list(source, 'by-tag/invented-type', 0, 25, 'invented-type')
@@ -62,6 +64,7 @@ class KnowledgeListingSpec extends Specification {
         identified.sourceFile(source).path == withId.path
         page.entries.find { !it.uuid }.sourceFile(source).path == plain.path
         page.entries.find { it.uuid == uuidOnlyId }.displayName == 'invented-type'
+        page.entries.find { it.uuid == rootCardId }.displayName == 'root-created.card.md'
     }
 
     def "source links fall back to by-id only when the listing file is unavailable"() {
