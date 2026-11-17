@@ -14,6 +14,7 @@ class KnowledgeCatalog {
     List<String> knowledgeTypes = []
     List<ContentType> contentTypes = []
     List<String> doorCapabilities = []
+    Map<String, List<String>> statePropertiesBySubtype = [:]
     List<String> warnings = []
 
     static KnowledgeCatalog read(KnowledgeSource source) {
@@ -43,6 +44,12 @@ class KnowledgeCatalog {
             Object routing = contract.mimeRouting
             if (routing instanceof Map) {
                 catalog.contentTypes = contentFromContract(routing)
+            }
+            (contract.stateMachines ?: []).each { machine ->
+                if (machine?.governedSubtype && machine?.property) {
+                    catalog.statePropertiesBySubtype[machine.governedSubtype.toString()] =
+                            (machine.property as List).collect { it.toString() }
+                }
             }
         } else {
             catalog.warnings << 'The detailed cartridge contract is not ready; ' +

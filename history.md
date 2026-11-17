@@ -1,5 +1,9 @@
 # History
 
+## v0.9.9 — 2026-11-17
+- Filter stateful surfaces using declared state-machine properties so only state-tagged work items appear as tasks.
+- Show the declared state in result notes without hardcoding surfaces or lanes.
+
 ## v0.9.8 — 2026-11-17
 - Attach cached PlantUML PNGs as external objects for an embedded map preview alongside rollover notes.
 

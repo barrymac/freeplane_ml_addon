@@ -88,6 +88,7 @@ class KnowledgeEntry {
     String displayName
     String uuid
     String subtype
+    String state
     File listingFile
 
     File sourceFile(KnowledgeSource source) {

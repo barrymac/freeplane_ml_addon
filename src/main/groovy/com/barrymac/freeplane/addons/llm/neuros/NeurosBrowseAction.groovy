@@ -165,12 +165,15 @@ class NeurosBrowseAction {
         String subtype = relativePath.startsWith('by-tag/') ? relativePath.split('/')[1] : ''
         KnowledgePage page = KnowledgeListing.list(source, relativePath, offset,
                 limits.browseLimit, subtype)
+        int rawEntryCount = page.entries.size()
+        page.entries = StateMetadataFilter.apply(source, relativePath, page.entries)
 
         page.entries.each { entry ->
             def entryNode = container.createChild(entry.displayName)
             entryNode.tags.add('neurOS result')
-            entryNode.note = entry.subtype ?
-                    "Type: ${entry.subtype}\nUse the link to open the source material." :
+            if (entry.state) entryNode.tags.add('neurOS work-item')
+            entryNode.note = (entry.state ? "State: ${entry.state}\n" : '') +
+                    (entry.subtype ? "Type: ${entry.subtype}\n" : '') +
                     'Use the link to open the source material.'
             entryNode.link.file = entry.sourceFile(source)
         }
@@ -180,7 +183,10 @@ class NeurosBrowseAction {
         }
 
         if (page.entries.isEmpty() && offset == 0) {
-            UiHelper.showInformationMessage(ui, 'There are no entries on this knowledge surface.')
+            String message = rawEntryCount > 0 ?
+                    'No state-tagged work items were found on this page.' :
+                    'There are no entries on this knowledge surface.'
+            UiHelper.showInformationMessage(ui, message)
             return
         }
 

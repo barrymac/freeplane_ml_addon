@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.8.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.9.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,10 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.9
+- **State-aware work surfaces**: state-machine metadata from the live cartridge filters stateful listings to actual state-tagged work items. Repository documents without `list`/`status`/`state` no longer masquerade as tasks; state is shown in result notes.
+- No surface names, lane names or subtype filters are hardcoded.
+
 ### v0.9.8
 - **Embedded PlantUML previews**: cached PNGs are also attached as Freeplane external objects at 50% zoom, so the preview is visible directly in the map as well as through rollover notes.
 

@@ -46,7 +46,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.8, opt-in, per map)
+## neurOS Knowledge (v0.9.9, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -112,6 +112,11 @@ an empty result usually means "retry in a minute", and the add-on says so.
 Browsing performs no semantic search and does not recursively download the
 corpus. If a source is still preparing its metadata, the add-on says so rather
 than inventing a catalog.
+
+Stateful surfaces use the cartridge's declared state-machine properties to
+show only entries carrying work-state metadata such as `list`, `status` or
+`state`. This keeps ordinary repository documents out of task views and shows
+the declared state in result notes without hardcoding surface or lane names.
 
 ### Previewing content (`LLM > Preview neurOS Content` or right-click)
 
