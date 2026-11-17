@@ -92,6 +92,12 @@ class KnowledgeEntry {
     File listingFile
 
     File sourceFile(KnowledgeSource source) {
+        // Prefer the actual listing file: it is the entry the user browsed and
+        // is available even when a canonical by-id projection is missing or
+        // belongs to another scope. Fall back to by-id only when necessary.
+        if (listingFile?.isFile() && listingFile.canRead()) {
+            return listingFile
+        }
         return uuid ? source.byIdPath(uuid) : listingFile
     }
 }

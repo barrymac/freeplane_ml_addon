@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.10.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.12.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,13 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.12
+- **Correct source previews**: prefer the browsed listing file over canonical by-id links when it is readable, so task previews show actual Markdown content even when by-id is missing or belongs to another scope.
+- Direct source reads no longer fall back to displaying the filename as if it were content.
+
+### v0.9.11
+- **Clearer catalog hierarchy**: curated surfaces are distinct from the full primitive vocabulary in All knowledge types. All knowledge types and Supported content are folded by default to reduce duplication and cognitive load.
+
 ### v0.9.10
 - **Runtime Markdown fix**: package `markedj` and `jsoup` in the add-on lib so Markdown preview works in Freeplane, not only in tests.
 - **Preview accelerator**: `Ctrl+Alt+P`, checked against default and user shortcut tables.

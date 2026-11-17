@@ -66,8 +66,15 @@ class NeurosPreviewAction {
 
     private static String readSource(def node) {
         File linked = node.link?.file
-        if (linked?.isFile() && linked.canRead()) {
-            return readBounded(linked)
+        if (linked != null) {
+            try {
+                return readBounded(linked)
+            } catch (IOException problem) {
+                throw new IOException(
+                        'The source material could not be read right now. ' +
+                                'The knowledge source may be busy or the entry may have moved.',
+                        problem)
+            }
         }
         return (node.text ?: '').toString()
     }

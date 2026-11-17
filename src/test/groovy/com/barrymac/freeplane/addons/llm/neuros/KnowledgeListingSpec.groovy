@@ -59,9 +59,20 @@ class KnowledgeListingSpec extends Specification {
 
         then:
         def identified = page.entries.find { it.uuid == id }
-        identified.sourceFile(source).path == source.byIdPath(id).path
+        identified.sourceFile(source).path == withId.path
         page.entries.find { !it.uuid }.sourceFile(source).path == plain.path
         page.entries.find { it.uuid == uuidOnlyId }.displayName == 'invented-type'
+    }
+
+    def "source links fall back to by-id only when the listing file is unavailable"() {
+        given:
+        def source = openSource()
+        String id = '33333333-3333-3333-3333-333333333333'
+        def entry = new KnowledgeEntry(displayName: 'missing', uuid: id,
+                listingFile: new File(root, 'does-not-exist.card.md'))
+
+        expect:
+        entry.sourceFile(source).path == source.byIdPath(id).path
     }
 
     def "server truncation is reported instead of pretending a complete listing"() {

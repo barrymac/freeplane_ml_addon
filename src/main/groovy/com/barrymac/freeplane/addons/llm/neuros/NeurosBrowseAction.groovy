@@ -93,10 +93,13 @@ class NeurosBrowseAction {
         def root = node.createChild("neurOS knowledge: ${source.scope}")
         root.tags.add('neurOS knowledge')
         root.note = "Knowledge catalog for ${source.description()}\n" +
+                'Curated surfaces are cartridge-provided entry points; All knowledge types ' +
+                'is the full primitive vocabulary, so some overlap is intentional. ' +
+                'Supported content is MIME metadata and stays collapsed by default.\n' +
                 'Select a surface or type and choose Browse neurOS Knowledge to expand it.'
 
         if (catalog.surfaces) {
-            def surfaces = root.createChild('Knowledge surfaces')
+            def surfaces = root.createChild('Curated knowledge surfaces')
             catalog.surfaces.each { surface ->
                 def child = surfaces.createChild(surface.displayName())
                 child.tags.add('neurOS surface')
@@ -107,7 +110,8 @@ class NeurosBrowseAction {
         }
 
         if (catalog.knowledgeTypes) {
-            def types = root.createChild('Knowledge types')
+            def types = root.createChild('All knowledge types')
+            types.folded = true
             catalog.knowledgeTypes.each { type ->
                 def child = types.createChild(type)
                 child.tags.add('neurOS type')
@@ -128,6 +132,7 @@ class NeurosBrowseAction {
 
         if (catalog.contentTypes) {
             def content = root.createChild('Supported content')
+            content.folded = true
             catalog.contentTypes.each { contentType ->
                 def child = content.createChild(contentType.displayName())
                 child.tags.add('neurOS content-type')

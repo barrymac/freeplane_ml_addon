@@ -1,5 +1,13 @@
 # History
 
+## v0.9.12 — 2026-11-17
+- Prefer the actual listing file for source previews and stop falling back to filename-only previews.
+- Handle dynamic mounts where isFile()/by-id can be unavailable despite a readable listing file.
+
+## v0.9.11 — 2026-11-17
+- Rename Knowledge types to All knowledge types and fold it plus Supported content by default.
+- Clarify curated surfaces versus full primitive vocabulary in catalog notes.
+
 ## v0.9.10 — 2026-11-17
 - Package markedj and jsoup so Markdown preview works at runtime.
 - Add `Ctrl+Alt+P` for on-demand preview.
