@@ -24,7 +24,13 @@ class NeurosPreviewAction {
                 return
             }
             String source = readSource(node)
-            if (!source?.trim()) {
+            if (source == null) {
+                UiHelper.showInformationMessage(ui,
+                        'This is a knowledge surface, not an entry. Expand it and select ' +
+                                'an entry to preview.')
+                return
+            }
+            if (!source.trim()) {
                 UiHelper.showInformationMessage(ui,
                         'Select a knowledge entry or a node containing Markdown or PlantUML.')
                 return
@@ -67,9 +73,15 @@ class NeurosPreviewAction {
     private static String readSource(def node) {
         File linked = node.link?.file
         if (linked != null) {
+            if (linked.isDirectory()) {
+                return null
+            }
             try {
                 return readBounded(linked)
             } catch (IOException problem) {
+                if (problem.message?.contains('Is a directory')) {
+                    return null
+                }
                 throw new IOException(
                         'The source material could not be read right now. ' +
                                 'The knowledge source may be busy or the entry may have moved.',

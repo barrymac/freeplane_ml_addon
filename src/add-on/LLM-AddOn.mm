@@ -75,7 +75,7 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="18" RULE="ON_BRANCH_CREATION"/>
 <attribute_layout NAME_WIDTH="112.61538 pt" VALUE_WIDTH="333.23076 pt"/>
 <attribute NAME="name" VALUE="promptLlmAddOn"/>
-<attribute NAME="version" VALUE="v0.9.15"/>
+<attribute NAME="version" VALUE="v0.9.16"/>
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>

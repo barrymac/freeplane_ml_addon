@@ -1,5 +1,8 @@
 # History
 
+## v0.9.16 — 2026-11-17
+- Treat Preview on a surface directory as a guidance message, not a source read error.
+
 ## v0.9.15 — 2026-11-17
 - Add an explicit post-population collapse pass for default-collapsed sections.
 

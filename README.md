@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.15.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.16.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,9 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.16
+- **Surface-node preview handling**: invoking Preview on a surface branch now says to expand it and select an entry, rather than attempting to read the directory as content.
+
 ### v0.9.15
 - **Post-population collapse**: after the full catalog is built, All knowledge types and Supported content are explicitly collapsed as a final step.
 
