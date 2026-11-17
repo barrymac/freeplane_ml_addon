@@ -3,6 +3,7 @@ package com.barrymac.freeplane.addons.llm.neuros
 import io.github.gitbucket.markedj.Marked
 import io.github.gitbucket.markedj.Options
 import org.freeplane.core.util.LogUtils
+import com.barrymac.freeplane.addons.llm.ConfigManager
 import com.barrymac.freeplane.addons.llm.ui.UiHelper
 
 import javax.imageio.ImageIO
@@ -40,21 +41,32 @@ class NeurosPreviewAction {
             LogUtils.info("NeurosPreview: source type=${plantUml ? 'PlantUML' : 'Markdown'}")
 
             if (plantUml) {
-                BufferedImage image = PlantumlRenderer.renderPng(source,
-                        limits.plantumlCommand, limits.plantumlTimeoutSeconds)
-                File cached = cachePreview(config, source, image, 'plantuml')
-                LogUtils.info("NeurosPreview: cached PlantUML preview at ${cached.path}")
-                primePreviewNote(node, cached, 'Diagram preview')
-                LogUtils.info('NeurosPreview: primed note for PlantUML rollover.')
+                File cached = previewCacheFile(config, source, 'plantuml')
+                BufferedImage image
+                if (cached.isFile()) {
+                    LogUtils.info("NeurosPreview: reusing cached preview ${cached.path}")
+                    image = ImageIO.read(cached)
+                } else {
+                    image = PlantumlRenderer.renderPng(source,
+                            limits.plantumlCommand, limits.plantumlTimeoutSeconds)
+                    ImageIO.write(image, 'png', cached)
+                }
+                primePreviewNote(node, cached, 'Diagram preview', 0.5f)
                 showImage(ui, image, node.text ?: 'PlantUML preview')
             } else {
-                String html = markdownToHtml(source)
-                BufferedImage image = MarkdownImageRenderer.renderHtml(html)
-                File cached = cachePreview(config, source, image, 'markdown')
-                LogUtils.info("NeurosPreview: cached Markdown preview at ${cached.path}")
-                primeMarkdownNote(node, source)
-                primePreviewNote(node, cached, 'Markdown preview')
-                LogUtils.info('NeurosPreview: primed note for Markdown rollover and embedding.')
+                String displayMarkdown = MarkdownPreviewSanitizer.clean(source)
+                String html = markdownToHtml(displayMarkdown)
+                File cached = previewCacheFile(config, displayMarkdown, 'markdown')
+                BufferedImage image
+                if (cached.isFile()) {
+                    LogUtils.info("NeurosPreview: reusing cached preview ${cached.path}")
+                    image = ImageIO.read(cached)
+                } else {
+                    image = MarkdownImageRenderer.renderHtml(html)
+                    ImageIO.write(image, 'png', cached)
+                }
+                primeMarkdownNote(node, displayMarkdown)
+                primePreviewNote(node, cached, 'Markdown preview', 0.35f)
                 showHtml(ui, html, node.text ?: 'Markdown preview')
             }
             LogUtils.info('NeurosPreview: dialog displayed.')
@@ -107,37 +119,32 @@ class NeurosPreviewAction {
         return new String(data, 0, Math.max(count, 0), 'UTF-8')
     }
 
-    /** Cache a rendered PNG so later rollovers do not invoke a renderer again. */
-    private static File cachePreview(def config, String source, BufferedImage image,
-                                     String prefix) {
-        if (!config?.freeplaneUserDirectory) {
-            throw new IOException('Cannot locate the add-on preview cache.')
-        }
-        File directory = new File(config.freeplaneUserDirectory,
-                'addons/promptLlmAddOn/previews')
-        if (!directory.exists() && !directory.mkdirs()) {
-            throw new IOException('Cannot create the add-on preview cache.')
+    /** Cache path for a rendered preview, next to the add-on's own files. */
+    static File previewCacheFile(def config, String source, String prefix) {
+        File directory = new File(ConfigManager.getAddonsDir(config), 'previews')
+        if (!directory.isDirectory() && !directory.mkdirs()) {
+            throw new IOException('Cannot create the add-on preview folder.')
         }
         MessageDigest digest = MessageDigest.getInstance('SHA-256')
         String key = digest.digest(source.getBytes('UTF-8')).encodeHex().toString()
-        File cached = new File(directory, "${prefix}-${key}.png")
-        if (!cached.isFile()) {
-            ImageIO.write(image, 'png', cached)
-        }
-        return cached
+        return new File(directory, "${prefix}-${key}.png")
     }
 
     /** Prime Freeplane's own Markdown note renderer for subsequent rollovers. */
     private static void primeMarkdownNote(def node, String markdown) {
         String existing = (node.note ?: '').toString()
-        if (!existing.contains(markdown)) {
-            node.note = existing ? existing + '\n\n---\n\n' + markdown : markdown
+        boolean generatedNote = existing.contains('Use the link to open') ||
+                existing.contains('[[card:')
+        if (!existing || generatedNote) {
+            node.note = markdown
+        } else if (!existing.contains(markdown)) {
+            node.note = existing + '\n\n---\n\n' + markdown
         }
         node.noteContentType = 'markdown'
     }
 
     /** Prime a Markdown image preview for subsequent rollovers. */
-    private static void primePreviewNote(def node, File cached, String label) {
+    private static void primePreviewNote(def node, File cached, String label, float zoom) {
         String preview = "![${label}](${cached.toURI().toString()})"
         String existing = (node.note ?: '').toString()
         if (!existing.contains(cached.toURI().toString())) {
@@ -146,7 +153,7 @@ class NeurosPreviewAction {
         node.noteContentType = 'markdown'
         // Embed the rendered preview in the map as well as in the note.
         node.externalObject.file = cached
-        node.externalObject.zoom = 0.5f
+        node.externalObject.zoom = zoom
     }
 
     private static void showHtml(def ui, String html, String title) {
@@ -163,6 +170,8 @@ class NeurosPreviewAction {
     }
 
     private static void showDialog(def ui, JScrollPane content, String title) {
+        content.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+        content.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
         JDialog dialog = new JDialog(ui.currentFrame, title, false)
         dialog.contentPane.add(content)
         dialog.setSize(900, 700)

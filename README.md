@@ -33,7 +33,8 @@ the add-on can:
   by default; listing pages are bounded and refreshed on demand.
 - **Preview neurOS Content** (`Ctrl+Alt+P`) — native Markdown rendering and
   on-demand PlantUML previews. Rendered Markdown and diagrams are cached,
-  embedded in the map, and made available to Freeplane rollovers.
+  embedded in the map, and made available to Freeplane rollovers. Work-card
+  markers and metadata are stripped from the reader-facing preview.
 - **Save Branch to neurOS** — save a branch as a work-graph card to the local
   watched workspace discovered from the map.
 

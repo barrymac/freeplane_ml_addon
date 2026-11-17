@@ -48,7 +48,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.22, opt-in, per map)
+## neurOS Knowledge (v0.9.23, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -127,8 +127,9 @@ Select a knowledge entry or a node containing Markdown or PlantUML and invoke
 
 *   **Markdown** is rendered directly by Freeplane's own Markdown plugin. A
     cached PNG of the rendered HTML is attached as an external object for an
-    embedded map preview, and the source remains in the note for native
-    Markdown rollover.
+    embedded map preview, and cleaned Markdown remains in the note for native
+    rollover. Card markers, metadata, DAG links and diagram references are
+    removed from the preview content.
 *   **PlantUML** is rendered once through the `plantuml` command on `PATH` and
     shown in a Swing dialog. The PNG is cached and attached as an external object
     for an embedded map preview; a Markdown image preview is also added to the

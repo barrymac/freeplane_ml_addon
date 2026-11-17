@@ -26,6 +26,32 @@ class NeurosPreviewActionSpec extends Specification {
         image.height <= 1200
     }
 
+    def "a longer document produces a taller image"() {
+        when:
+        def shortImage = MarkdownImageRenderer.renderHtml(
+                NeurosPreviewAction.markdownToHtml('# One line'), 600, 2400)
+        def longImage = MarkdownImageRenderer.renderHtml(
+                NeurosPreviewAction.markdownToHtml(('A full paragraph.\n\n' * 20)), 600, 2400)
+
+        then:
+        longImage.height > shortImage.height + 100
+    }
+
+    def "an unchanged preview reuses the same cached file"() {
+        given:
+        def config = [freeplaneUserDirectory: '/tmp/opencode/preview-cache-spec']
+
+        when:
+        File first = NeurosPreviewAction.previewCacheFile(config, '# Card\n\nbody', 'markdown')
+        File again = NeurosPreviewAction.previewCacheFile(config, '# Card\n\nbody', 'markdown')
+        File changed = NeurosPreviewAction.previewCacheFile(config, '# Card\n\nother', 'markdown')
+
+        then:
+        first == again
+        first.name != changed.name
+        first.name.startsWith('markdown-')
+    }
+
     def "PlantUML detection is content based, not filename based"() {
         expect:
         NeurosPreviewAction.isPlantUml('@startuml\nAlice -> Bob\n@enduml')

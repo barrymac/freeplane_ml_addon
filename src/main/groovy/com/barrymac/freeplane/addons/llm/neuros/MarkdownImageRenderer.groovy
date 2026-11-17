@@ -22,8 +22,7 @@ class MarkdownImageRenderer {
         pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE)
         pane.background = Color.WHITE
         pane.border = BorderFactory.createEmptyBorder(16, 16, 16, 16)
-        pane.setSize(targetWidth, 1)
-        pane.doLayout()
+        pane.setSize(targetWidth, Integer.MAX_VALUE)
         Dimension preferred = pane.preferredSize
         int height = Math.min(Math.max(preferred.height, 160), maxHeight)
         pane.setSize(targetWidth, height)

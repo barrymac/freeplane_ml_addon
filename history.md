@@ -1,5 +1,12 @@
 # History
 
+## v0.9.23 — 2026-11-17
+- Strip card markers, metadata, DAG links and diagram references from Markdown preview content.
+- Reduce embedded Markdown preview zoom to 35%.
+- Replace generated raw notes with clean preview Markdown.
+- Check preview cache before rendering so unchanged content is not regenerated.
+- Size embedded Markdown preview images to the rendered text instead of the pane minimum.
+
 ## v0.9.22 — 2026-11-17
 - Render Markdown preview HTML to a cached PNG and attach it as an embedded external object.
 - Keep Markdown source in the note for native rollover; both dialog and map preview are available.
