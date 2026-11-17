@@ -151,12 +151,16 @@ class NeurosBrowseAction {
             return
         }
         if (!loadMore && (container.children ?: []).size() > 0) {
-            UiHelper.showInformationMessage(ui,
-                    'This branch is already expanded. Use its Load more entry if one is available.')
-            return
+            // Refresh only generated entries. User-created children and other
+            // metadata are preserved; no Freeplane restart is needed to see
+            // newly ingested source material.
+            container.children.findAll {
+                hasTag(it, 'neurOS result') || hasTag(it, 'neurOS load-more')
+            }.each { it.delete() }
         }
 
         String relativePath = relativeListingPath(directory, source)
+        LogUtils.info("NeurosBrowse: refreshing ${relativePath}")
         int offset = loadMore ? intValue(storage[offsetKey(selected)]) : 0
         String subtype = relativePath.startsWith('by-tag/') ? relativePath.split('/')[1] : ''
         KnowledgePage page = KnowledgeListing.list(source, relativePath, offset,

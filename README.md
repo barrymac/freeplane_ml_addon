@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.6.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.8.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,12 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.8
+- **Embedded PlantUML previews**: cached PNGs are also attached as Freeplane external objects at 50% zoom, so the preview is visible directly in the map as well as through rollover notes.
+
+### v0.9.7
+- **Live browse refresh**: invoking Browse on an already-expanded surface replaces only generated result/load-more children, so newly ingested entries appear without restarting Freeplane or losing user-created nodes.
+
 ### v0.9.6
 - **Preview diagnostics**: log source type, render success, cache path, note priming and dialog display through Freeplane's standard `LogUtils` files.
 

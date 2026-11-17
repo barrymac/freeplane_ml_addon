@@ -46,7 +46,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.6, opt-in, per map)
+## neurOS Knowledge (v0.9.8, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -103,8 +103,10 @@ an empty result usually means "retry in a minute", and the add-on says so.
 2.  Select a **knowledge surface** or **knowledge type** and invoke Browse
     again. The add-on lists one bounded page of entries (default 25).
 3.  If more entries are available, select **Load more entries…** and invoke
-    Browse again to append the next page. Entries open source material through
-    their links; identifiers are not shown in titles. Invoking Browse on a result
+    Browse again to append the next page. Invoking Browse on an already-expanded
+    surface refreshes its generated entries, so newly ingested content appears
+    without restarting Freeplane. Entries open source material through their
+    links; identifiers are not shown in titles. Invoking Browse on a result
     opens its source rather than creating another catalog.
 
 Browsing performs no semantic search and does not recursively download the
@@ -120,8 +122,9 @@ Select a knowledge entry or a node containing Markdown or PlantUML and invoke
     source is also primed into the note so subsequent rollovers use Freeplane's
     native Markdown rendering.
 *   **PlantUML** is rendered once through the `plantuml` command on `PATH` and
-    shown in a Swing dialog. The PNG is cached and a Markdown image preview is
-    added to the note so later rollovers do not re-render it.
+    shown in a Swing dialog. The PNG is cached and attached as an external object
+    for an embedded map preview; a Markdown image preview is also added to the
+    note so later rollovers do not re-render it.
 
 PlantUML input and output are bounded and the process has a timeout. Process
 execution is enabled only for the preview actions; search, browse and save do

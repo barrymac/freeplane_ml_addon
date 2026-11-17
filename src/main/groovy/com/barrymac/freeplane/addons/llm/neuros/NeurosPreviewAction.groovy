@@ -120,6 +120,9 @@ class NeurosPreviewAction {
             node.note = existing ? existing + '\n\n' + preview : preview
         }
         node.noteContentType = 'markdown'
+        // Embed the rendered preview in the map as well as in the note.
+        node.externalObject.file = cached
+        node.externalObject.zoom = 0.5f
     }
 
     private static void showHtml(def ui, String html, String title) {

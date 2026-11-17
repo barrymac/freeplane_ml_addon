@@ -1,5 +1,12 @@
 # History
 
+## v0.9.8 — 2026-11-17
+- Attach cached PlantUML PNGs as external objects for an embedded map preview alongside rollover notes.
+
+## v0.9.7 — 2026-11-17
+- Browse refresh replaces only generated entries so newly ingested content appears without restarting.
+- Verified direct 9P PlantUML write → VISIBLE ingest → diagrams/ projection → by-tag and semantic visibility.
+
 ## v0.9.6 — 2026-11-17
 - Added preview lifecycle diagnostics: source type, cache path, note priming and dialog display.
 
