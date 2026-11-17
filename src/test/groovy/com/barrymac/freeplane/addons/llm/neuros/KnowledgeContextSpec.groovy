@@ -63,7 +63,7 @@ class KnowledgeContextSpec extends Specification {
         context.writeDestination == null
     }
 
-    def "a map inside a global single-surface scope gets a writable destination"() {
+    def "a direct knowledge surface never becomes a write destination"() {
         given:
         File surface = knowledgeSurface(
                 new File(root, 'global/scopes/single-scope'), 'single-scope')
@@ -75,8 +75,8 @@ class KnowledgeContextSpec extends Specification {
         then:
         context.enabled
         context.source.scope == 'single-scope'
-        context.canWrite()
-        context.writeDestination == surface.path
+        !context.canWrite()
+        context.writeDestination == null
     }
 
     def "a watched workspace is discovered through any cartridge knowledge link"() {
@@ -159,36 +159,6 @@ class KnowledgeContextSpec extends Specification {
 
         expect:
         KnowledgeContext.scopeFromMountInfo(mounts, directory) == 'freeplane_ml_addon'
-    }
-
-    def "a scoped writable network surface is detected from its mount, not its scope layout"() {
-        given:
-        String mounts = '36 29 0:33 / /mnt/neuros-9p-mss1/freeplane rw,relatime ' +
-                '- 9p 192.168.8.150 rw,trans=tcp\n'
-        File directory = new File('/mnt/neuros-9p-mss1/freeplane')
-
-        expect:
-        KnowledgeContext.isNetworkSurface(mounts, directory)
-    }
-
-    def "a scoped FUSE surface is not mistaken for a writable network workspace"() {
-        given:
-        String mounts = '36 29 0:33 / /mnt/neuros/software/example rw,nosuid ' +
-                '- fuse /dev/fuse rw\n'
-        File directory = new File('/mnt/neuros/software/example')
-
-        expect:
-        !KnowledgeContext.isNetworkSurface(mounts, directory)
-    }
-
-    def "mount detection uses the longest matching mount point and decodes escaped spaces"() {
-        given:
-        String mounts = '36 29 0:33 / /mnt/knowledge\\040space rw - 9p server rw\n' +
-                '37 29 0:34 / /mnt/knowledge\\040space/scope rw - fuse /dev/fuse rw\n'
-        File directory = new File('/mnt/knowledge space/scope')
-
-        expect:
-        !KnowledgeContext.isNetworkSurface(mounts, directory)
     }
 
     def "a dangling knowledge link reports that the source is not ready"() {

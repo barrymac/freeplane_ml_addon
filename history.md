@@ -1,5 +1,9 @@
 # History
 
+## v0.9.5 — 2026-11-17
+- Direct knowledge-surface maps are read-only for branch saving; local watched workspaces are required for writes.
+- Removed mount-type write detection rather than working around 9P lock semantics.
+
 ## v0.9.4 — 2026-11-17
 - Accept `cartridge-contract` as an enablement marker while `README.cartridge` is warming.
 - Fall back to the 9P mount's `aname` for scope while `watcher-status` is unavailable.

@@ -40,8 +40,9 @@ try {
     }
     if (!knowledgeContext.canWrite()) {
         UiHelper.showInformationMessage(ui,
-                'neurOS knowledge is available for this map, but its location does not ' +
-                        'provide a writable workspace for saving branches.')
+                'neurOS knowledge is available for this map, but saving branches requires ' +
+                        'a local watched workspace with a *_KNOWLEDGE link. ' +
+                        'Edit this map from a local workspace rather than directly on the knowledge surface.')
         return
     }
     NeurosLimits limits = NeurosLimits.load(node.map.storage)

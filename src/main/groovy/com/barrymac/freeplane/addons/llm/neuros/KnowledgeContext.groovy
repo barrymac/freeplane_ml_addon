@@ -92,13 +92,11 @@ class KnowledgeContext {
         if (!scope) {
             return disabled('The neurOS knowledge source at this map location is not ready yet.')
         }
-        // A global single-surface scope is a writable network workspace. A
-        // scoped read surface (for example a local knowledge mount) is not
-        // automatically a write destination; watched-workspace links below
-        // provide the destination for that case.
-        String destination = (hasGlobalScopesAncestor(directory) || hasNetworkMount(directory)) ?
-                directory.path : null
-        return enabled(KnowledgeSource.open(directory.path, scope), destination)
+        // A direct knowledge surface is never treated as a safe place to save
+        // new branches. Saving requires a local watched workspace discovered
+        // through a *_KNOWLEDGE link. This keeps live map editing off network
+        // knowledge mounts and avoids lock/save failure loops.
+        return enabled(KnowledgeSource.open(directory.path, scope), null)
     }
 
     private static KnowledgeContext enabled(KnowledgeSource source, String writeDestination) {
@@ -175,57 +173,10 @@ class KnowledgeContext {
         return bestScope
     }
 
-    /**
-     * Detect a writable network knowledge surface without making any domain or
-     * scope-name assumptions. The mount table is a capability probe, never UI
-     * text. Scoped FUSE read surfaces remain read-only for saving purposes.
-     */
-    private static boolean hasNetworkMount(File directory) {
-        File mountInfo = new File('/proc/self/mountinfo')
-        if (!mountInfo.isFile() || !mountInfo.canRead()) return false
-        try {
-            return isNetworkSurface(mountInfo.getText('UTF-8'), directory)
-        } catch (Exception ignored) {
-            return false
-        }
-    }
-
-    /** Package-visible for deterministic tests. */
-    static boolean isNetworkSurface(String mountInfoText, File directory) {
-        if (!mountInfoText || directory == null) return false
-        String path = directory.absoluteFile.path
-        String bestType = null
-        int bestLength = -1
-        mountInfoText.readLines().each { line ->
-            List<String> fields = line.split(' ').toList()
-            int separator = fields.indexOf('-')
-            if (separator < 2 || fields.size() <= separator + 1) return
-            String mountPoint = unescapeMountPath(fields[4])
-            if (path == mountPoint || path.startsWith(mountPoint + '/') ||
-                    (mountPoint == '/' && path.startsWith('/'))) {
-                if (mountPoint.length() > bestLength) {
-                    bestLength = mountPoint.length()
-                    bestType = fields[separator + 1]
-                }
-            }
-        }
-        return bestType == '9p'
-    }
-
     private static String unescapeMountPath(String value) {
         return value.replace('\\040', ' ')
                 .replace('\\011', '\t')
                 .replace('\\012', '\n')
                 .replace('\\134', '\\')
-    }
-
-    /** Universal global layout: .../scopes/<scope>/... */
-    private static boolean hasGlobalScopesAncestor(File directory) {
-        File current = directory.absoluteFile
-        while (current != null) {
-            if (current.name == 'scopes') return true
-            current = current.parentFile
-        }
-        return false
     }
 }

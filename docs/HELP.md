@@ -46,7 +46,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.4, opt-in, per map)
+## neurOS Knowledge (v0.9.5, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -59,6 +59,11 @@ neurOS is not enabled for it.
 The map's scope is read from the knowledge source itself. Following an ordinary
 Freeplane hyperlink to a map in another scope therefore works naturally: the
 newly opened map searches its own scope.
+
+**Editing safety:** search, browse and preview work from direct knowledge
+surfaces. Saving branches requires a local watched workspace with a
+`*_KNOWLEDGE` link. Do not live-edit `.mm` files directly on network knowledge
+mounts that do not support Freeplane's file-locking behavior.
 
 Optional per-map safety budgets (stored in the map) include:
 
