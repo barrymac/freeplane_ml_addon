@@ -83,7 +83,7 @@
 <attribute NAME="downloadUrl" VALUE="https://${homepage}/releases/download/${version}/LLM-AddOn-${version}.addon.mm"/>
 <attribute NAME="changelogUrl" VALUE="https://${homepage}/commits/main"/>
 <attribute NAME="addonsMenu" VALUE="/menu_bar/LLM"/>
-<attribute NAME="updateUrl" VALUE="https://raw.githubusercontent.com/barrymac/freeplane_ml_addon/release/version.properties"/>
+<attribute NAME="updateUrl" VALUE="https://raw.githubusercontent.com/barrymac/freeplane_ml_addon/main/version.properties"/>
 <richcontent TYPE="NOTE">
 <html>
   <head>
