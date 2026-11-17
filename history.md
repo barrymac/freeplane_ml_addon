@@ -1,5 +1,9 @@
 # History
 
+## v0.9.10 — 2026-11-17
+- Package markedj and jsoup so Markdown preview works at runtime.
+- Add `Ctrl+Alt+P` for on-demand preview.
+
 ## v0.9.9 — 2026-11-17
 - Filter stateful surfaces using declared state-machine properties so only state-tagged work items appear as tasks.
 - Show the declared state in result notes without hardcoding surfaces or lanes.

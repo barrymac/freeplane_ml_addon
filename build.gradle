@@ -50,6 +50,14 @@ dependencies {
     testImplementation fileTree("${freeplaneBasePath}/plugins/org.freeplane.plugin.markdown/lib") {
         include '*.jar'
     }
+
+    // Include the Markdown renderer and its HTML dependency in the add-on's
+    // runtime lib as well. compileOnly/testImplementation alone does not make
+    // these classes visible to Freeplane's script classloader.
+    addon fileTree("${freeplaneBasePath}/plugins/org.freeplane.plugin.markdown/lib") {
+        include 'markedj-*.jar'
+        include 'jsoup-*.jar'
+    }
 }
 
 sourceSets {

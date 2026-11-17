@@ -41,7 +41,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.9.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.10.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +77,10 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.10
+- **Runtime Markdown fix**: package `markedj` and `jsoup` in the add-on lib so Markdown preview works in Freeplane, not only in tests.
+- **Preview accelerator**: `Ctrl+Alt+P`, checked against default and user shortcut tables.
+
 ### v0.9.9
 - **State-aware work surfaces**: state-machine metadata from the live cartridge filters stateful listings to actual state-tagged work items. Repository documents without `list`/`status`/`state` no longer masquerade as tasks; state is shown in result notes.
 - No surface names, lane names or subtype filters are hardcoded.

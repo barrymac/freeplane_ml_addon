@@ -46,7 +46,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
-## neurOS Knowledge (v0.9.9, opt-in, per map)
+## neurOS Knowledge (v0.9.10, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
 There is no neurOS location or scope configuration tool.
@@ -118,7 +118,7 @@ show only entries carrying work-state metadata such as `list`, `status` or
 `state`. This keeps ordinary repository documents out of task views and shows
 the declared state in result notes without hardcoding surface or lane names.
 
-### Previewing content (`LLM > Preview neurOS Content` or right-click)
+### Previewing content (`LLM > Preview neurOS Content`, `Ctrl+Alt+P`, or right-click)
 
 Select a knowledge entry or a node containing Markdown or PlantUML and invoke
 **Preview neurOS Content**.
