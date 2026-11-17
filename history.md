@@ -1,5 +1,8 @@
 # History
 
+## v0.9.19 — 2026-11-17
+- Use the latest-release version.properties asset for update checks.
+
 ## v0.9.18 — 2026-11-17
 - Use canonical refs/heads/main raw URL for update checks.
 
