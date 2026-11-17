@@ -6,3 +6,6 @@
 /.gradle/
 # neurOS FUSE-mount symlinks (managed by neuros-vfs hooks)
 *_KNOWLEDGE
+
+# Local neurOS card artifacts
+/neuros-cards/

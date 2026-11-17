@@ -1,5 +1,7 @@
 # An add-on for freeplane that uses LLM APIs to brainstorm ideas from any selected node
 
+> **Demos, screencasts and project updates:** https://onticfabric.com/
+
 ## Features
 - **Quick Prompt (Ctrl+Alt+G):** Generate ideas or expand nodes using a pre-configured prompt with a single shortcut.
 - **Compare Connected Nodes (v0.4.0):** Analyze linked nodes using custom comparison types (e.g., Pros/Cons, Strengths/Weaknesses) and add structured results as child nodes.
@@ -41,7 +43,7 @@ The add-on can:
 - Potentially compare model outputs
 
 ### Setup
-Install add-on using the LLM-AddOn-v0.9.16.addon.mm file. Other files are used for development only.
+Install add-on using the LLM-AddOn-v0.9.17.addon.mm file. Other files are used for development only.
 
 # Pre-requisites
 
@@ -77,6 +79,10 @@ Check-list before starting
 ... you're done.
 
 ## Recent Features
+### v0.9.17
+- **Public release hygiene**: internal local paths, LAN/test identifiers and generated neurOS card artifacts removed from tracked public content.
+- **Demo hub**: https://onticfabric.com/ is linked in the README, help and add-on description.
+
 ### v0.9.16
 - **Surface-node preview handling**: invoking Preview on a surface branch now says to expand it and select an entry, rather than attempting to read the directory as content.
 

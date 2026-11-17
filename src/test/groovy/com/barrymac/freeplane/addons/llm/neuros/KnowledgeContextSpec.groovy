@@ -153,12 +153,12 @@ class KnowledgeContextSpec extends Specification {
 
     def "the mount attachment name supplies scope while watcher status is unavailable"() {
         given:
-        String mounts = '773 33 0:144 / /mnt/neuros-9p-mss1/freeplane rw,relatime ' +
-                '- 9p 192.168.8.150 rw,uname=barry,aname=freeplane_ml_addon,access=client\n'
-        File directory = new File('/mnt/neuros-9p-mss1/freeplane')
+        String mounts = '773 33 0:144 / /mnt/knowledge/example rw,relatime ' +
+                '- 9p 192.0.2.10 rw,uname=tester,aname=example-scope,access=client\n'
+        File directory = new File('/mnt/knowledge/example')
 
         expect:
-        KnowledgeContext.scopeFromMountInfo(mounts, directory) == 'freeplane_ml_addon'
+        KnowledgeContext.scopeFromMountInfo(mounts, directory) == 'example-scope'
     }
 
     def "a dangling knowledge link reports that the source is not ready"() {

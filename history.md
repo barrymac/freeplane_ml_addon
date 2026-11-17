@@ -1,5 +1,9 @@
 # History
 
+## v0.9.17 — 2026-11-17
+- Sanitized public tracked content and removed generated neurOS card artifacts.
+- Added https://onticfabric.com/ as the demos and project-updates link.
+
 ## v0.9.16 — 2026-11-17
 - Treat Preview on a surface directory as a guidance message, not a source read error.
 
