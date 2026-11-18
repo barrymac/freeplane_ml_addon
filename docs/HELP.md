@@ -15,7 +15,7 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 3.  **API Key Checks (First Time / If Missing):**
     *   The script will first check for a configured Novita.ai API key. If missing, you'll be prompted to enter it. This key is required for the actual image generation step and will be saved in your Freeplane user configuration.
     *   Next, it checks if a custom image prompt template has been saved by the user.
-    *   **If no custom template is saved:** The script will attempt to enhance the selected node's text using a separate LLM (like GPT or OpenRouter models) to create a more detailed image prompt. It will check for the corresponding LLM provider's API key (e.g., OpenAI or OpenRouter). If missing, you'll be prompted to enter it, and it will be saved in your configuration. A brief, non-cancellable "Generating Prompt" dialog will appear during this step.
+    *   **If no custom template is saved:** The script will attempt to enhance the selected node's text using the configured chat model to create a more detailed image prompt. It checks the API key for the configured provider. If missing, you'll be prompted to enter it, and it will be saved in your configuration. A brief, non-cancellable "Generating Prompt" dialog will appear during this step.
     *   **If a custom template *is* saved:** The LLM enhancement step is skipped, and the saved template is used directly.
 4.  **Edit Parameters Dialog:** The "Edit Image Generation Parameters" dialog appears.
     *   **Header:** Shows whether a user-saved template/parameters are being used or the system defaults.
@@ -138,6 +138,30 @@ Select a knowledge entry or a node containing Markdown or PlantUML and invoke
 PlantUML input and output are bounded and the process has a timeout. Process
 execution is enabled only for the preview actions; search, browse and save do
 not execute external commands.
+
+### Drawing relationships (`LLM > Draw neurOS Relationships`, `Ctrl+Alt+R`)
+
+Select an entry that has a source link — a work card or a diagram — and invoke
+**Draw neurOS Relationships**. The entry is read as the source of truth for its
+own mesh:
+
+*   Every typed link it declares becomes an edge. A card contributes its
+    `[[depends-on:…]]`, `[[blocks:…]]`, `[[references:…]]` and similar links; a
+    diagram contributes the arrows it draws between the cards it depicts.
+*   Targets are resolved inside the current scope only, by identifier, by file
+    name or by their readable title. Nothing is guessed and nothing outside the
+    scope is opened.
+*   Related entries already in the map are reused. Missing ones are added under
+    a **Related knowledge** branch, at most twelve per run, each linked to its
+    source material.
+*   Each connector carries the relationship in words — "depends on", "blocks",
+    "references" — and a colour family: dependency, blocking, structure,
+    tracking, reference, code, governance.
+*   Running it twice does not duplicate connectors. Links that point outside the
+    scope are counted in the summary rather than drawn as blanks.
+
+Relationship vocabulary is read from the entry, not from a fixed list, so a
+marker the cartridge has not named yet still appears with its own wording.
 
 ### Saving a branch (`LLM > Save Branch to neurOS`)
 

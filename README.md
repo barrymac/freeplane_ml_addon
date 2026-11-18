@@ -17,7 +17,7 @@ personal knowledge substrate from inside Freeplane.
 - **Quick Prompt** (`Ctrl+Alt+G`) — expand the selected node with your saved prompt and model.
 - **Compare Connected Nodes** — compare linked nodes using built-in or custom dimensions.
 - **Generate Image** — create and attach images through Novita.ai, optionally enhancing the prompt with an LLM.
-- **Prompt and model configuration** — choose OpenRouter or OpenAI, select a model and edit system/user prompts.
+- **Prompt and model configuration** — choose a provider and model, and edit system/user prompts.
 - **Branch generation with provenance** — generated branches are tagged with the model that produced them.
 
 ### Optional neurOS knowledge features
@@ -35,6 +35,9 @@ the add-on can:
   on-demand PlantUML previews. Rendered Markdown and diagrams are cached,
   embedded in the map, and made available to Freeplane rollovers. Work-card
   markers and metadata are stripped from the reader-facing preview.
+- **Draw neurOS Relationships** (`Ctrl+Alt+R`) — reads the typed links a card or
+  diagram declares and draws them as labelled connectors, adding the related
+  entries it can find in the current scope.
 - **Save Branch to neurOS** — save a branch as a work-graph card to the local
   watched workspace discovered from the map.
 
@@ -50,19 +53,19 @@ that neurOS is not enabled for the current map.
 
 **Communicator window**
 
-![LLM communicator window](src/add-on/images/ChatGptCommunicator.png)
+![LLM communicator window](src/add-on/images/chat-communicator.png)
 
 **Prompt sent from a node**
 
-![Prompt sent from a node](src/add-on/images/ChatGptQuestion.png)
+![Prompt sent from a node](src/add-on/images/prompt-from-node.png)
 
 **Generated response returned as a branch**
 
-![Generated response branch](src/add-on/images/ChatGptAnswer.png)
+![Generated response branch](src/add-on/images/generated-response.png)
 
 **API provider setup**
 
-![API provider setup](src/add-on/images/openAI-Setup.jpg)
+![API provider setup](src/add-on/images/provider-setup.jpg)
 
 ### neurOS knowledge exploration
 
@@ -81,9 +84,8 @@ https://onticfabric.com/.
 
 - **Freeplane** 1.11.3 or newer. Tested with Freeplane 1.12.11.
 - **Java** supported by your Freeplane installation (Java 17–23 for Freeplane 1.12.x).
-- **An LLM provider account and API key**:
-  - OpenRouter, or
-  - OpenAI.
+- **A chat provider account and API key** — either OpenRouter, or any
+  OpenAI-compatible chat-completions endpoint you point the add-on at.
 - **Novita.ai API key** — only needed for image generation.
 - **Optional: neurOS**
   - A running neurOS substrate with a mounted knowledge surface, and/or
@@ -135,6 +137,7 @@ location or watched workspace. No manual neurOS configuration is required.
 | `Ctrl+Alt+G` | Quick Prompt |
 | `Ctrl+Alt+I` | Browse neurOS Knowledge |
 | `Ctrl+Alt+P` | Preview neurOS Content |
+| `Ctrl+Alt+R` | Draw neurOS Relationships |
 
 Shortcuts can be changed through Freeplane's normal keyboard configuration.
 

@@ -1,7 +1,19 @@
 # History
 
+## v0.9.24 — 2026-11-17
+- Draw the typed relationships a card or diagram declares as labelled map connectors.
+- Reuse entries already in the map; add missing ones under a bounded Related knowledge branch.
+- Treat contradiction as its own family: crimson and dashed, distinct from a reference.
+- Read relationship vocabulary from the entry, so markers the cartridge has not named still read.
+- Report links that point outside the scope instead of inventing placeholder nodes.
+- Add `tools/mesh-plan.sh`, a Freeplane-free dry run of what will be drawn.
+- Remove OpenAI-centric wording from the README and help, and rename the legacy screenshots.
+
 ## v0.9.23 — 2026-11-17
-- Strip card markers, metadata, DAG links and diagram references from Markdown preview content.
+- Draw typed relationships from a card or diagram as labelled map connectors.
+- Reuse related entries already in the map; add missing ones under a bounded branch.
+- Read relationship vocabulary from the entry, so unnamed markers still read.
+- Report links that point outside the scope instead of drawing placeholders.
 - Reduce embedded Markdown preview zoom to 35%.
 - Replace generated raw notes with clean preview Markdown.
 - Check preview cache before rendering so unchanged content is not regenerated.
