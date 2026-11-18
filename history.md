@@ -1,5 +1,9 @@
 # History
 
+## v0.9.26 — 2026-11-17
+- The image prompt editor now offers the image service and model, and remembers both.
+- A config that still names `openai` as its provider says how to migrate instead of only refusing.
+
 ## v0.9.25 — 2026-11-17
 - Purge the OpenAI naming: settings live under `llm.*`, with existing `openai.*` values migrated once.
 - Remove OpenAI as a provider; OpenRouter is the default and any chat-completions URL can be used.

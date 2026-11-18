@@ -3,6 +3,7 @@ package com.barrymac.freeplane.addons.llm
 // Add these imports:
 import com.barrymac.freeplane.addons.llm.mock.UITest
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
+import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException
 // Keep existing imports
 import com.barrymac.freeplane.addons.llm.mock.MockHttpURLConnection
 import org.freeplane.core.util.LogUtils
@@ -79,7 +80,26 @@ class ApiCallerFactorySpec extends Specification {
         1 * mockUi.errorMessage("LLM AddOn Error: API call failed: Connection timeout")
     }
 
-    def "make_api_call handles unsupported provider"() {
+        def "an OpenAI-era provider value explains the migration"() {
+        when:
+        ApiCallerFactory.ApiProvider.fromString('openai')
+
+        then:
+        def problem = thrown(LlmAddonException)
+        problem.message.contains('no longer a provider')
+        problem.message.contains('llm.provider')
+        problem.message.contains('openrouter')
+    }
+
+    def "a full endpoint URL is used verbatim"() {
+        expect:
+        ApiCallerFactory.ApiProvider.endpointFor('https://example.test/v1/chat/completions') ==
+                'https://example.test/v1/chat/completions'
+        ApiCallerFactory.ApiProvider.endpointFor('openrouter') ==
+                'https://openrouter.ai/api/v1/chat/completions'
+    }
+
+def "make_api_call handles unsupported provider"() {
         when: "Using invalid provider"
         apiCaller.make_api_call("invalid", "key", [:])
 

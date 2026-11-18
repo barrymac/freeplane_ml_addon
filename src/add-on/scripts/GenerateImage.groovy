@@ -199,6 +199,10 @@ try {
     switch (editorResult.action) {
         case 'Generate':
             LogUtils.info("User chose 'Generate'.")
+            // The editor lets the user change service and model; honour that for
+            // this run as well as saving it for the next.
+            imageProvider = editorResult.params?.provider ?: imageProvider
+            imageModel = editorResult.params?.model ?: imageModel
             String finalUserTemplate = editorResult.prompt
             Map generationParams = editorResult.params // Contains validated params from editor
 

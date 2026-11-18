@@ -36,6 +36,11 @@ class ApiCallerFactory {
             switch (provider?.toLowerCase()) {
                 case 'openrouter': return OPENROUTER
                 case 'novita': return NOVITA
+                case 'openai':
+                    throw new LlmAddonException(
+                            'OpenAI is no longer a provider in this add-on. Set llm.provider to ' +
+                                    'openrouter and use an OpenRouter key, or set llm.base_url to a ' +
+                                    'chat-completions endpoint you control.')
                 default: throw new LlmAddonException(
                         "Unsupported API provider: $provider. Choose openrouter or novita, " +
                                 'or set llm.base_url to a chat-completions endpoint.')

@@ -1,6 +1,7 @@
 package com.barrymac.freeplane.addons.llm.ui
 
 import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.ConfigKeys
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import groovy.swing.SwingBuilder
 import org.freeplane.core.util.LogUtils
@@ -52,6 +53,12 @@ class ImagePromptEditor {
         LogUtils.info("Loaded initial parameters via ConfigManager: ${params}")
         // Seed is always random, not saved
         params.seed = new Random().nextInt(Integer.MAX_VALUE)
+        // Which service draws the image, and with which model. OpenRouter is the
+        // default because it serves image models on the same key as chat.
+        params.provider = ConfigKeys.read(config, ConfigKeys.IMAGE_PROVIDER, 'openrouter')
+        params.model = ConfigKeys.read(config, ConfigKeys.IMAGE_MODEL,
+                'google/gemini-3.1-flash-image')
+        def providerBox, modelField
         // --- END MODIFY PARAMETER LOADING ---
 
         try {
@@ -134,7 +141,14 @@ class ImagePromptEditor {
                             // 4. Parameters Panel (now with sliders)
                             gbc.gridy++; gbc.weighty = 0.0;
                             swingBuilder.panel(constraints: gbc, border: BorderFactory.createTitledBorder("Generation Parameters")) {
-                                swingBuilder.gridLayout(rows: 4, columns: 2, hgap: 10, vgap: 5)
+                                swingBuilder.gridLayout(rows: 6, columns: 2, hgap: 10, vgap: 5)
+                                // Image service and model
+                                swingBuilder.label(text: 'Image service:')
+                                providerBox = swingBuilder.comboBox(
+                                        items: ['openrouter', 'novita'],
+                                        selectedItem: params.provider)
+                                swingBuilder.label(text: 'Image model:')
+                                modelField = swingBuilder.textField(text: params.model, columns: 24)
                                 // Steps slider
                                 swingBuilder.label(text: 'Steps (4-50):')
                                 stepsField = swingBuilder.slider(
@@ -181,6 +195,14 @@ class ImagePromptEditor {
                                 }
                                 // Add the random seed just before generating
                                 params.seed = new Random().nextInt(Integer.MAX_VALUE)
+                                params.provider = providerBox.selectedItem?.toString() ?: 'openrouter'
+                                params.model = modelField.text?.trim()
+                                if (!params.model) {
+                                    showError(dialog, 'Choose an image model first')
+                                    return
+                                }
+                                ConfigKeys.write(config, ConfigKeys.IMAGE_PROVIDER, params.provider)
+                                ConfigKeys.write(config, ConfigKeys.IMAGE_MODEL, params.model)
                                 resultMap = [action: 'Generate', prompt: currentPrompt, params: params]
                                 dialog.dispose()
                             } catch (Exception e) {
