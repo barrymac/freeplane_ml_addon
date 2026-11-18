@@ -42,12 +42,12 @@ class ConfigKeys {
      */
     static String read(def config, String key, String fallback = null) {
         if (config == null) return fallback
-        def current = config.getProperty(key, null)
+        def current = config.getProperty((String) key, (String) null)
         if (current != null && current.toString().trim()) return current.toString()
 
         String legacy = LEGACY[key]
         if (legacy) {
-            def old = config.getProperty(legacy, null)
+            def old = config.getProperty((String) legacy, (String) null)
             if (old != null && old.toString().trim()) {
                 config.setProperty(key, old)
                 return old.toString()

@@ -17,7 +17,7 @@ class Keys {
         String fromEnvironment = System.getenv(environmentName)
         if (fromEnvironment?.trim()) return fromEnvironment.trim()
         if (config == null || !configKey) return ''
-        return (config.getProperty(configKey, '') ?: '').toString().trim()
+        return ((String) config.getProperty((String) configKey, (String) '') ?: '').toString().trim()
     }
 
     static String openRouter(def config) {

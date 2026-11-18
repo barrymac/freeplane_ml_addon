@@ -31,7 +31,7 @@ class MeshLens {
     private static String stored(def config) {
         if (config == null) return null
         try {
-            return (config.getProperty(CONFIG_KEY, null) ?: '').toString()
+            return ((String) config.getProperty((String) CONFIG_KEY, (String) null) ?: '').toString()
         } catch (MissingMethodException ignored) {
             try {
                 return (config.getProperty(CONFIG_KEY) ?: '').toString()

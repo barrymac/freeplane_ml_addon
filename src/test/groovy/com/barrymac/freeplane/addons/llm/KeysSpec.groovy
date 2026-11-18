@@ -6,6 +6,30 @@ import spock.lang.Subject
 @Subject(Keys)
 class KeysSpec extends Specification {
 
+    /**
+     * Freeplane's ConfigProperties exposes getProperty(String) plus overloads for
+     * String, boolean, int and long. Passing an untyped '' or null is ambiguous;
+     * this stub reproduces that shape so the typed call is locked in.
+     */
+    static class OverloadedConfig {
+        Map<String, String> values = [:]
+        String getProperty(String key) { values[key] }
+        String getProperty(String key, String fallback) { values[key] ?: fallback }
+        boolean getProperty(String key, boolean fallback) { fallback }
+        int getProperty(String key, int fallback) { fallback }
+        long getProperty(String key, long fallback) { fallback }
+    }
+
+    def "the typed lookup resolves through Freeplane's overload set"() {
+        given:
+        def config = new OverloadedConfig(values: [(ConfigKeys.API_KEY): 'from-config'])
+
+        expect:
+        Keys.resolve('A_NAME_THAT_IS_NOT_SET_ANYWHERE', config, ConfigKeys.API_KEY) == 'from-config'
+        ConfigKeys.read(config, ConfigKeys.MODEL, 'fallback') == 'fallback'
+    }
+
+
     private static Map configOf(Map<String, Object> values) {
         return [
                 getProperty: { String key, Object fallback = null ->

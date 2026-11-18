@@ -1,5 +1,9 @@
 # History
 
+## v0.9.32 — 2026-11-18
+- Fix the ambiguous `getProperty` lookup on Freeplane's config object (typed keys and fallbacks), which surfaced as "Ambiguous method overloading".
+- Add `docs/DEMO.md` and `tools/demo-map.sh` so the lens, enmeshment and disagreement flows can be run end to end in five minutes.
+
 ## v0.9.31 — 2026-11-18
 - Add relationship lenses: the map draws only the families you choose (dependency, blocking, structure, tracking, reference, code, governance, contradiction).
 - Add "Enmesh This Node" (`Ctrl+Alt+E`): a judgement model proposes missing relationships through the chosen lens, drawn dashed and grey until accepted.
