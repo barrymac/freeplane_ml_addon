@@ -68,22 +68,72 @@ class NeurosEnmeshAction {
             MeshLens.write(node.map.storage, lens)
             LogUtils.info("NeurosEnmesh: lens=${lens}")
 
+            String seedText = NeurosContradictionAction.entryText(seedFile)
             Map seedState = [id: seed?.id, title: seed?.title ?: node.text,
-                             text: EnmeshProposal.trim(NeurosContradictionAction.entryText(seedFile))]
+                             text: EnmeshProposal.trim(seedText)]
             List<Map> candidateState = candidates.collect { MeshNode candidate ->
                 [id: candidate.id, title: candidate.title,
                  text: EnmeshProposal.trim(NeurosContradictionAction.entryText(candidate.file))]
             }
-            Map battery = EnmeshProposal.battery(candidateState, seedState.title)
-            List<Judgement.Answer> answers = Judgement.ask(battery.state, battery.questions, key)
-            LogUtils.info("NeurosEnmesh: answers=" + answers.collect {
-                "${it.question}:${it.choice ?: it.probability}@${it.confidence ?: ''}"
-            }.join(' '))
-            List<MeshEdge> proposals = EnmeshProposal.proposals(
-                    candidateState, seedState.id, answers).findAll { lens.contains(it.family) }
+            // Retrieval is code's job, and it has three channels here: what the
+            // entry names, what shares its vocabulary, and what the substrate
+            // considers semantically near. The model never sees the rest.
+            List<String> semantic = SemanticCandidates.query(
+                    context.source.path(''),
+                    SemanticCandidates.questionFor(seedState.title, seedText))
+            LogUtils.info("NeurosEnmesh: semantic=${semantic.size()} " + semantic.take(5).join(' | '))
+            // The semantic surface names both cards and code; resolve against
+            // everything the index now holds (cards first, then code files).
+            List<Map> semanticState = semantic.collect { String name -> index.find(name) }
+                    .findAll { it != null }
+                    .collect { MeshNode match ->
+                        [id: match.id ?: match.file.name, title: match.title,
+                         text: EnmeshProposal.trim(NeurosContradictionAction.entryText(match.file))]
+                    }
 
-            if (proposals.isEmpty()) {
-                LogUtils.info('NeurosEnmesh: no proposal passed the confidence threshold inside the lens')
+            List<Map> pooled = (candidateState + semanticState)
+                    .unique { it.id ?: it.title }
+            candidateState = EnmeshCandidates.rank(seedState.text, pooled)
+            LogUtils.info("NeurosEnmesh: ranked candidates=" +
+                    candidateState.collect { it.title }.join(' | '))
+            // Evidence first: files and diagrams the entry names outright need no
+            // judgement. The code/files live outside the card index, so extend the
+            // drawing index after the card candidates have been chosen.
+            List<File> scopeFiles = TextReferences.scopeFiles(context.source.path(''))
+            scopeFiles.each { index.add(it) }
+            // Retrieval sees the whole entry; only the judgement call is trimmed.
+            List<MeshEdge> named = TextReferences.proposals(seedText, seedState.id, scopeFiles)
+            LogUtils.info("NeurosEnmesh: named-in-text=${named.size()} " +
+                    named.collect { it.target }.join(', '))
+
+            if (candidateState.isEmpty()) {
+                LogUtils.info('NeurosEnmesh: no entry shares vocabulary with this one')
+            }
+            // Stage one (NS): which of these deserves an edge at all? Ranked, so
+            // only the strongest few reach the naming question.
+            Map whether = EnmeshProposal.shortlistBattery(candidateState, seedState.title)
+            List<Judgement.Answer> worth = Judgement.ask(whether.state, whether.questions, key)
+            List<Integer> shortlist = EnmeshProposal.shortlisted(
+                    worth, candidateState.size(), 5, 0.5)
+            LogUtils.info("NeurosEnmesh: worth=" + worth.collect {
+                "${it.question}:${it.probability}".toString()
+            }.join(' ') + " → shortlist=${shortlist}")
+
+            List<MeshEdge> proposals = []
+            if (!shortlist.isEmpty()) {
+                List<Map> chosen = shortlist.collect { candidateState[it] }
+                Map battery = EnmeshProposal.battery(chosen, seedState.title)
+                List<Judgement.Answer> answers = Judgement.ask(battery.state, battery.questions, key)
+                LogUtils.info("NeurosEnmesh: answers=" + answers.collect {
+                    "${it.question}:${it.choice ?: it.probability}@${it.confidence ?: ''}".toString()
+                }.join(' '))
+                proposals = EnmeshProposal.proposals(chosen, seedState.id, answers)
+                        .findAll { lens.contains(it.family) }
+            }
+            List<MeshEdge> drawn = (named.findAll { lens.contains(it.family) } + proposals)
+
+            if (drawn.isEmpty()) {
+                LogUtils.info('NeurosEnmesh: nothing named in the text and no proposal passed the threshold')
                 UiHelper.showInformationMessage(ui,
                         'No relationship in this lens was supported by the text ' +
                                 "(${lens.size()} families checked, " +
@@ -92,17 +142,19 @@ class NeurosEnmeshAction {
                                 'if one exists in the work.')
                 return
             }
-            MeshDrawing drawing = MeshDrawing.draw(node, index, proposals)
+            MeshDrawing drawing = MeshDrawing.draw(node, index, drawn)
             node.tags.remove(TAG)
             node.tags.add(TAG)
             MeshReveal.reveal(c, drawing)
-            LogUtils.info("NeurosEnmesh: ${proposals.size()} proposals, ${drawing.summary()}")
+            LogUtils.info("NeurosEnmesh: ${drawn.size()} edges " +
+                    "(named=${named.size()}, judged=${proposals.size()}), ${drawing.summary()}")
             StringBuilder message = new StringBuilder(
-                    "${proposals.size()} proposed relationship${proposals.size() == 1 ? '' : 's'} " +
-                            'drawn dashed and grey — accept or delete them before trusting the map.\n')
-            proposals.each { MeshEdge edge ->
+                    "${drawn.size()} proposed relationship${drawn.size() == 1 ? '' : 's'} " +
+                            "drawn dashed and grey (${named.size()} named in the text, " +
+                            "${proposals.size()} judged). Accept or delete them before trusting the map.\n")
+            drawn.each { MeshEdge edge ->
                 def target = index.find(edge.target)
-                message << '\n• ' << edge.label << ' → ' << (target?.title ?: 'entry')
+                message << '\n• ' << edge.label << ' → ' << (target?.title ?: edge.target)
             }
             message << '\n\n' << drawing.summary()
             UiHelper.showInformationMessage(ui, message.toString())

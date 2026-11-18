@@ -20,12 +20,41 @@ class EnmeshProposalSpec extends Specification {
         Map battery = EnmeshProposal.battery(candidates(3), 'Selected entry')
 
         then:
-        battery.state.keySet() == ['seed', 'c0', 'c1', 'c2'] as Set
+        battery.state.keySet() == ['selected', 'c0', 'c1', 'c2'] as Set
         battery.questions.keySet() == ['r0', 'r1', 'r2'] as Set
         battery.questions.r0.criteria.keySet().containsAll(
-                ['depends_on', 'blocks', 'references', 'tracks', 'contains', 'reconciles',
-                 'none', 'cannot_tell'])
-        battery.state.seed.title == 'Selected entry'
+                ['selected_depends_on_candidate', 'candidate_depends_on_selected',
+                 'selected_blocks_candidate', 'candidate_blocks_selected', 'references',
+                 'tracks', 'contains', 'none', 'cannot_tell'])
+        battery.questions.r0.instructions.contains('Entry 1')
+        battery.questions.r0.instructions.contains('Selected entry')
+        battery.state.selected.title == "Selected entry"
+    }
+
+    def "stage one ranks candidates by the probability that an edge is warranted"() {
+        given:
+        def answers = [
+                new Judgement.Answer(question: 'w0', type: 'noul', probability: 0.12),
+                new Judgement.Answer(question: 'w1', type: 'noul', probability: 0.91),
+                new Judgement.Answer(question: 'w2', type: 'noul', probability: 0.64),
+                new Judgement.Answer(question: 'w3', type: 'noul', probability: 0.30)
+        ]
+
+        when:
+        List<Integer> shortlist = EnmeshProposal.shortlisted(answers, 4, 10, 0.5)
+
+        then:
+        shortlist == [1, 2]
+    }
+
+    def "stage one can shortlist everything, or nothing"() {
+        given:
+        def strong = (0..<3).collect { new Judgement.Answer(question: "w${it}", type: 'noul', probability: 0.8) }
+        def weak = (0..<3).collect { new Judgement.Answer(question: "w${it}", type: 'noul', probability: 0.1) }
+
+        expect:
+        EnmeshProposal.shortlisted(strong, 3, 2, 0.5) == [0, 1]
+        EnmeshProposal.shortlisted(weak, 3, 10, 0.5).isEmpty()
     }
 
     def "a confident choice becomes a provisional edge in the right family"() {
@@ -57,7 +86,7 @@ class EnmeshProposalSpec extends Specification {
                         choice: 'cannot_tell', confidence: 0.99)]).isEmpty()
         EnmeshProposal.proposals(candidates(1), 'seed-id', [
                 new Judgement.Answer(question: 'r0', type: 'choice',
-                        choice: 'depends_on', confidence: 0.4)]).isEmpty()
+                        choice: 'selected_depends_on_candidate', confidence: 0.4)]).isEmpty()
     }
 
     def "a missing answer proposes nothing"() {
@@ -72,11 +101,12 @@ class EnmeshProposalSpec extends Specification {
                         choice: choice, confidence: 0.9)])[0].family == family
 
         where:
-        choice      | family
-        'depends_on'| MeshVocabulary.DEPENDENCY
-        'blocks'    | MeshVocabulary.BLOCKING
-        'tracks'    | MeshVocabulary.TRACKING
-        'contains'  | MeshVocabulary.STRUCTURE
-        'reconciles'| MeshVocabulary.TRACKING
+        choice                        | family
+        'selected_depends_on_candidate'| MeshVocabulary.DEPENDENCY
+        'candidate_depends_on_selected'| MeshVocabulary.DEPENDENCY
+        'selected_blocks_candidate'    | MeshVocabulary.BLOCKING
+        'references'                   | MeshVocabulary.REFERENCE
+        'tracks'                       | MeshVocabulary.TRACKING
+        'contains'                     | MeshVocabulary.STRUCTURE
     }
 }
