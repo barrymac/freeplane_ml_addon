@@ -21,17 +21,29 @@ class SemanticCandidates {
     /** Names the substrate considers near the question, best first. */
     static List<String> query(File scopeRoot, String question, int limit = MAX_RESULTS) {
         if (scopeRoot == null || !question?.trim()) return []
-        File surface = new File(scopeRoot, 'by-query')
-        if (!surface.isDirectory()) return []
         String safe = question.trim().replace('/', ' ').replace('\n', ' ').take(300)
-        File answer = new File(surface, safe)
-        try {
-            if (!answer.exists()) return []
-            return parse(answer.getText('UTF-8')).take(Math.max(limit, 1))
-        } catch (Exception problem) {
-            LogUtils.warn("SemanticCandidates: the search surface did not answer: ${problem.message}")
+        File answer = new File(new File(scopeRoot, 'by-query'), safe)
+        String text = null
+        Throwable failure = null
+        Thread worker = new Thread({
+            try {
+                text = answer.getText('UTF-8')
+            } catch (Throwable problem) {
+                failure = problem
+            }
+        } as Runnable, 'neuros-semantic')
+        worker.daemon = true
+        long started = System.currentTimeMillis()
+        worker.start()
+        worker.join(DirectoryListing.TIMEOUT_SECONDS * 1000L)
+        if (worker.alive) {
+            LogUtils.warn("SemanticCandidates: the search surface did not answer in " +
+                    "${DirectoryListing.TIMEOUT_SECONDS}s")
             return []
         }
+        if (failure != null || text == null) return []
+        LogUtils.info("SemanticCandidates: answered in ${System.currentTimeMillis() - started}ms")
+        return parse(text).take(Math.max(limit, 1))
     }
 
     /** TSV rows: name, identifier, type. Blank lines and headers are skipped. */

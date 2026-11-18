@@ -16,11 +16,18 @@ class DirectoryListing {
 
     /** Entries in a directory, or an honest failure. */
     static File[] list(File directory, String label) {
-        if (directory == null || !directory.isDirectory()) return new File[0]
+        if (directory == null) return new File[0]
         File[] result = null
+        boolean missing = false
         Throwable failure = null
         Thread worker = new Thread({
             try {
+                // The existence check is a stat on the same mount, and can block
+                // just as long as the listing; both belong inside the budget.
+                if (!directory.isDirectory()) {
+                    missing = true
+                    return
+                }
                 result = directory.listFiles()
             } catch (Throwable problem) {
                 failure = problem
@@ -33,13 +40,17 @@ class DirectoryListing {
         worker.join(TIMEOUT_SECONDS * 1000L)
         long elapsed = System.currentTimeMillis() - started
         if (worker.alive) {
-            LogUtils.severe("list: ${label} did not answer in ${TIMEOUT_SECONDS}s")
+            LogUtils.severe("list: ${label} did not answer in ${TIMEOUT_SECONDS}s (stat or readdir)")
             throw new IOException(
                     'The knowledge source is slow right now (listing ' + label + ' timed out). ' +
                             'Try again when it is quieter.')
         }
         if (failure != null) {
             LogUtils.warn("list: ${label} failed: ${failure.message}")
+            return new File[0]
+        }
+        if (missing) {
+            LogUtils.info("list: ${label} is not a directory")
             return new File[0]
         }
         LogUtils.info("list: ${label} → ${result?.length ?: 0} entries in ${elapsed}ms")

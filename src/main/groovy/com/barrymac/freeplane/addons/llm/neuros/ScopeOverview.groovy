@@ -31,18 +31,12 @@ class ScopeOverview {
         if (scopeRoot == null || !scopeRoot.isDirectory()) return overview
 
         ['tasks', 'diagrams', 'repos', 'commits', 'sops', 'tenets', 'violations'].each { name ->
-            File directory = new File(scopeRoot, name)
-            if (directory.isDirectory()) {
-                Integer count = countEntries(directory)
-                if (count != null) overview.surfaces[name] = count
-            }
+            Integer count = countEntries(new File(scopeRoot, name))
+            if (count != null) overview.surfaces[name] = count
         }
-        File byTag = new File(scopeRoot, 'by-tag')
-        if (byTag.isDirectory()) {
-            byTag.listFiles()?.findAll { it.isDirectory() }?.sort { it.name }?.each { type ->
-                Integer count = countEntries(type)
-                if (count != null) overview.types[type.name] = count
-            }
+        DirectoryListing.list(new File(scopeRoot, 'by-tag'), 'by-tag').sort { it.name }.each { type ->
+            Integer count = countEntries(type)
+            if (count != null && count > 0) overview.types[type.name] = count
         }
 
         MeshIndex index = MeshIndex.load(scopeRoot)

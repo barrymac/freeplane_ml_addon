@@ -80,9 +80,7 @@ class TextReferences {
         if (scopeRoot == null || !scopeRoot.isDirectory()) return []
         List<File> files = []
         ['by-tag/class', 'by-tag/file', 'by-tag/diagram', 'diagrams'].each { String surface ->
-            File directory = new File(scopeRoot, surface)
-            if (!directory.isDirectory()) return
-            File[] listing = DirectoryListing.list(directory, surface)
+            File[] listing = DirectoryListing.list(new File(scopeRoot, surface), surface)
             if (listing.length == 0) return
             listing.findAll { it.isFile() }.each { files << it }
         }

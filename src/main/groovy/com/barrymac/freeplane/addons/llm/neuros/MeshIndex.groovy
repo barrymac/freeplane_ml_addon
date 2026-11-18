@@ -36,7 +36,7 @@ class MeshIndex {
 
     static MeshIndex load(File scopeRoot, int limit = MAX_ENTRIES) {
         MeshIndex index = new MeshIndex()
-        if (scopeRoot == null || !scopeRoot.isDirectory()) return index
+        if (scopeRoot == null) return index
 
         String key = "${scopeRoot.absolutePath}|${limit}".toString()
         Object[] cached = CACHE[key]
@@ -49,8 +49,7 @@ class MeshIndex {
         List<File> candidates = []
         collect(scopeRoot, candidates)
         ['tasks', 'diagrams'].each { surface ->
-            File directory = new File(scopeRoot, surface)
-            if (directory.isDirectory()) collect(directory, candidates)
+            collect(new File(scopeRoot, surface), candidates)
         }
 
         Set<String> paths = new HashSet<>()
