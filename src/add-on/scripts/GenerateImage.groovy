@@ -36,8 +36,10 @@ try {
         LogUtils.warn("Novita.ai API key missing - prompting user")
 
         // Use main Freeplane frame as parent instead of node
-        novitaApiKey = ui.showInputDialog(
-                ui.currentFrame, // More reliable parent component
+        // Freeplane's UITools.showInputDialog now takes a NodeModel rather than
+        // a frame; JOptionPane keeps this stable across Freeplane versions.
+        novitaApiKey = JOptionPane.showInputDialog(
+                ui.currentFrame,
                 """<html>Novita.ai API key required for image generation.<br>
             Get your key at <a href='https://novita.ai/'>novita.ai</a></html>""",
                 "API Key Required",
@@ -108,7 +110,7 @@ try {
             ]
             def helpUrl = providerUrls[llmProvider] ?: providerUrls.openai
 
-            llmApiKey = ui.showInputDialog(
+            llmApiKey = JOptionPane.showInputDialog(
                 ui.currentFrame,
                 """<html>${llmProvider.toUpperCase()} API key required for prompt generation.<br>
                 Get your key at <a href='${helpUrl}'>${llmProvider} website</a></html>""",
@@ -132,8 +134,11 @@ try {
             systemPrompt = "You are an expert image prompt engineer. Enhance this prompt for AI image generation."
         }
 
+        // Use the map's configured chat model rather than a hardcoded legacy id:
+        // prompt enhancement then works with whichever provider the user runs.
+        def promptModel = ConfigManager.loadBaseConfig(config).model
         def promptRequest = new ApiRequest(
-            model: "gpt-3.5-turbo", // Consider making this configurable
+            model: promptModel,
             messages: [
                 new Message(role: 'system', content: systemPrompt),
                 new Message(role: 'user', content: prompt)

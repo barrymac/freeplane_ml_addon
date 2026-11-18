@@ -7,22 +7,25 @@ import org.freeplane.core.util.LogUtils
  */
 //@CompileStatic
 class ConfigManager {
-    // Default model list, refreshed 2026-11 against live provider catalogues
-    // (OpenRouter rankings + OpenAI model index). Users can always override
-    // via the 'openai.available_models' property (newline-separated).
+    // Default model list, refreshed 2026-11-17 against the live OpenRouter
+    // catalogue. Deliberately excludes OpenAI and Anthropic: both are far more
+    // expensive than the open-weight houses, and a user who wants them can add
+    // them to 'openai.available_models' themselves.
     static final List<String> DEFAULT_MODELS = [
-            // OpenRouter top-ranked (verified IDs, Nov 2026)
-            'deepseek/deepseek-v4.1-flash-20260910',
-            'z-ai/glm-5.3-flash-20260826',
-            'deepseek/deepseek-v4-flash-20260731',
-            // OpenAI current line (Responses-era ids also valid on chat completions)
-            'gpt-6-astra',
-            'gpt-6.1-sol',
-            'gpt-6.1-terra',
-            'gpt-6-luna',
-            'gpt-5.6-sol',
-            'gpt-5.4-mini',
-            'gpt-oss-120b'
+            // newest fast + flagship, Nov 2026
+            'tencent/hy4-flash',
+            'qwen/qwen4-max',
+            'google/gemini-4-hydrogen',
+            // domain-tuned: legal vocabulary and long-contract reasoning
+            'z-ai/glm-5.3-flashx-legal',
+            // long-context and reasoning houses
+            'moonshotai/kimi-k3.1-pro',
+            'deepseek/deepseek-v4.1-flash-1017',
+            'minimax/minimax-m3.1-flash',
+            'x-ai/grok-4.7',
+            'mistralai/mistral-large-4-0',
+            // vision-capable, for map screenshots and diagrams
+            'nvidia/nemotron-3.5-super-vl'
     ]
 
     /** First entry of DEFAULT_MODELS — the out-of-the-box choice. */
