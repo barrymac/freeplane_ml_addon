@@ -101,9 +101,49 @@ class ResponseParser {
     }
     
     /**
+     * Extracts image data URLs from a provider response.
+     *
+     * OpenRouter answers either on chat completions (`choices[0].message.images`)
+     * or on its Responses API (`output[]` carrying an `openrouter:image_generation`
+     * item), so both shapes are accepted rather than assuming one.
+     */
+    static List<String> parseImageResponse(String jsonResponse, String provider) {
+        if (provider == 'novita') return parseNovitaResponse(jsonResponse)
+        try {
+            if (!jsonResponse?.trim()) {
+                throw new Exception('Empty response from the image provider')
+            }
+            def parsed = new JsonSlurper().parseText(jsonResponse)
+            List<String> urls = []
+
+            parsed.choices?.each { choice ->
+                choice.message?.images?.each { image ->
+                    String url = image?.image_url?.url ?: image?.url
+                    if (url) urls << url
+                }
+            }
+            parsed.output?.each { item ->
+                if (item?.type == 'openrouter:image_generation') {
+                    String url = item.imageUrl ?: item.result
+                    if (url) urls << url
+                }
+            }
+
+            if (urls.isEmpty()) {
+                throw new Exception('No images found in the provider response')
+            }
+            LogUtils.info("Parsed ${urls.size()} image URLs from ${provider}")
+            return urls
+        } catch (Exception e) {
+            LogUtils.severe("Failed to parse image response from ${provider}: ${e.message}")
+            throw new Exception("Failed to parse ${provider} image response: ${e.message}", e)
+        }
+    }
+
+    /**
      * Parses LLM response to extract generated prompt text
      * 
-     * @param llmResponse The raw JSON response from OpenAI API
+     * @param llmResponse The raw JSON response from the chat provider
      * @return The generated prompt text or null if parsing fails
      */
     static String extractGeneratedPrompt(String llmResponse) {

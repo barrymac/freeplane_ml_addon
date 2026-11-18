@@ -1,5 +1,12 @@
 # History
 
+## v0.9.25 — 2026-11-17
+- Purge the OpenAI naming: settings live under `llm.*`, with existing `openai.*` values migrated once.
+- Remove OpenAI as a provider; OpenRouter is the default and any chat-completions URL can be used.
+- Image generation defaults to OpenRouter image models (openrouter key), with Novita kept as an option.
+- A missing chat key no longer blocks image generation; the prompt is simply used as written.
+- Chat parameters are written once for every provider instead of per-vendor spellings.
+
 ## v0.9.24 — 2026-11-17
 - Draw the typed relationships a card or diagram declares as labelled map connectors.
 - Reuse entries already in the map; add missing ones under a bounded Related knowledge branch.

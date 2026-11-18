@@ -1,6 +1,7 @@
 import com.barrymac.freeplane.addons.llm.api.ApiRequest
 import com.barrymac.freeplane.addons.llm.prompts.Message
 import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.ConfigKeys
 import com.barrymac.freeplane.addons.llm.services.ResourceLoaderService
 import com.barrymac.freeplane.addons.llm.ui.ImageSelectionDialog
 import com.barrymac.freeplane.addons.llm.ui.ImagePromptEditor
@@ -17,6 +18,7 @@ import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showErrorMessage
 import static com.barrymac.freeplane.addons.llm.ui.UiHelper.showInformationMessage
 
 import com.barrymac.freeplane.addons.llm.api.ApiPayloadBuilder
+import com.barrymac.freeplane.addons.llm.api.ImageGeneration
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ResponseParser
 import groovy.json.JsonSlurper
@@ -28,11 +30,18 @@ try {
     // 1. Load Configuration
     LogUtils.info("Loading configuration...")
 
-    // Check for API key FIRST before any other operations
+    // Images run through the chat provider by default (OpenRouter serves
+    // image-output models on the same endpoint and key), with Novita kept as an
+    // explicit alternative for its cheaper diffusion models.
+    String imageProvider = ConfigKeys.read(config, ConfigKeys.IMAGE_PROVIDER, ImageGeneration.OPENROUTER)
+    String imageModel = ConfigKeys.read(config, ConfigKeys.IMAGE_MODEL,
+            ImageGeneration.DEFAULT_OPENROUTER_IMAGE_MODEL)
+    LogUtils.info("Image provider: ${imageProvider}, model: ${imageModel}")
+
     def novitaApiKey = config.getProperty('novita.key', '')
 
     // Handle missing key with dialog that persists the value
-    if (!novitaApiKey) {
+    if (imageProvider == ImageGeneration.NOVITA && !novitaApiKey) {
         LogUtils.warn("Novita.ai API key missing - prompting user")
 
         // Use main Freeplane frame as parent instead of node
@@ -98,33 +107,20 @@ try {
 
     if (savedTemplate?.trim().isEmpty()) { // Check if it's null, empty, or whitespace
         LogUtils.info("No valid saved template found - generating enhancement")
-        def llmProvider = config.getProperty('openai.api_provider', 'openai')
-        def llmApiKey = config.getProperty('openai.key', '')
+        def llmProvider = ConfigKeys.read(config, ConfigKeys.PROVIDER, 'openrouter')
+        def llmApiKey = ConfigKeys.read(config, ConfigKeys.API_KEY, '')?.trim()
 
+        // Image generation is Novita's job. A chat provider key only buys prompt
+        // enhancement, so a missing one must never block the image.
         if (!llmApiKey) {
-            LogUtils.warn("${llmProvider} API key missing - prompting user")
-            def providerUrls = [
-                'openai': 'https://platform.openai.com/api-keys',
-                'openrouter': 'https://openrouter.ai/keys',
-                'novita': 'https://novita.ai/account'
-            ]
-            def helpUrl = providerUrls[llmProvider] ?: providerUrls.openai
-
-            llmApiKey = JOptionPane.showInputDialog(
-                ui.currentFrame,
-                """<html>${llmProvider.toUpperCase()} API key required for prompt generation.<br>
-                Get your key at <a href='${helpUrl}'>${llmProvider} website</a></html>""",
-                "API Key Required",
-                JOptionPane.QUESTION_MESSAGE
-            )
-
-            if (!llmApiKey?.trim()) {
-                showInformationMessage(ui, "Prompt generation requires a valid API key")
-                return // Exit script
-            }
-            config.setProperty('openai.key', llmApiKey.trim())
+            LogUtils.info('No chat provider key configured - using the image prompt as written')
+            showInformationMessage(ui,
+                    'No chat provider is configured, so the image prompt is used as written. ' +
+                    'Add a provider key in the LLM settings when you want prompts enhanced.')
+            enhancedPrompt = prompt
         }
 
+        if (llmApiKey) {
         String systemPrompt
         try {
             systemPrompt = ResourceLoaderService.loadTextResource('/novitaSystemPrompt.txt')
@@ -170,6 +166,7 @@ try {
             LogUtils.warn("Failed to parse LLM response, using original prompt: ${e.message}")
             enhancedPrompt = prompt // Fallback
         }
+        }
     } else {
         LogUtils.info("Using saved template from config, skipping LLM enhancement.") // Adjusted log
     }
@@ -211,21 +208,30 @@ try {
             LogUtils.info("Expanded final prompt: ${finalPrompt.take(100)}...")
 
 
-            // 5. Build Novita Payload
-            LogUtils.info("Building Novita payload...")
-            def payloadMap = ApiPayloadBuilder.buildNovitaImagePayload(
-                finalPrompt, // Use the directly expanded prompt
-                generationParams.steps,
-                generationParams.width,
-                generationParams.height,
-                generationParams.imageNum,
-                generationParams.seed // Use the seed from the editor result
-            )
-            LogUtils.info("Built Novita payload: ${payloadMap}")
+            // 5. Build the payload the chosen provider expects
+            LogUtils.info("Building ${imageProvider} payload...")
+            def payloadMap = imageProvider == ImageGeneration.NOVITA ?
+                    ApiPayloadBuilder.buildNovitaImagePayload(
+                            finalPrompt,
+                            generationParams.steps,
+                            generationParams.width,
+                            generationParams.height,
+                            generationParams.imageNum,
+                            generationParams.seed) :
+                    ImageGeneration.openRouterPayload(imageModel, finalPrompt, generationParams.imageNum)
+            LogUtils.info("Built ${imageProvider} payload: ${payloadMap}")
 
             // 6. Create API Caller Closure
             LogUtils.info("Creating Novita API caller closure...")
-            Closure callNovitaApi = ApiCallerFactory.createApiCaller([ui: ui]).make_api_call.curry('novita', novitaApiKey)
+            def imageKey = ImageGeneration.keyFor(imageProvider, config)
+            if (!imageKey) {
+                showErrorMessage(ui,
+                        "No API key is configured for ${imageProvider}. Add one in the LLM settings " +
+                                "to generate images.")
+                return
+            }
+            Closure callNovitaApi = ApiCallerFactory.createApiCaller([ui: ui])
+                    .make_api_call.curry(imageProvider, imageKey)
 
             // --- SwingWorker Implementation ---
             LogUtils.info("Setting up SwingWorker for Novita API call...")
@@ -311,7 +317,7 @@ try {
 
                         // If get() succeeded:
                         LogUtils.info("SwingWorker: API call successful. Parsing response...")
-                        List<String> imageUrls = ResponseParser.parseNovitaResponse(rawApiResponse)
+                        List<String> imageUrls = ResponseParser.parseImageResponse(rawApiResponse, imageProvider)
                         if (imageUrls.isEmpty()) {
                             LogUtils.error("SwingWorker: API response did not contain any image URLs.")
                             showErrorMessage(ui, "The API did not return any image URLs. Check logs.")

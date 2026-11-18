@@ -243,8 +243,6 @@ try {
             }
 
             // --- Prepare Initial Payloads ---
-            // Use response_format for OpenAI JSON mode where possible
-            def responseFormat = (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "json_object"] : null
             def compatParams = ModelCompatibility.chatParams(apiConfig.provider, apiConfig.model,
                 apiConfig.temperature, apiConfig.maxTokens)
 

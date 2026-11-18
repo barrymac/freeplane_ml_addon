@@ -8,9 +8,8 @@ import org.freeplane.core.util.LogUtils
 //@CompileStatic
 class ConfigManager {
     // Default model list, refreshed 2026-11-17 against the live OpenRouter
-    // catalogue. Deliberately excludes OpenAI and Anthropic: both are far more
-    // expensive than the open-weight houses, and a user who wants them can add
-    // them to 'openai.available_models' themselves.
+    // catalogue. Deliberately excludes the two most expensive frontier houses
+    // on cost grounds; a user who wants them can add them in the settings.
     static final List<String> DEFAULT_MODELS = [
             // newest fast + flagship, Nov 2026
             'tencent/hy4-flash',
@@ -39,20 +38,20 @@ class ConfigManager {
      */
     static ApiConfig loadBaseConfig(def config) {
         try {
-            def provider = config.getProperty('openai.api_provider', 'openrouter')
-            def model = config.getProperty('openai.gpt_model', DEFAULT_MODEL)
-            def maxTokens = config.getProperty('openai.max_response_length', 2000) as int
-            def temperature = config.getProperty('openai.temperature', 0.7) as double
+            def provider = ConfigKeys.read(config, ConfigKeys.PROVIDER, 'openrouter')
+            def model = ConfigKeys.read(config, ConfigKeys.MODEL, DEFAULT_MODEL)
+            def maxTokens = ConfigKeys.read(config, ConfigKeys.MAX_RESPONSE_LENGTH, '2000') as int
+            def temperature = ConfigKeys.read(config, ConfigKeys.TEMPERATURE, '0.7') as double
 
             // Get available models from config or use defaults
-            def availableModels = config.getProperty('openai.available_models')?.split('\n') ?: DEFAULT_MODELS
+            def availableModels = ConfigKeys.read(config, ConfigKeys.AVAILABLE_MODELS)?.split('\n') ?: DEFAULT_MODELS
 
             LogUtils.info("Loaded configuration: provider=${provider}, model=${model}, maxTokens=${maxTokens}, temperature=${temperature}")
             LogUtils.info("Available models: ${availableModels}")
 
             return new ApiConfig(
                     provider: provider,
-                    apiKey: config.getProperty('openai.key', '') ?: '',
+                    apiKey: ConfigKeys.read(config, ConfigKeys.API_KEY, '') ?: '',
                     model: model,
                     maxTokens: maxTokens,
                     temperature: temperature,
@@ -92,7 +91,7 @@ class ConfigManager {
      */
     static int getSystemMessageIndex(def config) {
         try {
-            def index = config.getProperty('openai.system_message_index', 0) as int
+            def index = ConfigKeys.read(config, ConfigKeys.SYSTEM_MESSAGE_INDEX, '0') as int
             LogUtils.info("System message index: ${index}")
             return index
         } catch (Exception e) {
@@ -109,7 +108,7 @@ class ConfigManager {
      */
     static int getUserMessageIndex(def config) {
         try {
-            def index = config.getProperty('openai.user_message_index', 0) as int
+            def index = ConfigKeys.read(config, ConfigKeys.USER_MESSAGE_INDEX, '0') as int
             LogUtils.info("User message index: ${index}")
             return index
         } catch (Exception e) {

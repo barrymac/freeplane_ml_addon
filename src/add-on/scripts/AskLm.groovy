@@ -7,6 +7,7 @@ import org.freeplane.core.util.LogUtils
 import com.barrymac.freeplane.addons.llm.api.ApiCallerFactory
 import com.barrymac.freeplane.addons.llm.ApiConfig
 import com.barrymac.freeplane.addons.llm.ConfigManager
+import com.barrymac.freeplane.addons.llm.ConfigKeys
 import com.barrymac.freeplane.addons.llm.prompts.MessageExpander // Needed for expanding template
 import com.barrymac.freeplane.addons.llm.exceptions.LlmAddonException // Needed for API error handling
 import com.barrymac.freeplane.addons.llm.utils.JsonUtils // Needed for response parsing
@@ -115,9 +116,7 @@ try {
             ]
             Map<String, Object> payload = [
                     'model'      : dialogResult.model,
-                    'messages'   : messagesList,
-                    // Add response_format based on provider/model from result map
-                    'response_format': (dialogResult.provider == 'openai' && dialogResult.model.toString().contains("gpt")) ? [type: "text"] : null
+                    'messages'   : messagesList
             ] + ModelCompatibility.chatParams(dialogResult.provider, dialogResult.model.toString(),
                     dialogResult.temperature, dialogResult.maxTokens)
 
@@ -176,13 +175,13 @@ try {
 
             // 2. Save configuration properties using data from result map
             // Use 'config' from script context
-            config.setProperty('openai.key', dialogResult.apiKey)
-            config.setProperty('openai.gpt_model', dialogResult.model)
-            config.setProperty('openai.max_response_length', dialogResult.maxTokens)
-            config.setProperty('openai.temperature', dialogResult.temperature)
-            config.setProperty('openai.system_message_index', dialogResult.systemMessageIndex)
-            config.setProperty('openai.user_message_index', dialogResult.userMessageIndex)
-            config.setProperty('openai.api_provider', dialogResult.provider)
+            ConfigKeys.write(config, ConfigKeys.API_KEY, dialogResult.apiKey)
+            ConfigKeys.write(config, ConfigKeys.MODEL, dialogResult.model)
+            ConfigKeys.write(config, ConfigKeys.MAX_RESPONSE_LENGTH, dialogResult.maxTokens)
+            ConfigKeys.write(config, ConfigKeys.TEMPERATURE, dialogResult.temperature)
+            ConfigKeys.write(config, ConfigKeys.SYSTEM_MESSAGE_INDEX, dialogResult.systemMessageIndex)
+            ConfigKeys.write(config, ConfigKeys.USER_MESSAGE_INDEX, dialogResult.userMessageIndex)
+            ConfigKeys.write(config, ConfigKeys.PROVIDER, dialogResult.provider)
 
             UiHelper.showInformationMessage(ui, "Changes saved.")
 

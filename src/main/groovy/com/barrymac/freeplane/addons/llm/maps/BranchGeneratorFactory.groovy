@@ -28,7 +28,7 @@ class BranchGeneratorFactory {
                     if (provider == 'openrouter') {
                         Desktop.desktop.browse(new URI("https://openrouter.ai/keys"))
                     } else {
-                        Desktop.desktop.browse(new URI("https://platform.openai.com/account/api-keys"))
+                        Desktop.desktop.browse(new URI("https://openrouter.ai/keys"))
                     }
                     ui.errorMessage("Invalid authentication or incorrect API key provided.")
                     return

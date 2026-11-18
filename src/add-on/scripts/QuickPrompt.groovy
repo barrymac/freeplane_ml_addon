@@ -80,8 +80,7 @@ try {
 
         Map<String, Object> payload = [
             'model'      : apiConfig.model,
-            'messages'   : messagesList,
-            'response_format': (apiConfig.provider == 'openai' && apiConfig.model.contains("gpt")) ? [type: "text"] : null
+            'messages'   : messagesList
         ] + ModelCompatibility.chatParams(apiConfig.provider, apiConfig.model,
             apiConfig.temperature, apiConfig.maxTokens)
 

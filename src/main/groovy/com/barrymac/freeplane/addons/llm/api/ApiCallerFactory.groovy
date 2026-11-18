@@ -20,7 +20,6 @@ class ApiCallerFactory {
      * Enum for supported API providers
      */
     enum ApiProvider {
-        OPENAI('https://api.openai.com/v1/chat/completions'),
         OPENROUTER('https://openrouter.ai/api/v1/chat/completions'),
         NOVITA('https://api.novita.ai/v3beta/flux-1-schnell')
 
@@ -34,12 +33,19 @@ class ApiCallerFactory {
          * Get provider from string
          */
         static ApiProvider fromString(String provider) {
-            switch (provider.toLowerCase()) {
-                case 'openai': return OPENAI
+            switch (provider?.toLowerCase()) {
                 case 'openrouter': return OPENROUTER
                 case 'novita': return NOVITA
-                default: throw new LlmAddonException("Unsupported API provider: $provider")
+                default: throw new LlmAddonException(
+                        "Unsupported API provider: $provider. Choose openrouter or novita, " +
+                                'or set llm.base_url to a chat-completions endpoint.')
             }
+        }
+
+        /** A provider name, or a full endpoint URL the caller supplies itself. */
+        static String endpointFor(String provider) {
+            if (provider?.startsWith('http')) return provider
+            return fromString(provider).endpoint
         }
     }
 
@@ -59,9 +65,12 @@ class ApiCallerFactory {
                     requestObj.toMap() : requestObj as Map<String, Object>
 
             try {
-                // Convert string provider to enum
-                def provider = ApiProvider.fromString(providerStr)
-                return handleApiCall(provider, apiKey, payloadMap, ui)
+                // A configured base URL is used verbatim; otherwise the provider
+                // name picks a known endpoint.
+                String endpoint = ApiProvider.endpointFor(providerStr)
+                def provider = providerStr?.startsWith('http') ?
+                        ApiProvider.OPENROUTER : ApiProvider.fromString(providerStr)
+                return handleApiCall(provider, endpoint, apiKey, payloadMap, ui)
             } catch (ApiException e) {
                 // Pass the exception message directly as it should contain necessary context
                 ui.errorMessage(e.message)
@@ -72,18 +81,12 @@ class ApiCallerFactory {
             }
         }
 
-        // For backward compatibility
-        def make_openai_call = { String apiKey, Map<String, Object> payloadMap ->
-            return make_api_call('openai', apiKey, payloadMap)
-        }
-
         def make_openrouter_call = { String apiKey, Map<String, Object> payloadMap ->
             return make_api_call('openrouter', apiKey, payloadMap)
         }
 
         return [
                 make_api_call       : make_api_call,
-                make_openai_call    : make_openai_call,
                 make_openrouter_call: make_openrouter_call
         ]
     }
@@ -97,10 +100,10 @@ class ApiCallerFactory {
      * @param ui The UI
      * @return The response text
      */
-    private static String handleApiCall(ApiProvider provider, String apiKey,
-                                        Map<String, Object> payloadMap, def ui) {
+    private static String handleApiCall(ApiProvider provider, String endpoint,
+                                        String apiKey, Map<String, Object> payloadMap, def ui) {
         def responseText = ""
-        String apiUrl = provider.endpoint
+        String apiUrl = endpoint
         Map<String, String> headers = [
                 "Content-Type" : "application/json",
                 "Authorization": "Bearer $apiKey"
@@ -195,15 +198,12 @@ class ApiCallerFactory {
                         errorMsg = "Invalid authentication or incorrect API key provided for ${provider.name().toLowerCase()}."
                         browseUrl = (provider == ApiProvider.OPENROUTER) ?
                                 "https://openrouter.ai/keys" :
-                                (provider == ApiProvider.NOVITA) ?
-                                "https://novita.ai/account" : "https://platform.openai.com/account/api-keys"
+                                "https://novita.ai/account"
                         break
                     case 404:
                         errorMsg = (provider == ApiProvider.OPENROUTER) ?
                                 "Endpoint not found. Check your OpenRouter configuration." :
-                                (provider == ApiProvider.NOVITA) ?
-                                "Endpoint not found. Check your Novita configuration." :
-                                "You might need organization membership for OpenAI API."
+                                "Endpoint not found. Check your Novita configuration."
                         break
                     case 429:
                         errorMsg = "Rate limit reached or quota exceeded for ${provider.name().toLowerCase()}."

@@ -85,7 +85,7 @@ class AskLmDialogueHelper {
                             }
                             cPanel.gridx++
                             swingBuilder.panel(constraints: cPanel, layout: new BorderLayout(), border: BorderFactory.createTitledBorder('Provider')) {
-                                apiProviderBox = swingBuilder.comboBox(items: ['openai', 'openrouter'], selectedItem: apiConfig.provider)
+                                apiProviderBox = swingBuilder.comboBox(items: ['openrouter', 'novita'], selectedItem: apiConfig.provider)
                             }
                             cPanel.gridx++
                             cPanel.gridwidth = 2 // Make slider span 2 columns if needed
