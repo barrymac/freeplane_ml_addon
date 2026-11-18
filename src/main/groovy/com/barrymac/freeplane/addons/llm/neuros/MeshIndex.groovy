@@ -8,10 +8,15 @@ import org.freeplane.core.util.LogUtils
  * Only names are indexed — no file is opened and no identifier is shown. A
  * target resolves by the identifier written in the document, by file name, or
  * by its readable title; anything else is honestly unresolved.
+ *
+ * Listings go through {@link DirectoryListing}, so a busy knowledge host produces
+ * a timeout instead of a silent hang, and the result is cached briefly so repeated
+ * actions in one session do not re-walk the mount.
  */
 class MeshIndex {
 
     static final int MAX_ENTRIES = 400
+    static final long CACHE_MILLIS = 30_000L
 
     private static final String UUID =
             '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
@@ -22,6 +27,8 @@ class MeshIndex {
     private static final java.util.regex.Pattern UUID_NAME =
             ~/^(.*?)(${UUID})-?(.*?)\.card\.md$/
 
+    private static final Map<String, Object[]> CACHE = [:]
+
     final List<MeshNode> entries = []
     private final Map<String, MeshNode> byId = [:]
     private final Map<String, MeshNode> byTitle = [:]
@@ -30,6 +37,14 @@ class MeshIndex {
     static MeshIndex load(File scopeRoot, int limit = MAX_ENTRIES) {
         MeshIndex index = new MeshIndex()
         if (scopeRoot == null || !scopeRoot.isDirectory()) return index
+
+        String key = "${scopeRoot.absolutePath}|${limit}".toString()
+        Object[] cached = CACHE[key]
+        if (cached != null && (System.currentTimeMillis() - (long) cached[1]) < CACHE_MILLIS) {
+            long age = (System.currentTimeMillis() - (long) cached[1]) / 1000
+            LogUtils.info("MeshIndex: reusing a listing from ${age}s ago")
+            return (MeshIndex) cached[0]
+        }
 
         List<File> candidates = []
         collect(scopeRoot, candidates)
@@ -43,7 +58,14 @@ class MeshIndex {
                 .sort { it.name }
                 .take(Math.max(limit, 1))
                 .each { index.add(it) }
+
+        CACHE[key] = [index, System.currentTimeMillis()] as Object[]
         return index
+    }
+
+    /** Drop the cached listing, so a changed scope is seen immediately. */
+    static void invalidate() {
+        CACHE.clear()
     }
 
     MeshNode find(String target) {
@@ -77,15 +99,7 @@ class MeshIndex {
     }
 
     private static void collect(File directory, List<File> candidates) {
-        File[] files
-        try {
-            files = directory.listFiles()
-        } catch (Exception problem) {
-            LogUtils.warn("Mesh index could not list ${directory.name}: ${problem.message}")
-            return
-        }
-        if (files == null) return
-        files.findAll { file ->
+        DirectoryListing.list(directory, directory.name ?: directory.path).findAll { file ->
             file.isFile() && (file.name.endsWith('.card.md') || file.name.endsWith('.puml'))
         }.each { candidates << it }
     }

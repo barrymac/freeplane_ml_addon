@@ -25,16 +25,20 @@ class NeurosEnmeshAction {
         try {
             def node = c.selected
             if (node == null) {
+                LogUtils.info('NeurosEnmesh: no node selected')
                 UiHelper.showInformationMessage(ui, 'Please select a node first.')
                 return
             }
             KnowledgeContext context = KnowledgeContext.discover(node.map.file)
             if (!context.isEnabled()) {
+                LogUtils.info("NeurosEnmesh: neurOS not enabled — ${context.reason}")
                 UiHelper.showInformationMessage(ui, context.reason)
                 return
             }
             File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
+                LogUtils.info("NeurosEnmesh: link unresolved — hasLink=${LinkTargets.hasLink(node)} " +
+                        "link=${LinkTargets.describe(node)}")
                 UiHelper.showInformationMessage(ui, LinkTargets.hasLink(node) ?
                         "The link on this node does not point at a readable file: " +
                                 LinkTargets.describe(node) :
@@ -43,6 +47,9 @@ class NeurosEnmeshAction {
             }
             String key = Keys.jev()
             if (!key) {
+                LogUtils.info("NeurosEnmesh: no Jev key. env JEV_API_KEY=" +
+                        "${Keys.environment(Keys.JEV) ? 'present' : 'absent'} " +
+                        "snapshot=${Keys.environmentSnapshot().size()} vars")
                 UiHelper.showInformationMessage(ui,
                         'Enmeshment needs a judgement model. Set JEV_API_KEY in the environment.')
                 return

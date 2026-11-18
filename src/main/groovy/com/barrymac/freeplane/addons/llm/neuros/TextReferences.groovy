@@ -82,12 +82,12 @@ class TextReferences {
         ['by-tag/class', 'by-tag/file', 'by-tag/diagram', 'diagrams'].each { String surface ->
             File directory = new File(scopeRoot, surface)
             if (!directory.isDirectory()) return
-            File[] listing = directory.listFiles()
-            if (listing == null) return
+            File[] listing = DirectoryListing.list(directory, "by-tag/${surface}".toString())
+            if (listing.length == 0) return
             listing.findAll { it.isFile() }.each { files << it }
         }
-        File[] root = scopeRoot.listFiles()
-        root?.findAll { it.isFile() && it.name.endsWith('.puml') }?.each { files << it }
+        File[] root = DirectoryListing.list(scopeRoot, 'root')
+        root.findAll { it.isFile() && it.name.endsWith('.puml') }.each { files << it }
         return files
     }
 

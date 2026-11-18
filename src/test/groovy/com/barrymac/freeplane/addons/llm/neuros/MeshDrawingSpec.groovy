@@ -32,11 +32,18 @@ class MeshDrawingSpec extends Specification {
     private MeshIndex index
 
     def setup() {
+        // The index caches listings for the session; a test that writes files must
+        // not inherit an earlier test's snapshot.
+        MeshIndex.invalidate()
         expansion = card(EXPAND, 'bounded-relationship-expansion')
         automatic = card(AUTO, 'automatic-visible-hit-connectors')
         door = card(DOOR, 'lazy-door-navigation')
         mesh = card(MESH, 'bounded-mesh-density-inspector')
         index = MeshIndex.load(scope)
+    }
+
+    def cleanup() {
+        MeshIndex.invalidate()
     }
 
     private File card(String uuid, String slug) {
@@ -189,6 +196,7 @@ class MeshDrawingSpec extends Specification {
         def map = newTree()
         def expansionNode = child(map.root, expansion)
         (1..20).each { card(String.format('%08d-0000-0000-0000-000000000000', it), "entry-${it}") }
+        MeshIndex.invalidate()
         def freshIndex = MeshIndex.load(scope)
         List<MeshEdge> edges = (1..20).collect { number ->
             new MeshEdge(source: EXPAND,

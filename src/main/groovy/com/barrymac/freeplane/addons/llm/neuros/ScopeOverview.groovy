@@ -84,8 +84,8 @@ class ScopeOverview {
                 def matcher = (status.getText('UTF-8') =~ /(?m)^total_available:\s*(\d+)\s*$/)
                 if (matcher.find()) return matcher.group(1) as Integer
             }
-            File[] files = directory.listFiles()
-            return files == null ? null : files.findAll { it.name != '.listing-status' }.size()
+            File[] files = DirectoryListing.list(directory, directory.name)
+            return files.findAll { it.name != '.listing-status' }.size()
         } catch (Exception problem) {
             LogUtils.warn("Scope overview could not count ${directory.name}: ${problem.message}")
             return null

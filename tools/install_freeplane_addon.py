@@ -308,6 +308,27 @@ def register_accelerators(base: Path, scripts: list[dict]) -> None:
     print(f'[+] accelerators {path} ({written} updated)')
 
 
+def warn_if_running() -> None:
+    """A jar replaced under a running Freeplane breaks lazily loaded classes.
+
+    The JVM keeps an open handle on the old archive; the next class the script
+    touches — often a generated closure — is missing from the replaced file and
+    surfaces as NoClassDefFoundError. Say it at install time instead.
+    """
+    running = []
+    proc = Path('/proc')
+    for entry in proc.iterdir() if proc.is_dir() else []:
+        try:
+            cmdline = (entry / 'cmdline').read_bytes().decode('utf-8', 'ignore')
+        except Exception:
+            continue
+        if 'freeplanelauncher.jar' in cmdline:
+            running.append(entry.name)
+    if running:
+        print(f'[!] Freeplane is running (pid {", ".join(running)}): restart it, or the '
+              f'new jar will fail with NoClassDefFoundError on first use.')
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('package', type=Path)
@@ -318,6 +339,7 @@ def main() -> None:
         raise SystemExit(f'no such package: {args.package}')
     args.base.mkdir(parents=True, exist_ok=True)
     install(args.package, args.base)
+    warn_if_running()
 
 
 if __name__ == '__main__':

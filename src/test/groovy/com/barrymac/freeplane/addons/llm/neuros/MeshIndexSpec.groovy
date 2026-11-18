@@ -19,6 +19,10 @@ class MeshIndexSpec extends Specification {
         return file
     }
 
+    def setup() {
+        MeshIndex.invalidate()
+    }
+
     def "titles read as words, never as identifiers"() {
         expect:
         MeshIndex.titleOf("CARD-${EXPAND}-bounded-relationship-expansion.card.md") ==
