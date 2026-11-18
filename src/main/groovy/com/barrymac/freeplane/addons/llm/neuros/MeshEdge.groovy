@@ -15,4 +15,6 @@ class MeshEdge {
     String label
     String family
     boolean declared
+    /** Provisional: proposed by a judgement, not yet accepted. */
+    boolean proposed
 }

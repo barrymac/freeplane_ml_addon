@@ -49,12 +49,16 @@ class NeurosMeshAction {
         File seedFile = node.link?.file
         MeshIndex index = MeshIndex.load(context.source.path(''))
         MeshNode seed = index.forFile(seedFile)
-        List<MeshEdge> edges = readEdges(seedFile, seed)
-        if (edges.isEmpty()) {
-            return 'This entry declares no relationships yet. Add a typed link to its ' +
-                    'source material first.'
+        Set<String> lens = MeshLens.read(node.map.storage)
+        List<MeshEdge> edges = MeshLens.filter(readEdges(seedFile, seed), lens)
+        MeshGaps.Diagnosis diagnosis = MeshGaps.diagnose(edges, index)
+        if (diagnosis.kind != MeshGaps.LINKED) {
+            LogUtils.info("NeurosMesh: ${diagnosis.kind} (${diagnosis.declared} declared)")
+            tag(node, diagnosis.tag())
+            return diagnosis.message()
         }
         MeshDrawing drawing = MeshDrawing.draw(node, index, edges)
+        tag(node, null)
         LogUtils.info("NeurosMesh: ${drawing.summary()}")
         return drawing.summary()
     }
@@ -65,6 +69,12 @@ class NeurosMeshAction {
             return PumlMeshReader.read(text)
         }
         return MeshMarkers.read(text, seed?.id)
+    }
+
+    /** Mark the node when the expansion revealed a gap; clear it when it did not. */
+    private static void tag(def node, String tag) {
+        node.tags.removeAll([MeshGaps.TAG_NO_LINKS, MeshGaps.TAG_UNRESOLVED])
+        if (tag) node.tags.add(tag)
     }
 
     private static String readBounded(File file) {

@@ -75,7 +75,7 @@
 <hook NAME="AutomaticEdgeColor" COUNTER="18" RULE="ON_BRANCH_CREATION"/>
 <attribute_layout NAME_WIDTH="112.61538 pt" VALUE_WIDTH="333.23076 pt"/>
 <attribute NAME="name" VALUE="promptLlmAddOn"/>
-<attribute NAME="version" VALUE="v0.9.30"/>
+<attribute NAME="version" VALUE="v0.9.31"/>
 <attribute NAME="author" VALUE="barry, dpolivaev"/>
 <attribute NAME="freeplaneVersionFrom" VALUE="v1.11.3" OBJECT="org.freeplane.features.format.FormattedObject|java.lang.String&amp;#x7c;v1.11.3|number:decimal:#0.####"/>
 <attribute NAME="freeplaneVersionTo" VALUE=""/>
@@ -256,6 +256,8 @@
 <attribute NAME="addons.${name}.neurosPreviewPopup" VALUE="Preview neurOS Content"/>
 <attribute NAME="addons.${name}.neurosMesh" VALUE="Draw neurOS Relationships"/>
 <attribute NAME="addons.${name}.neurosContradictions" VALUE="Find neurOS Disagreements"/>
+<attribute NAME="addons.${name}.neurosPublishCheck" VALUE="Check Preview Before Publishing"/>
+<attribute NAME="addons.${name}.neurosEnmesh" VALUE="Enmesh This Node"/>
 <attribute NAME="addons.${name}.neurosPushCard" VALUE="Save Branch to neurOS"/>
 </node>
 </node>
@@ -288,6 +290,8 @@
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPreviewPopup.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosMesh.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosContradictions.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPublishCheck.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosEnmesh.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPushCard.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn-icon.svg"/>
@@ -527,6 +531,30 @@
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
 <attribute NAME="keyboardShortcut" VALUE="control alt C"/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="true"/>
+</node>
+<node TEXT="NeurosPublishCheck.groovy" ID="ID_NEUROS_PUBLISH_CHECK" CREATED="1786920000009" MODIFIED="1786920000009">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosPublishCheck"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE="control alt shift C"/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="true"/>
+</node>
+<node TEXT="NeurosEnmesh.groovy" ID="ID_NEUROS_ENMESH" CREATED="1786920000010" MODIFIED="1786920000010">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosEnmesh"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE="control alt E"/>
 <attribute NAME="execute_scripts_without_asking" VALUE="true"/>
 <attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>

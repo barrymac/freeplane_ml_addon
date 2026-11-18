@@ -1,5 +1,11 @@
 # History
 
+## v0.9.31 — 2026-11-18
+- Add relationship lenses: the map draws only the families you choose (dependency, blocking, structure, tracking, reference, code, governance, contradiction).
+- Add "Enmesh This Node" (`Ctrl+Alt+E`): a judgement model proposes missing relationships through the chosen lens, drawn dashed and grey until accepted.
+- An empty expansion now diagnoses itself: no relationships at all (enmeshment gap) versus links that resolve nowhere (substrate gap), tagged on the node.
+- Add `tools/mesh-gaps.sh`: a scope-wide report of enmeshment and substrate gaps.
+
 ## v0.9.30 — 2026-11-17
 - Judgement is Jev only: one transport, one key, no provider knobs.
 - Jev vision: images travel as assets, fitted to the accepted size bounds (pad small frames, downscale large ones).

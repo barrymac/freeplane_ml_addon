@@ -72,10 +72,13 @@ class MeshDrawing {
         if (exists) return false
         def connector = source.addConnectorTo(target)
         connector.middleLabel = edge.label
-        connector.color = MeshVocabulary.color(edge.family)
-        connector.width = 2
+        // Provisional proposals read as pencilled-in: grey and dashed, whatever
+        // family they belong to, so nobody mistakes them for accepted structure.
+        connector.color = edge.proposed ?
+                new java.awt.Color(0x88, 0x88, 0x88) : MeshVocabulary.color(edge.family)
+        connector.width = edge.proposed ? 1 : 2
         connector.endArrow = true
-        int[] dash = MeshVocabulary.dashFor(edge.family)
+        int[] dash = edge.proposed ? ([4, 6] as int[]) : MeshVocabulary.dashFor(edge.family)
         if (dash != null) connector.dashArray = dash
         return true
     }

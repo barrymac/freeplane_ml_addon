@@ -145,6 +145,27 @@ class MeshDrawingSpec extends Specification {
         connector.middleLabel == 'contradicts'
     }
 
+    def "a provisional proposal is drawn dashed and grey, not in family colour"() {
+        given:
+        def map = newTree()
+        def expansionNode = child(map.root, expansion)
+        child(map.root, automatic)
+
+        when:
+        def drawing = MeshDrawing.draw(expansionNode, index, [
+                new MeshEdge(source: EXPAND, target: AUTO, marker: 'depends-on',
+                        label: 'proposed: depends on', family: MeshVocabulary.DEPENDENCY,
+                        declared: true, proposed: true)])
+
+        then:
+        drawing.drawn == 1
+        def connector = expansionNode.connectorsOut[0]
+        connector.color == new java.awt.Color(0x88, 0x88, 0x88)
+        connector.dashArray == ([4, 6] as int[])
+        connector.width == 1
+        connector.middleLabel.startsWith('proposed:')
+    }
+
     def "a link outside the scope is counted, never invented"() {
         given:
         def map = newTree()
