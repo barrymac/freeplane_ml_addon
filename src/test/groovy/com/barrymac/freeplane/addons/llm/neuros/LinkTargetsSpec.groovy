@@ -53,4 +53,16 @@ class LinkTargetsSpec extends Specification {
         expect:
         LinkTargets.fileFor(node) == null
     }
+
+    def "a link written as text still resolves"() {
+        given:
+        File card = new File(directory, 'card.md')
+        card.text = 'x'
+
+        expect:
+        LinkTargets.textAsFile(card.absolutePath) == card
+        LinkTargets.textAsFile(card.toURI().toString()) == card
+        LinkTargets.textAsFile('  ') == null
+        LinkTargets.textAsFile('https://example.test/card.md') == null
+    }
 }

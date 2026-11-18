@@ -1,5 +1,9 @@
 # History
 
+## v0.9.35 — 2026-11-18
+- Resolve a node's target from every form its link can take (file, URI, text, raw), and log the values when none resolve.
+- Preview, draw, disagreements, enmeshment and the publish check share that resolution.
+
 ## v0.9.34 — 2026-11-18
 - Resolve a node's target from the link URI when Freeplane leaves `link.file` null, so `file://` links are no longer reported as "no entry".
 - The demo launcher installs the packaged add-on into the profile before starting.
