@@ -1,5 +1,10 @@
 # History
 
+## v0.9.27 — 2026-11-17
+- Add a typed judgement client: one call asks named questions about a state and returns choices with confidence, or probabilities.
+- Two transports: Jev at TypeSafe (verified live) and the decision model at OpenRouter.
+- Credentials resolve from the environment first; a saved key is only a convenience, and keys are never written into a map.
+
 ## v0.9.26 — 2026-11-17
 - The image prompt editor now offers the image service and model, and remembers both.
 - A config that still names `openai` as its provider says how to migrate instead of only refusing.
