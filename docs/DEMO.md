@@ -8,16 +8,16 @@ The judgement actions read `JEV_API_KEY` from the environment Freeplane starts i
 Starting from a desktop menu will not have it.
 
 ```bash
-mkdir -p /tmp/enmesh-demo
-ln -sfn /mnt/neuros-9p-mss1/freeplane /tmp/enmesh-demo/SCOPE_KNOWLEDGE
-tools/demo-map.sh /mnt/neuros-9p-mss1/freeplane /tmp/enmesh-demo/EnmeshDemo.mm
-
-JEV_API_KEY="$JEV_API_KEY" ~/bin/freeplane-1.12.11/freeplane.sh \
-  /tmp/enmesh-demo/EnmeshDemo.mm
+cd ~/src/ai/freeplane_ml_addon
+tools/enmesh-demo.sh            # prepares /tmp/enmesh-demo and launches Freeplane
 ```
 
-`tools/demo-map.sh` writes the map, and the `SCOPE_KNOWLEDGE` symlink beside it
-is what tells the add-on which scope is in play — no configuration needed.
+One command prepares the folder, writes the map and starts Freeplane with a Java
+version it accepts (24+ is rejected upstream, which is why the wrapper pins 23).
+Use `--no-launch` to prepare without opening a window.
+
+The `SCOPE_KNOWLEDGE` symlink beside the map is what tells the add-on which scope
+is in play — no configuration needed.
 
 ## 2. Enmesh a node that has no links at all
 
@@ -58,9 +58,11 @@ These cards were written to agree, so the honest result is *reconciles* or
 *unresolved*, with the reason and confidence in the summary. A `contradicts` here
 would mean the model is over-reading.
 
-For a known-positive, use the probe pair described in `docs/HELP.md` once it
-exists — the same shortcut against two cards that genuinely disagree produces a
-dashed crimson connector.
+For a known-positive, use the shipped probe pair in `demo/probe/` — two cards that
+genuinely disagree (filed 30 July vs nothing before 28 August). Ingest that folder
+into the scope, run the same shortcut on the first card, and expect a dashed
+crimson connector labelled `contradicts`. Measured: **0.96 confidence**. If it
+comes back reconciled, the judgement plane is wrong, not the fixture.
 
 ## 5. Check a preview before publishing
 
