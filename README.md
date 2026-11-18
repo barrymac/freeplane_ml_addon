@@ -162,6 +162,24 @@ Shortcuts can be changed through Freeplane's normal keyboard configuration.
 
 ---
 
+## Easter egg: the fixture that disagrees with itself
+
+`demo/probe/` ships two cards that cannot both be true — one says a notice was
+filed on **30 July 2026**, the other that **nothing** was filed before
+**28 August 2026**. They reference each other.
+
+Ingest that folder into a neurOS scope, select the first card and press
+**Find neurOS Disagreements** (`Ctrl+Alt+C`). The expected answer is a dashed
+crimson connector labelled `contradicts`, with a confidence beside it — measured
+at **0.96**.
+
+It exists because every other card in this project agrees with its neighbours, so
+the *positive* case of contradiction detection had nothing to run against. If a
+judgement model ever says those two agree, that is a defect worth knowing about.
+`DemoProbeSpec` fails the build if anyone edits the pair into agreement.
+
+Details: [`demo/probe/README.md`](demo/probe/README.md).
+
 ## Development
 
 ```bash

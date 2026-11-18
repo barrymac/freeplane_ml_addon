@@ -73,7 +73,9 @@ class NeurosMeshAction {
 
     /** Mark the node when the expansion revealed a gap; clear it when it did not. */
     private static void tag(def node, String tag) {
-        node.tags.removeAll([MeshGaps.TAG_NO_LINKS, MeshGaps.TAG_UNRESOLVED])
+        [MeshGaps.TAG_NO_LINKS, MeshGaps.TAG_UNRESOLVED].each { String existing ->
+            if (node.tags.contains(existing)) node.tags.remove(existing)
+        }
         if (tag) node.tags.add(tag)
     }
 

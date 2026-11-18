@@ -254,6 +254,58 @@ def install(package: Path, base: Path) -> None:
     xml_path = base / 'addons' / f'{name}.script.xml'
     xml_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
     print(f'[+] xml {xml_path}')
+    register_accelerators(base, scripts)
+
+
+def register_accelerators(base: Path, scripts: list[dict]) -> None:
+    """Write the keyboard shortcuts Freeplane expects in accelerator.properties.
+
+    A script's <keyboardShortcut> attribute is only a declaration: Freeplane binds
+    the key when its own installer records it here. Installing a package by hand
+    skips that step, which is why shortcuts appear in the menu without but do
+    nothing when pressed. The file is shared, so existing entries are preserved.
+    """
+    wanted: dict[str, str] = {}
+    for script in scripts:
+        shortcut = script.get('keyboardShortcut')
+        if not shortcut:
+            continue
+        action = script.get('menuTitleKey') or script['name']
+        wanted[f'acceleratorFor.MindMap/{action}_on_single_node'] = shortcut
+
+    if not wanted:
+        return
+
+    path = base / 'accelerator.properties'
+    lines = path.read_text(encoding='utf-8').splitlines() if path.exists() else []
+    updated: dict[str, str] = {}
+    order: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith('#'):
+            order.append(line)
+            continue
+        key, _, value = stripped.partition('=')
+        order.append(key)
+        updated[key] = value
+
+    written = 0
+    for key, shortcut in wanted.items():
+        if updated.get(key) != shortcut:
+            if key not in updated:
+                order.append(key)
+            updated[key] = shortcut
+            written += 1
+
+    if not written:
+        print(f'[=] accelerators already current: {len(wanted)}')
+        return
+
+    out = [line for line in order if line.startswith('#') or not line.strip()]
+    out.extend(f'{key}={value}' for key, value in updated.items())
+    path.write_text('\n'.join(out) + '\n', encoding='utf-8')
+    print(f'[+] accelerators {path} ({written} updated)')
 
 
 def main() -> None:

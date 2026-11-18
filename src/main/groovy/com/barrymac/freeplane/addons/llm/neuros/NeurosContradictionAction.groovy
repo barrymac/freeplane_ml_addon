@@ -39,6 +39,7 @@ class NeurosContradictionAction {
             }
             String key = Keys.jev()
             if (!key) {
+                LogUtils.info('NeurosContradictions: no JEV_API_KEY in the environment')
                 UiHelper.showInformationMessage(ui,
                         'This needs a judgement model. Set JEV_API_KEY in the environment, then ' +
                                 'try again.')
@@ -53,6 +54,7 @@ class NeurosContradictionAction {
                     .findAll { it != null && it.file != seedFile }
                     .unique { it.file }
             if (candidates.isEmpty()) {
+                LogUtils.info('NeurosContradictions: the entry has no resolved neighbours')
                 UiHelper.showInformationMessage(ui,
                         'This entry has no resolved neighbours to compare. Draw its relationships ' +
                                 'first, or add typed links to related entries.')
@@ -82,6 +84,7 @@ class NeurosContradictionAction {
                         declared: MeshVocabulary.isDeclared(resolution.kind))
             }
             if (edges.isEmpty()) {
+                LogUtils.info("NeurosContradictions: nothing drawable — ${summary(resolutions)}")
                 UiHelper.showInformationMessage(ui, summary(resolutions))
                 return
             }

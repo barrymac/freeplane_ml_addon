@@ -73,7 +73,9 @@ class NeurosPublishCheckAction {
     }
 
     private static void tag(def node, String status) {
-        node.tags.removeAll([TAG_SAFE, TAG_REVIEW, TAG_UNSAFE])
+        [TAG_SAFE, TAG_REVIEW, TAG_UNSAFE].each { String existing ->
+            if (node.tags.contains(existing)) node.tags.remove(existing)
+        }
         node.tags.add(status == PrivacyCheck.UNSAFE ? TAG_UNSAFE :
                 status == PrivacyCheck.REVIEW ? TAG_REVIEW : TAG_SAFE)
     }

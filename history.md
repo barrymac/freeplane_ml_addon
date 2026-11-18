@@ -1,5 +1,10 @@
 # History
 
+## v0.9.33 — 2026-11-18
+- Fix tag handling: Freeplane's tag proxy has no `removeAll`, so gap and publish-check tagging threw.
+- Register script accelerators when installing a package by hand, so shortcuts bind like the menu installer's do.
+- Explain the contradictory probe pair in the README.
+
 ## v0.9.32 — 2026-11-18
 - Fix the ambiguous `getProperty` lookup on Freeplane's config object (typed keys and fallbacks), which surfaced as "Ambiguous method overloading".
 - Add `docs/DEMO.md` and `tools/demo-map.sh` so the lens, enmeshment and disagreement flows can be run end to end in five minutes.
