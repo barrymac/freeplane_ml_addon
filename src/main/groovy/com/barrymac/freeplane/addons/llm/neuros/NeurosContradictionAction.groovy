@@ -33,8 +33,10 @@ class NeurosContradictionAction {
             }
             File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
-                UiHelper.showInformationMessage(ui,
-                        'Select a knowledge entry that has a link, then look for disagreements.')
+                UiHelper.showInformationMessage(ui, LinkTargets.hasLink(node) ?
+                        "The link on this node does not point at a readable file: " +
+                                LinkTargets.describe(node) :
+                        'Select a knowledge entry that has a link.')
                 return
             }
             String key = Keys.jev()

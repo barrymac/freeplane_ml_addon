@@ -30,9 +30,10 @@ class NeurosMeshAction {
             }
             File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
-                UiHelper.showInformationMessage(ui,
-                        'Select a knowledge entry or diagram that has a link, then draw its ' +
-                                'relationships.')
+                UiHelper.showInformationMessage(ui, LinkTargets.hasLink(node) ?
+                        "The link on this node does not point at a readable file: " +
+                                LinkTargets.describe(node) :
+                        'Select a knowledge entry that has a link.')
                 return
             }
 

@@ -22,15 +22,15 @@ wanted = [
     ('Neutral provider configuration  <-- enmesh candidate', 'neutral-provider-configuration'),
     ('Graph traversal over 9P  <-- enmesh candidate', 'graph-traversal'),
 ]
-files = {name: f for f in os.listdir(scope) for label, name in wanted if name in f}
+listing = os.listdir(scope)
 nodes, index = [], 0
 for label, key in wanted:
-    for name, path in files.items():
-        if key in name:
-            index += 1
-            nodes.append(f'    <node TEXT="{label}" POSITION="right" ID="ID_{index:03d}" '
-                         f'LINK="file://{os.path.join(scope, name)}"/>')
-            break
+    match = next((f for f in listing if key in f), None)
+    if match is None:
+        continue
+    index += 1
+    nodes.append(f'    <node TEXT="{label}" POSITION="right" ID="ID_{index:03d}" '
+                 f'LINK="{os.path.join(scope, match)}"/>')
 xml = ('<map version="freeplane 1.12.1">\n'
        '  <node TEXT="Enmesh demo — pick a node, press Ctrl+Alt+E" FOLDED="false" ID="ID_ROOT">\n'
        + '\n'.join(nodes) + '\n  </node>\n</map>\n')

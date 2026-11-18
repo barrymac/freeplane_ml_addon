@@ -46,6 +46,25 @@ class LinkTargets {
         return null
     }
 
+    /** True when the node carries a link, readable or not. */
+    static boolean hasLink(def node) {
+        try {
+            return node?.link != null
+        } catch (Exception ignored) {
+            return false
+        }
+    }
+
+    /** The link as the user sees it, for messages that name the problem. */
+    static String describe(def node) {
+        try {
+            def link = node?.link
+            return (link?.text ?: link?.uri?.toString() ?: link?.toString() ?: 'unknown').toString()
+        } catch (Exception ignored) {
+            return 'unknown'
+        }
+    }
+
     /** A file URI, or a URI whose scheme-less form is a path on disk. */
     static File uriAsFile(URI uri) {
         if (uri == null) return null
