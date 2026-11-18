@@ -1,5 +1,11 @@
 # History
 
+## v0.9.28 — 2026-11-17
+- Add "Find neurOS Disagreements": compare the selected entry with the entries it links to and draw what the judgement supports.
+- Each pair resolves to a contradiction, a reconciliation under a condition, or unresolved; only the first two are drawn.
+- Contradictions are dashed crimson; reconciliations are solid. Unresolved pairs are reported, never guessed.
+- Bounded at eight pairs per run; confidence below 0.75 is left unresolved.
+
 ## v0.9.27 — 2026-11-17
 - Add a typed judgement client: one call asks named questions about a state and returns choices with confidence, or probabilities.
 - Two transports: Jev at TypeSafe (verified live) and the decision model at OpenRouter.
