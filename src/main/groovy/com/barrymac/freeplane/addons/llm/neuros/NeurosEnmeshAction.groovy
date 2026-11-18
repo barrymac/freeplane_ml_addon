@@ -51,15 +51,22 @@ class NeurosEnmeshAction {
             MeshIndex index = MeshIndex.load(context.source.path(''))
             MeshNode seed = index.forFile(seedFile)
             List<MeshNode> candidates = candidates(index, seed, seedFile)
+            LogUtils.info("NeurosEnmesh: seed='${seed?.title}' entries=${index.entries.size()} " +
+                    "candidates=${candidates.size()}")
             if (candidates.isEmpty()) {
+                LogUtils.info('NeurosEnmesh: every entry already has a declared link to this one')
                 UiHelper.showInformationMessage(ui,
                         'There is nothing left in this scope to enmesh with.')
                 return
             }
 
             Set<String> lens = chooseLens(ui, node.map.storage)
-            if (lens == null) return
+            if (lens == null) {
+                LogUtils.info('NeurosEnmesh: cancelled at the lens picker')
+                return
+            }
             MeshLens.write(node.map.storage, lens)
+            LogUtils.info("NeurosEnmesh: lens=${lens}")
 
             Map seedState = [id: seed?.id, title: seed?.title ?: node.text,
                              text: EnmeshProposal.trim(NeurosContradictionAction.entryText(seedFile))]
@@ -69,24 +76,36 @@ class NeurosEnmeshAction {
             }
             Map battery = EnmeshProposal.battery(candidateState, seedState.title)
             List<Judgement.Answer> answers = Judgement.ask(battery.state, battery.questions, key)
+            LogUtils.info("NeurosEnmesh: answers=" + answers.collect {
+                "${it.question}:${it.choice ?: it.probability}@${it.confidence ?: ''}"
+            }.join(' '))
             List<MeshEdge> proposals = EnmeshProposal.proposals(
                     candidateState, seedState.id, answers).findAll { lens.contains(it.family) }
 
             if (proposals.isEmpty()) {
+                LogUtils.info('NeurosEnmesh: no proposal passed the confidence threshold inside the lens')
                 UiHelper.showInformationMessage(ui,
-                        "No missing ${lens.size()} lens relationships were supported by the text. " +
-                                'That is a real answer: the entry may already be enmeshed as far as ' +
-                                'this scope can tell.')
+                        'No relationship in this lens was supported by the text ' +
+                                "(${lens.size()} families checked, " +
+                                "${candidateState.size()} entries compared). " +
+                                'That is a real answer: nothing in those entries states a link, even ' +
+                                'if one exists in the work.')
                 return
             }
             MeshDrawing drawing = MeshDrawing.draw(node, index, proposals)
             node.tags.remove(TAG)
             node.tags.add(TAG)
+            MeshReveal.reveal(c, drawing)
             LogUtils.info("NeurosEnmesh: ${proposals.size()} proposals, ${drawing.summary()}")
-            UiHelper.showInformationMessage(ui,
+            StringBuilder message = new StringBuilder(
                     "${proposals.size()} proposed relationship${proposals.size() == 1 ? '' : 's'} " +
-                            'drawn dashed and grey — accept or delete them before trusting the map.\n\n' +
-                            drawing.summary())
+                            'drawn dashed and grey — accept or delete them before trusting the map.\n')
+            proposals.each { MeshEdge edge ->
+                def target = index.find(edge.target)
+                message << '\n• ' << edge.label << ' → ' << (target?.title ?: 'entry')
+            }
+            message << '\n\n' << drawing.summary()
+            UiHelper.showInformationMessage(ui, message.toString())
         } catch (Exception problem) {
             LogUtils.severe("Error in NeurosEnmesh action: ${problem.message}", problem)
             UiHelper.showErrorMessage(ui, "Enmesh This Node Error: ${problem.message}")

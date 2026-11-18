@@ -1,5 +1,10 @@
 # History
 
+## v0.9.39 — 2026-11-18
+- Reveal the result of a drawing run: expand the container, select the first new entry and centre on it.
+- Log every enmeshment stage (seed, lens, candidates, per-candidate answers), so an empty result is explainable.
+- Reword the empty-enmeshment dialog: it now states how many entries were compared in how many families.
+
 ## v0.9.37 — 2026-11-18
 - Read credentials from the process environment when Freeplane's sandbox denies `System.getenv` (RuntimePermission getenv.NAME), falling back to the environment file the process exposes.
 - Keys are still environment-first, config-second, and never written into a map.

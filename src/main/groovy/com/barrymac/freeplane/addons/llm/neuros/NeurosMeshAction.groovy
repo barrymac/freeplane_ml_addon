@@ -37,7 +37,7 @@ class NeurosMeshAction {
                 return
             }
 
-            String summary = draw(node, context)
+            String summary = draw(node, context, c)
             UiHelper.showInformationMessage(ui, summary)
         } catch (Exception problem) {
             LogUtils.severe("Error in NeurosMesh action: ${problem.message}", problem)
@@ -46,7 +46,7 @@ class NeurosMeshAction {
     }
 
     /** Draw the selected entry's relationships; returns a reader-facing summary. */
-    static String draw(def node, KnowledgeContext context) {
+    static String draw(def node, KnowledgeContext context, def c = null) {
         File seedFile = LinkTargets.fileFor(node)
         MeshIndex index = MeshIndex.load(context.source.path(''))
         MeshNode seed = index.forFile(seedFile)
@@ -60,6 +60,7 @@ class NeurosMeshAction {
         }
         MeshDrawing drawing = MeshDrawing.draw(node, index, edges)
         tag(node, null)
+        if (c != null) MeshReveal.reveal(c, drawing)
         LogUtils.info("NeurosMesh: ${drawing.summary()}")
         return drawing.summary()
     }

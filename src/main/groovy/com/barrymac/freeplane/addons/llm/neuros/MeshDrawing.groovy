@@ -22,6 +22,8 @@ class MeshDrawing {
     private final Map<String, Object> byName = [:]
     private def container
     private int created
+    final List<Object> createdNodes = []
+    Object firstTarget
     private int drawn
     private int alreadyThere
     private int unresolved
@@ -58,6 +60,7 @@ class MeshDrawing {
             skipped++
             return
         }
+        if (firstTarget == null) firstTarget = target
         if (connect(source, target, edge)) {
             drawn++
         } else {
@@ -102,6 +105,7 @@ class MeshDrawing {
         createdNode.link.file = entry.file
         createdNode.tags.add(ENTRY_TAG)
         created++
+        createdNodes << createdNode
         if (path) byPath[path] = createdNode
         if (name) byName[name] = createdNode
         return createdNode
@@ -156,6 +160,13 @@ class MeshDrawing {
         if (skipped) parts << "${skipped} could not be placed"
         return parts.join(', ') + '.'
     }
+
+    /** Where the reader should be looking after a drawing run. */
+    Object getRevealTarget() {
+        return createdNodes ? createdNodes[0] : firstTarget
+    }
+
+    Object getContainer() { container }
 
     int getDrawn() { drawn }
 

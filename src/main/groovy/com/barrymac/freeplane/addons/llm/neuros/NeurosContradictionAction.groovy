@@ -91,6 +91,7 @@ class NeurosContradictionAction {
                 return
             }
             MeshDrawing drawing = MeshDrawing.draw(node, index, edges)
+            MeshReveal.reveal(c, drawing)
             UiHelper.showInformationMessage(ui, summary(resolutions) + '\n\n' + drawing.summary())
         } catch (Exception problem) {
             LogUtils.severe("Error in NeurosContradictions action: ${problem.message}", problem)
