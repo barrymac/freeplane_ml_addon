@@ -1,5 +1,9 @@
 # History
 
+## v0.9.29 — 2026-11-17
+- The decision transport's model and endpoint are overridable from the environment, so a replacement for the retired model drops in without code changes.
+- Add `tools/judgement-check.sh` to test a transport end to end outside Freeplane.
+
 ## v0.9.28 — 2026-11-17
 - Add "Find neurOS Disagreements": compare the selected entry with the entries it links to and draw what the judgement supports.
 - Each pair resolves to a contradiction, a reconciliation under a condition, or unresolved; only the first two are drawn.

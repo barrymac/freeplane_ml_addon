@@ -106,6 +106,27 @@ class JudgementSpec extends Specification {
         thrown(LlmAddonException)
     }
 
+    def "the model and endpoint can be replaced from the environment"() {
+        given:
+        def environment = [DECISION_MODEL: 'vendor/decide-v2',
+                           DECISION_API_URL: 'https://example.test/decisions',
+                           JEV_MODEL: 'jev-preview',
+                           JEV_API_URL: 'https://example.test/systemone']
+
+        expect:
+        Judgement.modelFor(Judgement.Transport.DECISION, environment) == 'vendor/decide-v2'
+        Judgement.endpointFor(Judgement.Transport.DECISION, environment) == 'https://example.test/decisions'
+        Judgement.modelFor(Judgement.Transport.JEV, environment) == 'jev-preview'
+        Judgement.endpointFor(Judgement.Transport.JEV, environment) == 'https://example.test/systemone'
+    }
+
+    def "without overrides the documented defaults are used"() {
+        expect:
+        Judgement.modelFor(Judgement.Transport.JEV, [:]) == 'jev-latest'
+        Judgement.endpointFor(Judgement.Transport.JEV, [:]) == 'https://api.typesafe.ai/v1/systemone'
+        Judgement.modelFor(Judgement.Transport.DECISION, [:]) == 'inception/mercury-decide'
+    }
+
     def "asking without a key fails loudly with what to set"() {
         when:
         Judgement.ask(Judgement.Transport.JEV, [a: 1], [q0: [type: 'noul', instructions: 'x']], '')

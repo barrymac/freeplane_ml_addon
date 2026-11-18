@@ -21,6 +21,9 @@ import java.net.URL
  */
 class Judgement {
 
+    // The decision model that named this transport has been retired upstream, so
+    // both the model and the endpoint are overridable from the environment. A
+    // replacement drops in without touching code.
     static final String DECISION_ENDPOINT = 'https://openrouter.ai/api/alpha/decisions'
     static final String DECISION_MODEL = 'inception/mercury-decide'
     static final String JEV_ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
@@ -66,13 +69,29 @@ class Judgement {
                             'Jev needs a key. Set JEV_API_KEY (or TYPESAFE_API_KEY) in the environment.' :
                             'The decision model needs a key. Set OPENROUTER_API_KEY in the environment.')
         }
-        String endpoint = transport == Transport.JEV ? JEV_ENDPOINT : DECISION_ENDPOINT
-        String chosenModel = model ?: (transport == Transport.JEV ? JEV_MODEL : DECISION_MODEL)
+        String endpoint = endpointFor(transport, System.getenv())
+        String chosenModel = model ?: modelFor(transport, System.getenv())
         byte[] body = new JsonBuilder(payloadFor(transport, chosenModel, state, questions))
                 .toString().getBytes('UTF-8')
 
         String response = post(endpoint, key, body)
         return parse(transport, response)
+    }
+
+    /** Endpoint for a transport, overridable per environment. */
+    static String endpointFor(Transport transport, Map<String, String> environment) {
+        if (transport == Transport.JEV) {
+            return environment?.JEV_API_URL?.trim() ?: JEV_ENDPOINT
+        }
+        return environment?.DECISION_API_URL?.trim() ?: DECISION_ENDPOINT
+    }
+
+    /** Model for a transport, overridable per environment. */
+    static String modelFor(Transport transport, Map<String, String> environment) {
+        if (transport == Transport.JEV) {
+            return environment?.JEV_MODEL?.trim() ?: JEV_MODEL
+        }
+        return environment?.DECISION_MODEL?.trim() ?: DECISION_MODEL
     }
 
     /** Payload shape per transport, kept pure so it can be checked without a network. */
