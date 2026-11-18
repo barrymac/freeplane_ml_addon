@@ -19,6 +19,15 @@ JAVA_23="${FREEPLANE_JAVA_HOME:-$HOME/.sdkman/candidates/java/23.0.2-oracle}"
 [ -d "$SCOPE" ] || { echo "scope not found: $SCOPE" >&2; exit 1; }
 [ -x "$JAVA_23/bin/java" ] || { echo "Java 23 not found at $JAVA_23" >&2; exit 1; }
 
+# Install the packaged add-on into the Freeplane profile so the demo runs the
+# build in this repo, not whatever was installed last time.
+PACKAGE="$(ls -t "$REPO_ROOT"/build/addon/LLM-AddOn-*.addon.mm 2>/dev/null | head -1)"
+PROFILE="${XDG_CONFIG_HOME:-$HOME/.config}/freeplane/1.12.x"
+if [ -n "$PACKAGE" ] && [ -d "$PROFILE" ]; then
+  python3 "$REPO_ROOT/tools/install_freeplane_addon.py" "$PACKAGE" --base "$PROFILE" >/dev/null
+  echo "installed: $(basename "$PACKAGE")"
+fi
+
 mkdir -p "$OUT_DIR"
 ln -sfn "$SCOPE" "$OUT_DIR/SCOPE_KNOWLEDGE"
 "$REPO_ROOT/tools/demo-map.sh" "$SCOPE" "$OUT_DIR/EnmeshDemo.mm"
@@ -35,5 +44,5 @@ fi
 
 echo "launching Freeplane (Java 23) with $OUT_DIR/EnmeshDemo.mm"
 FREEPLANE_JAVA_HOME="$JAVA_23" nohup "$FREEPLANE_HOME/freeplane.sh" \
-  "$OUT_DIR/EnmeshDemo.mm" >/tmp/enmesh-demo/freeplane.log 2>&1 &
-echo "log: /tmp/enmesh-demo/freeplane.log"
+  "$OUT_DIR/EnmeshDemo.mm" >"$OUT_DIR/freeplane.log" 2>&1 &
+echo "log: $OUT_DIR/freeplane.log"

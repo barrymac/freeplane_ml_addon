@@ -1,5 +1,9 @@
 # History
 
+## v0.9.34 — 2026-11-18
+- Resolve a node's target from the link URI when Freeplane leaves `link.file` null, so `file://` links are no longer reported as "no entry".
+- The demo launcher installs the packaged add-on into the profile before starting.
+
 ## v0.9.33 — 2026-11-18
 - Fix tag handling: Freeplane's tag proxy has no `removeAll`, so gap and publish-check tagging threw.
 - Register script accelerators when installing a package by hand, so shortcuts bind like the menu installer's do.

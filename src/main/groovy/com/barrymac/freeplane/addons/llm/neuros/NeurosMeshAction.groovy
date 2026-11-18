@@ -28,7 +28,7 @@ class NeurosMeshAction {
                 UiHelper.showInformationMessage(ui, context.reason)
                 return
             }
-            File seedFile = node.link?.file
+            File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
                 UiHelper.showInformationMessage(ui,
                         'Select a knowledge entry or diagram that has a link, then draw its ' +
@@ -46,7 +46,7 @@ class NeurosMeshAction {
 
     /** Draw the selected entry's relationships; returns a reader-facing summary. */
     static String draw(def node, KnowledgeContext context) {
-        File seedFile = node.link?.file
+        File seedFile = LinkTargets.fileFor(node)
         MeshIndex index = MeshIndex.load(context.source.path(''))
         MeshNode seed = index.forFile(seedFile)
         Set<String> lens = MeshLens.read(node.map.storage)

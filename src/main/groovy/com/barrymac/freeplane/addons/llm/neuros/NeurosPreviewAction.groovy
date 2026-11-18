@@ -87,7 +87,7 @@ class NeurosPreviewAction {
     }
 
     private static String readSource(def node) {
-        File linked = node.link?.file
+        File linked = LinkTargets.fileFor(node)
         if (linked != null) {
             if (linked.isDirectory()) {
                 return null

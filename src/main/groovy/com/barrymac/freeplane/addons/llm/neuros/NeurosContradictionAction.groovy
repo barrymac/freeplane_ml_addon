@@ -31,7 +31,7 @@ class NeurosContradictionAction {
                 UiHelper.showInformationMessage(ui, context.reason)
                 return
             }
-            File seedFile = node.link?.file
+            File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
                 UiHelper.showInformationMessage(ui,
                         'Select a knowledge entry that has a link, then look for disagreements.')
