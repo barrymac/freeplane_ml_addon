@@ -1,5 +1,10 @@
 # History
 
+## v0.9.30 — 2026-11-17
+- Judgement is Jev only: one transport, one key, no provider knobs.
+- Jev vision: images travel as assets, fitted to the accepted size bounds (pad small frames, downscale large ones).
+- `tools/jev-check.sh` and `tools/jev-vision-check.sh` verify text and vision judgements outside Freeplane.
+
 ## v0.9.29 — 2026-11-17
 - The decision transport's model and endpoint are overridable from the environment, so a replacement for the retired model drops in without code changes.
 - Add `tools/judgement-check.sh` to test a transport end to end outside Freeplane.

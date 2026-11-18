@@ -11,7 +11,6 @@ class Keys {
 
     static final String OPENROUTER = 'OPENROUTER_API_KEY'
     static final String JEV = 'JEV_API_KEY'
-    static final String GROQ = 'GROQ_API_KEY'
 
     /** Environment first, then the configured value, then empty. */
     static String resolve(String environmentName, def config, String configKey = null) {
@@ -29,9 +28,5 @@ class Keys {
     static String jev() {
         String key = System.getenv(JEV) ?: System.getenv('TYPESAFE_API_KEY')
         return key?.trim() ?: ''
-    }
-
-    static String groq() {
-        return System.getenv(GROQ)?.trim() ?: ''
     }
 }

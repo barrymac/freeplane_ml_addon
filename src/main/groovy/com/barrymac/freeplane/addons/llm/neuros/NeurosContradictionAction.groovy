@@ -68,8 +68,7 @@ class NeurosContradictionAction {
                     ContradictionPlanner.pairs(seedState, candidateState)
             Map battery = ContradictionPlanner.battery(pairs)
 
-            List<Judgement.Answer> answers = Judgement.ask(
-                    Judgement.Transport.JEV, battery.state, battery.questions, key)
+            List<Judgement.Answer> answers = Judgement.ask(battery.state, battery.questions, key)
             List<ContradictionPlanner.Resolution> resolutions =
                     ContradictionPlanner.resolve(pairs, answers)
 

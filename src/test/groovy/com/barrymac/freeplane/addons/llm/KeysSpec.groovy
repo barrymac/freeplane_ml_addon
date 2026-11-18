@@ -37,9 +37,8 @@ class KeysSpec extends Specification {
         Keys.resolve('A_NAME_THAT_IS_NOT_SET_ANYWHERE', null) == ''
     }
 
-    def "Jev and Groq read the environment only"() {
+    def "Jev reads the environment only"() {
         expect:
         Keys.jev() == (System.getenv('JEV_API_KEY') ?: System.getenv('TYPESAFE_API_KEY') ?: '')
-        Keys.groq() == (System.getenv('GROQ_API_KEY') ?: '')
     }
 }
