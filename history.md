@@ -1,5 +1,9 @@
 # History
 
+## v0.9.37 — 2026-11-18
+- Read credentials from the process environment when Freeplane's sandbox denies `System.getenv` (RuntimePermission getenv.NAME), falling back to the environment file the process exposes.
+- Keys are still environment-first, config-second, and never written into a map.
+
 ## v0.9.36 — 2026-11-18
 - The demo map's links now point at real files (the generator wrote the keyword instead of the filename).
 - A link that exists but cannot be read is reported as such, with the link shown, instead of "select an entry that has a link".

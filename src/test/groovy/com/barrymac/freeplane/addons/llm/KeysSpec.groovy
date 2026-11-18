@@ -61,6 +61,34 @@ class KeysSpec extends Specification {
         Keys.resolve('A_NAME_THAT_IS_NOT_SET_ANYWHERE', null) == ''
     }
 
+    def "the process environment parses NUL-separated pairs"() {
+        given:
+        byte[] data = 'PATH=/usr/bin\u0000JEV_API_KEY=abc123\u0000EMPTY=\u0000WEIRD'.bytes
+
+        when:
+        Map<String, String> values = Keys.parseEnvironment(data)
+
+        then:
+        values['PATH'] == '/usr/bin'
+        values['JEV_API_KEY'] == 'abc123'
+        values['EMPTY'] == ''
+        !values.containsKey('WEIRD')
+    }
+
+    def "an empty or missing environment parses to nothing"() {
+        expect:
+        Keys.parseEnvironment(new byte[0]).isEmpty()
+        Keys.parseEnvironment(null).isEmpty()
+    }
+
+    def "Jev is read from the environment snapshot, not from config"() {
+        given:
+        Keys.refresh()
+
+        expect:
+        Keys.jev() == (Keys.environment('JEV_API_KEY') ?: Keys.environment('TYPESAFE_API_KEY') ?: '')
+    }
+
     def "Jev reads the environment only"() {
         expect:
         Keys.jev() == (System.getenv('JEV_API_KEY') ?: System.getenv('TYPESAFE_API_KEY') ?: '')
