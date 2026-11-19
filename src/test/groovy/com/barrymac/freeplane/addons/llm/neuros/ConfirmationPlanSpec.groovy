@@ -90,6 +90,34 @@ class ConfirmationPlanSpec extends Specification {
         log.text.contains('1.0')
     }
 
+    def "duplicate copies of one decision count as one independent source"() {
+        given:
+        def candidate = new ConfirmCandidate(canonical: 'Maria de Fátima Silva Carvalho', proposedType: 'judge')
+        candidate.variants << new ConfirmCandidate.Variant(
+                name: 'Maria de Fátima', sourceClass: 'official-header',
+                sourceId: 'escavador-copy-1', evidenceId: 'PJe-93533725', weight: 1.0)
+        candidate.variants << new ConfirmCandidate.Variant(
+                name: 'Desa. Maria de Fátima', sourceClass: 'official-header',
+                sourceId: 'escavador-copy-2', evidenceId: 'PJe-93533725', weight: 1.0)
+        candidate.variants << new ConfirmCandidate.Variant(
+                name: 'Maria de Fátima', sourceClass: 'official-header',
+                sourceId: 'djen-cert', evidenceId: 'PJe-94266481', weight: 1.0)
+
+        expect:
+        candidate.variants.size() == 3
+        candidate.independentSources() == 2
+    }
+
+    def "source-class granularity is preserved rather than collapsed to 1.0"() {
+        given:
+        def candidates = ConfirmationPlan.load(fixture())
+
+        expect:
+        candidates[0].variants.collect { it.sourceClass } ==
+                ['official-header', 'court-header', 'filing-caption', 'transcript']
+        candidates[0].variants.collect { it.weight } == [1.0, 0.95, 0.7, 0.25]
+    }
+
     def "a missing candidates file yields nothing rather than an error"() {
         expect:
         ConfirmationPlan.load(new File(directory, 'absent.json')).isEmpty()

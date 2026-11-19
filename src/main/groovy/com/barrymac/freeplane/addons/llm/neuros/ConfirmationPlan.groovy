@@ -36,6 +36,7 @@ class ConfirmationPlan {
                     name: variant.name,
                     sourceClass: variant.sourceClass ?: variant.source ?: 'unknown',
                     sourceId: variant.sourceId ?: variant.doc ?: variant.id ?: 'unknown',
+                    evidenceId: variant.evidenceId ?: variant.anchor ?: variant.pje ?: variant.sha256,
                     weight: (variant.weight ?: 0d) as double)
         }
         return candidate

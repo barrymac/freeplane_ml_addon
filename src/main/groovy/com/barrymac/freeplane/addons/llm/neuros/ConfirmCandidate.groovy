@@ -14,10 +14,17 @@ class ConfirmCandidate {
         String name
         String sourceClass
         String sourceId
+        /** Calibration anchor id, PJe document number, or SHA-256 when no footer id. */
+        String evidenceId
         double weight
 
         String chip() {
             return "${sourceClass} (${sourceId})"
+        }
+
+        /** Independence is by anchor/document, never by the variant's spelling. */
+        String independenceKey() {
+            return "${sourceClass}|${evidenceId ?: sourceId}"
         }
     }
 
@@ -33,6 +40,15 @@ class ConfirmCandidate {
     /** The strongest evidence for the canonical form, for the confidence chip. */
     double strongest() {
         return variants.collect { it.weight }.max() ?: 0d
+    }
+
+    /**
+     * Independent evidence count: two Escavador copies of the same decision are
+     * ONE source, however many spellings of the name they carry. Distinct anchor
+     * ids or document hashes are what make corroboration independent.
+     */
+    int independentSources() {
+        return variants.collect { it.independenceKey() }.unique().size()
     }
 
     String displayName() {
