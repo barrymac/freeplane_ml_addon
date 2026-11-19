@@ -48,6 +48,19 @@ This feature uses the Novita.ai API to generate images based on the text of a se
 *   Your saved image prompt template and parameter slider values are also stored there, prefixed with `llm.addon.`.
 
 
+## Hands-free iteration
+
+Two scripts make plugin development loop without any dialogues:
+
+- `tools/install-and-restart.sh [package.addon.mm]` installs the newest package
+  and restarts Freeplane only when the version changed. Safe to call from a build
+  hook or a watcher.
+- `tools/auto-install-watch.sh` watches `build/addon/` and calls it whenever a
+  new package lands (needs `inotify-tools`).
+
+Both reuse Freeplane's own package installer shape, so accelerators stay bound
+and the app restarts with the map it had open.
+
 ## neurOS Knowledge (v0.9.23, opt-in, per map)
 
 The neurOS features discover their connection from the current map's location.
