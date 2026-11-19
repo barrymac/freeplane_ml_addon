@@ -15,7 +15,10 @@ SURFACE = sys.argv[3] if len(sys.argv) > 3 else 'judge'
 
 
 def title_of(name):
-    base = name.rsplit('.', 1)[0] if '.' in name else name
+    base = name
+    for suffix in ('.md', '.judge', '.matter', '.card', '.card.md'):
+        if base.endswith(suffix):
+            base = base[: -len(suffix)]
     return base.replace('-', ' ').replace('_', ' ').strip()
 
 
@@ -51,7 +54,7 @@ def main():
     print(f'{SURFACE}: {len(judges)} entries')
 
     map_xml = ET.Element('map', version='freeplane 1.12.1')
-    root = ET.SubElement(map_xml, 'node', TEXT=f'Judges and their matters ({len(judges)})', ID='ID_ROOT')
+    root = ET.SubElement(map_xml, 'node', TEXT=f'Judges and their matters ({len(judges)} judges)', ID='ID_ROOT')
     judges_branch = ET.SubElement(root, 'node', TEXT='Judges', ID='ID_JUDGES')
     matters_branch = ET.SubElement(root, 'node', TEXT='Matters', ID='ID_MATTERS')
 
