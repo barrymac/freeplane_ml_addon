@@ -64,6 +64,19 @@ class ConfigKeysSpec extends Specification {
         ConfigKeys.read(config, ConfigKeys.TEMPERATURE, '0.7') == '0.7'
     }
 
+    def "map storage with only single-argument getProperty still reads"() {
+        given:
+        // Freeplane's PropertiesProxy exposes getProperty(String) only.
+        def storage = [getProperty: { String key ->
+            key == ConfigKeys.IMAGE_MODEL ? 'google/gemini-3.1-flash-image' : null
+        }] as Map
+
+        expect:
+        ConfigKeys.read(storage, ConfigKeys.IMAGE_MODEL, 'fallback') ==
+                'google/gemini-3.1-flash-image'
+        ConfigKeys.read(storage, ConfigKeys.API_KEY, '') == ''
+    }
+
     def "every neutral key that replaced a legacy one is mapped"() {
         expect:
         ConfigKeys.LEGACY.keySet() == [

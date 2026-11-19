@@ -40,14 +40,36 @@ class ConfigKeys {
      * Reads a setting by its neutral key, falling back once to the legacy key
      * and migrating the value when it finds one there.
      */
+    /**
+     * Map storage and the global config expose different getProperty overloads:
+     * map storage has getProperty(String) only, the global config has
+     * getProperty(String, String). Try the single-argument form first so a map
+     * storage never sees an ambiguous two-argument call.
+     */
+    private static String property(def config, String key, String fallback) {
+        if (config == null) return fallback
+        try {
+            def single = config.getProperty(key)
+            if (single != null) return single.toString()
+        } catch (MissingMethodException ignored) {
+            // fall through to the two-argument form
+        }
+        try {
+            def pair = config.getProperty((String) key, (String) fallback)
+            return pair == null ? fallback : pair.toString()
+        } catch (Exception ignored) {
+            return fallback
+        }
+    }
+
     static String read(def config, String key, String fallback = null) {
         if (config == null) return fallback
-        def current = config.getProperty((String) key, (String) null)
+        def current = property(config, key, null)
         if (current != null && current.toString().trim()) return current.toString()
 
         String legacy = LEGACY[key]
         if (legacy) {
-            def old = config.getProperty((String) legacy, (String) null)
+            def old = property(config, legacy, null)
             if (old != null && old.toString().trim()) {
                 config.setProperty(key, old)
                 return old.toString()

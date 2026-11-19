@@ -9,6 +9,18 @@ import os
 import sys
 import xml.etree.ElementTree as ET
 
+
+def ensure_workspace(mount):
+    """Give the rendered map a neurOS-enabled home: a directory with a
+    *_KNOWLEDGE symlink to the mount, so discovery works when it is opened."""
+    import pathlib
+    work = pathlib.Path('/tmp/judge-demo')
+    work.mkdir(parents=True, exist_ok=True)
+    link = work / 'LEGAL_KNOWLEDGE'
+    if not link.exists():
+        link.symlink_to(mount)
+    return work
+
 MOUNT = sys.argv[1] if len(sys.argv) > 1 else '/mnt/neuros/hohfeldian/legalease-legal'
 OUT = sys.argv[2] if len(sys.argv) > 2 else '/tmp/judge-render.mm'
 SURFACE = sys.argv[3] if len(sys.argv) > 3 else 'judge'
@@ -91,10 +103,12 @@ def main():
                              DESTINATION=target, MIDDLE_LABEL=label)
         conn.set('COLOR', '#4060a0' if label == 'PRESIDES_OVER' else '#707070')
 
-    ET.ElementTree(map_xml).write(OUT, encoding='utf-8', xml_declaration=True)
+    workspace = ensure_workspace(MOUNT)
+    output_path = workspace / 'JudgeRender.mm'
+    ET.ElementTree(map_xml).write(str(output_path), encoding='utf-8', xml_declaration=True)
     print(f'nodes: {len(node_ids)} (judges + matters)')
     print(f'edges: {total_edges}')
-    print(f'written: {OUT}')
+    print(f'written: {output_path}')
 
 
 if __name__ == '__main__':
