@@ -50,7 +50,7 @@ def edges_from(mount, uuid):
 def main():
     surface_dir = os.path.join(MOUNT, 'by-tag', SURFACE)
     judges = sorted(os.listdir(surface_dir))
-    judges = [f for f in judges if os.path.isfile(os.path.join(surface_dir, f))]
+    judges = [f for f in judges if os.path.isfile(os.path.join(surface_dir, f)) and not f.startswith('.')]
     print(f'{SURFACE}: {len(judges)} entries')
 
     map_xml = ET.Element('map', version='freeplane 1.12.1')
