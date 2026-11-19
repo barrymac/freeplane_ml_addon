@@ -28,6 +28,15 @@ class ScopeHealthSpec extends Specification {
         ScopeHealth.classify(9, null) == ScopeHealth.OK
     }
 
+    def "a wired-but-wrong edge is a defect, not a gap"() {
+        given:
+        def diagnosis = new MeshGaps.Diagnosis(kind: MeshGaps.WRONG)
+
+        expect:
+        diagnosis.remedyText().contains('Explicit deletion required')
+        !diagnosis.remedyText().contains('image upgrade')
+    }
+
     def "degraded read does not become an enmeshment gap"() {
         when:
         def diagnosis = MeshGaps.diagnose(0, 0, ScopeHealth.DEGRADED)

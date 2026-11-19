@@ -14,6 +14,8 @@ class MeshGaps {
     static final String LINKED = 'linked'
     static final String NO_LINKS = 'no-links'
     static final String UNRESOLVED = 'unresolved'
+    /** The edge exists, walks, and asserts something false. Not a gap: a defect. */
+    static final String WRONG = 'wired-and-wrong'
 
     static final String TAG_NO_LINKS = 'mesh gap: no links'
     static final String TAG_UNRESOLVED = 'mesh gap: unresolved'
@@ -23,6 +25,18 @@ class MeshGaps {
         int declared
         int resolved
         int unresolved
+        String remedy
+
+        /** The remedy this gap class names, so a user knows which lane fixes it. */
+        String remedyText() {
+            if (remedy) return remedy
+            switch (kind) {
+                case NO_LINKS: return 'Human writes the missing markers (enmeshment gap).'
+                case UNRESOLVED: return 'Wiring arrives with the image upgrade (by-image).'
+                case WRONG: return 'Explicit deletion required — activation or wiring cannot fix a wrong edge.'
+                default: return 'Scoped backfill pending (by-gate).'
+            }
+        }
 
         String message() {
             switch (kind) {
@@ -33,7 +47,11 @@ class MeshGaps {
                     return "This entry declares ${declared} relationship" +
                             "${declared == 1 ? '' : 's'}, but none resolve inside this scope. " +
                             'That is a substrate gap: the links point at identities or surfaces this ' +
-                            'mount does not expose.'
+                            'mount does not expose. ' + remedyText()
+                case WRONG:
+                    return 'This edge exists and walks, but asserts something false, unverified ' +
+                            'or mis-merged. That is an evidentiary defect, not a pending task. ' +
+                            remedyText()
                 default:
                     return "This entry declares ${declared} relationship" +
                             "${declared == 1 ? '' : 's'}, ${resolved} of them inside this scope."
