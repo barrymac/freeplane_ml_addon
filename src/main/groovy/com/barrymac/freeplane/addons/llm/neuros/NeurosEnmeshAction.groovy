@@ -67,6 +67,10 @@ class NeurosEnmeshAction {
                 return
             }
 
+            // The cartridge is the vocabulary: every marker it declares becomes a
+            // lens candidate at runtime, so new legal/travel/infra relationships
+            // arrive without a code change.
+            MeshVocabulary.loadContract(context.source.path('cartridge-contract'))
             Set<String> lens = chooseLens(ui, node.map.storage)
             if (lens == null) {
                 LogUtils.info('NeurosEnmesh: cancelled at the lens picker')

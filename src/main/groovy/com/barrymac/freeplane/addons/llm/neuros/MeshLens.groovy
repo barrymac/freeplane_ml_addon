@@ -24,7 +24,19 @@ class MeshLens {
     ] as LinkedHashMap
 
     static Set<String> allFamilies() {
-        return FAMILIES.keySet()
+        return families().keySet()
+    }
+
+    /** Every family the vocabulary currently knows, including runtime additions. */
+    static Map<String, String> families() {
+        Map<String, String> result = new LinkedHashMap<>(FAMILIES)
+        MeshVocabulary.DECLARED.each { marker, pair ->
+            String family = pair[1]
+            if (!result.containsKey(family)) {
+                result[family] = family[0].toUpperCase() + family.substring(1)
+            }
+        }
+        return result
     }
 
     /** Map storage and the global config expose slightly different accessors. */
@@ -55,19 +67,19 @@ class MeshLens {
         String stored = stored(config)
         if (!stored?.trim()) return allFamilies()
         Set<String> chosen = stored.split(',').collect { it.trim().toLowerCase() }.findAll { it }
-                .findAll { FAMILIES.containsKey(it) } as Set
+                .findAll { families().containsKey(it) } as Set
         return chosen ?: allFamilies()
     }
 
-    static void write(def config, Collection<String> families) {
-        Set<String> chosen = (families ?: []).findAll { FAMILIES.containsKey(it) } as Set
+    static void write(def config, Collection<String> selected) {
+        Set<String> chosen = (selected ?: []).findAll { families().containsKey(it) } as Set
         store(config, (chosen ?: allFamilies()).sort().join(','))
     }
 
     /** Keep only edges inside the lens. Edges with an unknown family are kept. */
-    static List<MeshEdge> filter(List<MeshEdge> edges, Set<String> families) {
+    static List<MeshEdge> filter(List<MeshEdge> edges, Set<String> selected) {
         if (!edges) return []
-        if (families == null || families.isEmpty()) return edges
-        return edges.findAll { !it.family || families.contains(it.family) }
+        if (selected == null || selected.isEmpty()) return edges
+        return edges.findAll { !it.family || selected.contains(it.family) }
     }
 }

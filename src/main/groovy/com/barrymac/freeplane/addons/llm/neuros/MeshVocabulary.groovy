@@ -101,6 +101,46 @@ class MeshVocabulary {
             'counsel-for'  : ['counsel for', PROCEDURE]
     ]
 
+    /**
+     * Extend the vocabulary from the mounted cartridge contract.
+     *
+     * Every marker the cartridge declares is read at runtime, so a legal scope's
+     * presides-over / cites / bound-by and a future travel scope's own markers
+     * arrive without a code change. The hardcoded table only supplies nicer
+     * wording and colours for common families; the contract is authoritative for
+     * what exists.
+     */
+    static void loadContract(File contractFile) {
+        if (contractFile == null || !contractFile.isFile()) return
+        try {
+            def contract = new groovy.json.JsonSlurper().parse(contractFile)
+            List<Map> grammar = contract.markerGrammar ?: []
+            grammar.each { rule ->
+                String marker = (rule.markerToken ?: '').toString().toLowerCase()
+                if (!marker || DECLARED.containsKey(marker)) return
+                String lens = (rule.lens ?: '').toString().toLowerCase()
+                String family = familyForLens(lens)
+                DECLARED[marker] = [marker.replace('-', ' ').replace('_', ' '), family]
+                if (!COLORS.containsKey(family)) {
+                    COLORS[family] = COLORS[REFERENCE]
+                }
+            }
+        } catch (Exception ignored) {
+            // An unreadable contract leaves the base vocabulary intact.
+        }
+    }
+
+    /** Cartridge lens -> the visual family it reads as. */
+    static String familyForLens(String lens) {
+        switch (lens) {
+            case 'ontic': return CODE
+            case 'epistemic': return REFERENCE
+            case 'deontic': return GOVERNANCE
+            case 'structural': return STRUCTURE
+            default: return REFERENCE
+        }
+    }
+
     private static final Map<String, Color> COLORS = [
             (DEPENDENCY): new Color(0xC0, 0x6A, 0x00),
             (BLOCKING)  : new Color(0xB0, 0x20, 0x20),

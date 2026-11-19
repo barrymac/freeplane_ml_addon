@@ -137,6 +137,19 @@ class EnmeshProposal {
                 .collect { it.index as Integer }
     }
 
+    /** The criteria for one run: the curated set plus whatever the cartridge declares. */
+    static Map<String, String> criteria() {
+        Map<String, String> result = new LinkedHashMap<>(CRITERIA)
+        com.barrymac.freeplane.addons.llm.neuros.MeshVocabulary.DECLARED.each { marker, pair ->
+            String key = marker.replace('-', '_').replace(' ', '_')
+            if (!result.containsKey(key) && key != 'card') {
+                result[key] = "One entry has a '${pair[0]}' relationship to the other, " +
+                        'as this cartridge declares that marker'
+            }
+        }
+        return result
+    }
+
     static Map<String, Map> battery(List<Map> candidates, String seedTitle) {
         Map state = [selected: [title: seedTitle]]
         Map questions = [:]
@@ -152,7 +165,7 @@ class EnmeshProposal {
                             'texts describe? Answer `none` when the texts do not support one, and ' +
                             '`cannot_tell` when either text is too thin to judge. Do not infer a ' +
                             'relationship from what would be sensible in general.',
-                    criteria    : CRITERIA
+                    criteria    : criteria()
             ]
         }
         return [state: state, questions: questions]
