@@ -118,6 +118,31 @@ class ConfirmationPlanSpec extends Specification {
         candidates[0].variants.collect { it.weight } == [1.0, 0.95, 0.7, 0.25]
     }
 
+    def "a human-attested decision records the attesting name"() {
+        given:
+        def candidates = ConfirmationPlan.load(fixture())
+        File log = new File(directory, 'decisions.log')
+
+        when:
+        ConfirmationPlan.recordDecision(log, candidates[0], 'confirm', null, 'barrymac')
+
+        then:
+        log.text.contains('barrymac')
+        !log.text.contains('unattested')
+    }
+
+    def "an unattended decision is recorded as such, not silently accepted"() {
+        given:
+        def candidates = ConfirmationPlan.load(fixture())
+        File log = new File(directory, 'decisions.log')
+
+        when:
+        ConfirmationPlan.recordDecision(log, candidates[0], 'confirm')
+
+        then:
+        log.text.contains('unattested')
+    }
+
     def "a missing candidates file yields nothing rather than an error"() {
         expect:
         ConfirmationPlan.load(new File(directory, 'absent.json')).isEmpty()

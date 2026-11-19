@@ -77,8 +77,16 @@ class ConfirmationPlan {
         return lines.join('\n')
     }
 
-    /** Record a decision without writing any markers (wiring is not yet fixed). */
-    static File recordDecision(File log, ConfirmCandidate candidate, String decision, String mergeTarget = null) {
+    /**
+     * Record a decision without writing any markers (wiring is not yet fixed).
+     *
+     * `attestedBy` names the person attesting the human half of acceptance: the
+     * gate bank proves existence, but only a named human can attest that a
+     * PRESIDES_OVER means relator, that no variant was folded wrongly, or that no
+     * negative control merged. A decision with no attesting name is incomplete.
+     */
+    static File recordDecision(File log, ConfirmCandidate candidate, String decision, String mergeTarget = null,
+                               String attestedBy = null) {
         candidate.decision = decision
         candidate.mergeTarget = mergeTarget
         candidate.status = decision == 'confirm' ? 'confirmed' :
@@ -88,7 +96,7 @@ class ConfirmationPlan {
             log.parentFile?.mkdirs()
             log << "${new Date().format('yyyy-MM-dd HH:mm:ss')}\t${decision}\t" +
                     "${candidate.canonical}\t${mergeTarget ?: ''}\t" +
-                    "${candidate.strongest()}\n"
+                    "${candidate.strongest()}\t${attestedBy ?: 'unattested'}\n"
         }
         return log
     }
