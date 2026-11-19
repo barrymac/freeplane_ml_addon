@@ -258,6 +258,7 @@
 <attribute NAME="addons.${name}.neurosContradictions" VALUE="Find neurOS Disagreements"/>
 <attribute NAME="addons.${name}.neurosPublishCheck" VALUE="Check Preview Before Publishing"/>
 <attribute NAME="addons.${name}.neurosEnmesh" VALUE="Enmesh This Node"/>
+<attribute NAME="addons.${name}.neurosConfirm" VALUE="Resolve Candidate Entities"/>
 <attribute NAME="addons.${name}.neurosPushCard" VALUE="Save Branch to neurOS"/>
 </node>
 </node>
@@ -292,6 +293,7 @@
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosContradictions.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPublishCheck.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosEnmesh.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosConfirm.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPushCard.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn.svg"/>
 <attribute NAME="delete" VALUE="${installationbase}/resources/images/promptLlmAddOn-icon.svg"/>
@@ -560,6 +562,18 @@
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
 <attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
 <attribute NAME="execute_scripts_without_network_restriction" VALUE="true"/>
+</node>
+<node TEXT="NeurosConfirm.groovy" ID="ID_NEUROS_CONFIRM" CREATED="1786920000011" MODIFIED="1786920000011">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosConfirm"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE="control alt shift E"/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="false"/>
 </node>
 <node TEXT="NeurosSearch.groovy" ID="ID_NEUROS_SEARCH" CREATED="1786920000001" MODIFIED="1786920000001">
 <attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>

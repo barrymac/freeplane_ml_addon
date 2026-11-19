@@ -31,6 +31,14 @@ for label, key in wanted:
     index += 1
     nodes.append(f'    <node TEXT="{label}" POSITION="right" ID="ID_{index:03d}" '
                  f'LINK="{os.path.join(scope, match)}"/>')
+if not nodes:
+    index = 0
+    for f in sorted(listing):
+        if f.endswith('.card.md'):
+            index += 1
+            nodes.append(f'    <node TEXT="{f.replace(".card.md", "")}" POSITION="right" '
+                         f'ID="ID_{index:03d}" LINK="{os.path.join(scope, f)}"/>')
+
 xml = ('<map version="freeplane 1.12.1">\n'
        '  <node TEXT="Enmesh demo — pick a node, press Ctrl+Alt+E" FOLDED="false" ID="ID_ROOT">\n'
        + '\n'.join(nodes) + '\n  </node>\n</map>\n')

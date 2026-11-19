@@ -107,6 +107,14 @@ class NeurosBrowseAction {
                         '\n\nSelect this node and choose Browse neurOS Knowledge to list entries.'
                 child.link.file = source.path(surface.name)
             }
+        } else {
+            // Some cartridges do not declare curated surfaces at all — that is a
+            // fact about the cartridge, not a bug in the mount. Say so plainly
+            // instead of silently offering a shorter catalogue.
+            def note = root.createChild('No curated surfaces in this cartridge')
+            note.tags.add('neurOS content-type')
+            note.note = 'This cartridge declares primitive types, not curated surfaces. ' +
+                    'Everything it offers is under All knowledge types.'
         }
 
         if (catalog.knowledgeTypes) {
@@ -119,6 +127,18 @@ class NeurosBrowseAction {
                 child.link.file = source.path("by-tag/${type}")
             }
             types.setFolded(true)
+        }
+
+        if (catalog.statePropertiesBySubtype) {
+            def workViews = root.createChild('Work views')
+            workViews.note = 'Views for types this cartridge gives a state machine to, ' +
+                    'showing only entries that carry the declared state property.'
+            catalog.statePropertiesBySubtype.each { subtype, properties ->
+                def child = workViews.createChild(subtype)
+                child.tags.add('neurOS work-view')
+                child.note = "Entries of type ${subtype} carrying ${properties.join(', ')}."
+                child.link.file = source.path("by-tag/${subtype}")
+            }
         }
 
         if (catalog.doorCapabilities) {

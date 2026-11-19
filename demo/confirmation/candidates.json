@@ -1,0 +1,32 @@
+[
+  {
+    "id": "maria-fatima",
+    "canonical": "Maria de Fátima Silva Carvalho",
+    "proposedType": "judge",
+    "status": "hollow",
+    "variants": [
+      {"name": "Maria de Fátima Silva Carvalho", "sourceClass": "official-header", "sourceId": "8004600-02-decisao", "weight": 1.0},
+      {"name": "Desa. Maria de Fátima", "sourceClass": "court-header", "sourceId": "8162536-27-despacho", "weight": 0.95},
+      {"name": "Dr. Maria de Fátima", "sourceClass": "filing-caption", "sourceId": "petition-1042", "weight": 0.7},
+      {"name": "Maria de Fache", "sourceClass": "transcript", "sourceId": "audio-2026-04-11", "weight": 0.25}
+    ]
+  },
+  {
+    "id": "marielza",
+    "canonical": "Marielza Brandão Franco",
+    "proposedType": "judge",
+    "status": "hollow",
+    "variants": [
+      {"name": "Marielza Brandão Franco", "sourceClass": "counsel-reported", "sourceId": "note-8167792", "weight": 0.4}
+    ]
+  },
+  {
+    "id": "maria-de-fache",
+    "canonical": "Maria de Fache",
+    "proposedType": "judge",
+    "status": "hollow",
+    "variants": [
+      {"name": "Maria de Fache", "sourceClass": "transcript", "sourceId": "audio-2026-04-11", "weight": 0.25}
+    ]
+  }
+]
