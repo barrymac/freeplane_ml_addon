@@ -57,6 +57,9 @@ Two scripts make plugin development loop without any dialogues:
   hook or a watcher.
 - `tools/auto-install-watch.sh` watches `build/addon/` and calls it whenever a
   new package lands (needs `inotify-tools`).
+- `tools/handsfree-iterate.sh` runs both watchers: it installs new packages and
+  confirms Freeplane's "Create release package" dialog automatically, so an
+  iteration completes with nobody at the keyboard.
 
 Both reuse Freeplane's own package installer shape, so accelerators stay bound
 and the app restarts with the map it had open.

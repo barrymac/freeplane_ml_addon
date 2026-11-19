@@ -38,15 +38,15 @@ class MeshMarkersSpec extends Specification {
 
     def "a marker the cartridge does not name still reads as an edge"() {
         given:
-        String card = '[[supersedes:22222222-2222-2222-2222-222222222222]]'
+        String card = '[[relates-to:22222222-2222-2222-2222-222222222222]]'
 
         when:
         List<MeshEdge> edges = MeshMarkers.read(card, null)
 
         then:
         edges.size() == 1
-        edges[0].marker == 'supersedes'
-        edges[0].label == 'supersedes'
+        edges[0].marker == 'relates-to'
+        edges[0].label == 'relates to'
         !edges[0].declared
     }
 

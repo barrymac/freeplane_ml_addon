@@ -30,7 +30,19 @@ class EnmeshProposal {
             candidate_blocks_selected   : ['blocks', MeshVocabulary.BLOCKING, 'blocks', REVERSE],
             references                  : ['references', MeshVocabulary.REFERENCE, 'references', FORWARD],
             tracks                      : ['tracks', MeshVocabulary.TRACKING, 'tracks', FORWARD],
-            contains                    : ['contains', MeshVocabulary.STRUCTURE, 'contains', FORWARD]
+            contains                    : ['contains', MeshVocabulary.STRUCTURE, 'contains', FORWARD],
+            // Legal-directional relationships, still expressed as generic
+            // candidate→selected vs selected→candidate so no legal mode exists.
+            selected_presides_over        : ['presides-over', MeshVocabulary.AUTHORITY, 'presides over', FORWARD],
+            candidate_presides_over       : ['presides-over', MeshVocabulary.AUTHORITY, 'presides over', REVERSE],
+            selected_relator_of           : ['relator', MeshVocabulary.AUTHORITY, 'relator of', FORWARD],
+            candidate_relator_of          : ['relator', MeshVocabulary.AUTHORITY, 'relator of', REVERSE],
+            cites                         : ['cites', MeshVocabulary.CITATION, 'cites', FORWARD],
+            authority_for                 : ['authority-for', MeshVocabulary.CITATION, 'authority for', FORWARD],
+            overrules                     : ['overrules', MeshVocabulary.CONTRADICTION, 'overrules', FORWARD],
+            distinguishes                 : ['distinguishes', MeshVocabulary.CONTRADICTION, 'distinguishes', FORWARD],
+            bound_by                      : ['bound-by', MeshVocabulary.GOVERNANCE, 'bound by', FORWARD],
+            authorised_by                 : ['authorised-by', MeshVocabulary.AUTHORITY, 'authorised by', FORWARD]
     ] as LinkedHashMap
 
     /**
@@ -57,6 +69,28 @@ class EnmeshProposal {
                             'against a design card',
             contains:
                     'One is a part of the other scope, or the other is a part of it',
+            selected_presides_over:
+                    'The selected card is the judge or authority figure presiding over the ' +
+                            'candidate matter or decision',
+            candidate_presides_over:
+                    'The candidate is the judge or authority figure presiding over the ' +
+                            'selected card',
+            selected_relator_of:
+                    'The selected card is the relator or rapporteur for the candidate',
+            candidate_relator_of:
+                    'The candidate is the relator or rapporteur for the selected card',
+            cites:
+                    'One text cites the other as authority, precedent or supporting material',
+            authority_for:
+                    'The selected card is cited as authority for the candidate',
+            overrules:
+                    'One decision or claim overrules or reverses the other',
+            distinguishes:
+                    'One decision distinguishes its facts from the other rather than following it',
+            bound_by:
+                    'One is legally bound by the other (a decision, a statute, a holding)',
+            authorised_by:
+                    'One is authorised, mandated or empowered by the other',
             none:
                     'The two texts describe unrelated work: nothing in one is needed, named or ' +
                             'contained by the other',

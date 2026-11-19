@@ -17,10 +17,10 @@ class MeshVocabularySpec extends Specification {
 
     def "a marker the cartridge has not named still reads, from its own name"() {
         expect:
-        !MeshVocabulary.isDeclared('supersedes')
-        MeshVocabulary.label('supersedes') == 'supersedes'
+        !MeshVocabulary.isDeclared('relates-to')
+        MeshVocabulary.label('relates-to') == 'relates to'
         MeshVocabulary.label('owned_by') == 'owned by'
-        MeshVocabulary.family('supersedes') == MeshVocabulary.REFERENCE
+        MeshVocabulary.family('relates-to') == MeshVocabulary.REFERENCE
     }
 
     def "disagreement is its own family and is drawn dashed"() {

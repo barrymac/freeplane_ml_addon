@@ -20,6 +20,9 @@ class MeshVocabulary {
     static final String CODE = 'code'
     static final String GOVERNANCE = 'governance'
     static final String CONTRADICTION = 'contradiction'
+    static final String AUTHORITY = 'authority'
+    static final String CITATION = 'citation'
+    static final String PROCEDURE = 'procedure'
 
     /** marker -> [human label, colour family] */
     static final Map<String, List<String>> DECLARED = [
@@ -73,7 +76,29 @@ class MeshVocabulary {
             'conflicts-with': ['conflicts with', CONTRADICTION],
             'rebuts'       : ['rebuts', CONTRADICTION],
             'disputes'     : ['disputes', CONTRADICTION],
-            'overrules'    : ['overrules', CONTRADICTION]
+            'overrules'    : ['overrules', CONTRADICTION],
+            // Legal and scholarly relationship vocabulary (hohfeld-style). Kept as
+            // ordinary markers, not a special legal mode: the same lens machinery
+            // reads them whether the scope is software or a case file.
+            'presides-over': ['presides over', AUTHORITY],
+            'held-by'      : ['held by', AUTHORITY],
+            'authorised-by': ['authorised by', AUTHORITY],
+            'governs'      : ['governs', GOVERNANCE],
+            'bound-by'     : ['bound by', GOVERNANCE],
+            'against'      : ['against', CONTRADICTION],
+            'opposes'      : ['opposes', CONTRADICTION],
+            'regarding'    : ['regarding', REFERENCE],
+            'correlates-to': ['correlates to', REFERENCE],
+            'cites'        : ['cites', CITATION],
+            'cited-by'     : ['cited by', CITATION],
+            'authority-for': ['authority for', CITATION],
+            'distinguishes': ['distinguishes', CONTRADICTION],
+            'supersedes'   : ['supersedes', CONTRADICTION],
+            'decided-by'   : ['decided by', PROCEDURE],
+            'relator'      : ['relator of', AUTHORITY],
+            'party-to'     : ['party to', PROCEDURE],
+            'witness-for'  : ['witness for', PROCEDURE],
+            'counsel-for'  : ['counsel for', PROCEDURE]
     ]
 
     private static final Map<String, Color> COLORS = [
@@ -84,7 +109,10 @@ class MeshVocabulary {
             (REFERENCE) : new Color(0x70, 0x70, 0x70),
             (CODE)      : new Color(0x00, 0x70, 0x70),
             (GOVERNANCE): new Color(0x70, 0x40, 0x90),
-            (CONTRADICTION): new Color(0xB0, 0x10, 0x40)
+            (CONTRADICTION): new Color(0xB0, 0x10, 0x40),
+            (AUTHORITY)   : new Color(0x1F, 0x4E, 0x8C),
+            (CITATION)    : new Color(0x6A, 0x50, 0xA0),
+            (PROCEDURE)   : new Color(0x2E, 0x6E, 0x5E)
     ]
 
     static boolean isDeclared(String marker) {
