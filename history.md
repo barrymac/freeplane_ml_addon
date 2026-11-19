@@ -1,5 +1,11 @@
 # History
 
+## v0.9.40 — 2026-11-19
+- Candidate confirmation UI (Ctrl+Alt+Shift+E): hollow candidates, merge/split/none, dry-run diff, decisions log as replay buffer.
+- Evidence independence by anchor/PJe/SHA; source-class granularity preserved; hard negatives unrepresentable as merges.
+- Scope health states (ok / empty / degraded) so a drain never renders as an empty mesh.
+- Judge render tool and a discoverable lab document for agents without the mount.
+
 ## v0.9.39 — 2026-11-18
 - Reveal the result of a drawing run: expand the container, select the first new entry and centre on it.
 - Log every enmeshment stage (seed, lens, candidates, per-candidate answers), so an empty result is explainable.
