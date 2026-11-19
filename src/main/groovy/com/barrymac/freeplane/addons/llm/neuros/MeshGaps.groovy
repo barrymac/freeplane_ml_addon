@@ -45,6 +45,15 @@ class MeshGaps {
         }
     }
 
+    /** Classify one entry, honouring a degraded read before judging absence. */
+    static Diagnosis diagnose(int declared, int resolved, String health) {
+        if (health == ScopeHealth.DEGRADED) {
+            return new Diagnosis(kind: LINKED, declared: declared, resolved: resolved,
+                    unresolved: Math.max(declared - resolved, 0))
+        }
+        return diagnose(declared, resolved)
+    }
+
     /** Classify one entry from what it declared and what resolved. */
     static Diagnosis diagnose(int declared, int resolved) {
         int unresolved = Math.max(declared - resolved, 0)
