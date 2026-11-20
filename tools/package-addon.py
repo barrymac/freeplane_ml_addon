@@ -61,6 +61,16 @@ def repack(template: Path, output: Path) -> None:
     if root is None:
         raise SystemExit(f'{template}: no root <node>')
 
+    # Take each script's attributes from the CURRENT definition map, not from
+    # the template: a permission changed in src must reach the package.
+    definition = ET.parse(REPO / 'src' / 'add-on' / 'LLM-AddOn.mm')
+    definition_scripts = {}
+    for node in definition.getroot().iter('node'):
+        text = node.get('TEXT') or ''
+        if text.endswith('.groovy'):
+            definition_scripts[text] = {a.get('NAME'): a.get('VALUE')
+                                       for a in node.findall('attribute')}
+
     scripts_node = child_by_text(root, 'scripts')
     scripts_dir = REPO / 'src' / 'add-on' / 'scripts'
     if scripts_node is not None and scripts_dir.is_dir():
@@ -69,6 +79,11 @@ def repack(template: Path, output: Path) -> None:
             name = path.name
             body = path.read_text(encoding='utf-8')
             if name in existing:
+                # Refresh attributes from the definition map as well as the body.
+                for attr_name, attr_value in definition_scripts.get(name, {}).items():
+                    for attr in existing[name].findall('attribute'):
+                        if attr.get('NAME') == attr_name:
+                            attr.set('VALUE', attr_value)
                 set_payload(existing[name], body, is_base64=False)
             else:
                 # Clone an existing script node so attributes follow the
