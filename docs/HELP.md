@@ -57,8 +57,10 @@ Two scripts make plugin development loop without any dialogues:
   hook or a watcher.
 - `tools/auto-install-watch.sh` watches `build/addon/` and calls it whenever a
   new package lands (needs `inotify-tools`).
-- `tools/headless-build.sh` compiles the jar with gradle (no GUI) and assembles
-  the package with `tools/package-addon.py` — no Freeplane launch, no dialog.
+- `tools/headless-build.sh` runs the full cycle: `./gradlew jar prepareAddonSource`
+  (always refreshing the add-on lib so the packaged jar is never stale), then
+  `tools/package-addon.py` with the repo-root template. Add `--install` to also
+  install and restart Freeplane.
 - `tools/handsfree-iterate.sh` runs both watchers: it installs new packages and
   confirms Freeplane's "Create release package" dialog automatically, so an
   iteration completes with nobody at the keyboard.
