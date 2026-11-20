@@ -54,8 +54,18 @@ class ConfigKeys {
         if (OVERRIDE_DIR != null) {
             return new File(OVERRIDE_DIR, SETTINGS_FILE)
         }
-        String xdg = System.getenv('XDG_CONFIG_HOME') ?: System.getProperty('user.home') + '/.config'
-        return new File("${xdg}/freeplane/1.12.x/${SETTINGS_FILE}")
+        // Freeplane's sandbox denies getenv for specific variables; user.home is
+        // always available from the JVM and doesn't need a permission check.
+        String configBase
+        try {
+            configBase = System.getenv('XDG_CONFIG_HOME')
+        } catch (SecurityException ignored) {
+            configBase = null
+        }
+        if (!configBase) {
+            configBase = System.getProperty('user.home') + '/.config'
+        }
+        return new File("${configBase}/freeplane/1.12.x/${SETTINGS_FILE}")
     }
 
     private static Properties load() {
