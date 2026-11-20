@@ -33,8 +33,8 @@ try {
     // Images run through the chat provider by default (OpenRouter serves
     // image-output models on the same endpoint and key), with Novita kept as an
     // explicit alternative for its cheaper diffusion models.
-    String imageProvider = ConfigKeys.read(config, ConfigKeys.IMAGE_PROVIDER, ImageGeneration.OPENROUTER)
-    String imageModel = ConfigKeys.read(config, ConfigKeys.IMAGE_MODEL,
+    String imageProvider = ConfigKeys.read(ConfigKeys.IMAGE_PROVIDER, ImageGeneration.OPENROUTER)
+    String imageModel = ConfigKeys.read(ConfigKeys.IMAGE_MODEL,
             ImageGeneration.DEFAULT_OPENROUTER_IMAGE_MODEL)
     LogUtils.info("Image provider: ${imageProvider}, model: ${imageModel}")
 
@@ -107,8 +107,8 @@ try {
 
     if (savedTemplate?.trim().isEmpty()) { // Check if it's null, empty, or whitespace
         LogUtils.info("No valid saved template found - generating enhancement")
-        def llmProvider = ConfigKeys.read(config, ConfigKeys.PROVIDER, 'openrouter')
-        def llmApiKey = ConfigKeys.read(config, ConfigKeys.API_KEY, '')?.trim()
+        def llmProvider = ConfigKeys.read(ConfigKeys.PROVIDER, 'openrouter')
+        def llmApiKey = ConfigKeys.read(ConfigKeys.API_KEY, '')?.trim()
 
         // Image generation is Novita's job. A chat provider key only buys prompt
         // enhancement, so a missing one must never block the image.

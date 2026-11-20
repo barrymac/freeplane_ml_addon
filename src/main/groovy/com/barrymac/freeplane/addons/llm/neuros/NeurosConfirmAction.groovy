@@ -188,7 +188,7 @@ class NeurosConfirmAction {
     }
 
     private static File candidatesFile(def node) {
-        String configured = ConfigKeys.read(node.map.storage, 'llm.neuros.candidatesFile', null)
+        String configured = ConfigKeys.read('llm.neuros.candidatesFile', null)
         if (configured?.trim()) return new File(configured)
         File mapFile = node.map.file
         if (mapFile != null) return new File(mapFile.parentFile, 'candidates.json')
