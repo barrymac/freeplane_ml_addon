@@ -125,9 +125,8 @@ class AskLmDialogueHelper {
                                     id: 'neurosCandidatesFile')
                             constraints.gridy++
                             swingBuilder.label(text: 'Listing timeout (seconds)')
-                            swingBuilder.spinner(
-                                    new javax.swing.SpinnerNumberModel(
-                                            (com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.listTimeoutSeconds') ?: '20' as int), 1, 300, 1),
+                            swingBuilder.formattedTextField(columns: 5,
+                                    value: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.listTimeoutSeconds') ?: '20',
                                     id: 'neurosTimeout')
                         }
                         constraints.gridy++

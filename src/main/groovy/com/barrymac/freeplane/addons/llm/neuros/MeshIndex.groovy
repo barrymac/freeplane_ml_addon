@@ -112,7 +112,10 @@ class MeshIndex {
 
     /** `CARD-<uuid>-bounded-dependency-expansion.card.md` reads as a title. */
     static String titleOf(String name) {
-        String base = (name ?: '').replaceAll(/\.card\.md$/, '').replaceAll(/\.puml$/, '')
+        String base = (name ?: '')
+        for (String suffix in ['.card.md', '.judge.md', '.matter.md', '.puml', '.md']) {
+            base = base.replaceAll(/${java.util.regex.Pattern.quote(suffix)}$/, '')
+        }
         def card = CARD_NAME.matcher(name ?: '')
         if (card.matches()) {
             base = card.group(2) ?: ''
