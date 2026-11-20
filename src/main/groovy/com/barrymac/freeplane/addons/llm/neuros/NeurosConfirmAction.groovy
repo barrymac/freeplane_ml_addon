@@ -127,15 +127,24 @@ class NeurosConfirmAction {
     }
 
     private static String decide(def ui, ConfirmCandidate candidate) {
-        String[] options = ['Confirm as new entity', 'Merge into existing entity…',
-                            'Keep as separate entity (split)', 'None (reject)', 'Cancel']
+        String[] options = ['Merge into existing entity…', 'Keep as separate entity (split)',
+                            'Confirm as new entity', 'None (reject)', 'Cancel']
+        String meaning = '<html><b>What each action means</b><br>' +
+                '<b>Merge</b> — this candidate IS the same entity as an existing canonical one: ' +
+                'fold it in as an alias of that judge.<br>' +
+                '<b>Split</b> — this candidate is NOT that judge: keep it as a separate entity ' +
+                '(a different person, or a misspelling that must not merge).<br>' +
+                '<b>Confirm as new</b> — this is a real, distinct entity with no existing ' +
+                'canonical to merge into.<br>' +
+                '<b>None</b> — this candidate is noise: discard it.</html>'
         int choice = JOptionPane.showOptionDialog(ui.currentFrame,
                 "${candidate.canonical}\n\n" +
-                        candidate.variants.collect { "${it.name}  [${it.chip()}]" }.join('\n'),
+                        candidate.variants.collect { "${it.name}  [${it.chip()}]" }.join('\n') +
+                        '\n\n' + meaning,
                 'Resolve candidate', JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, options, options[0])
         if (choice < 0 || choice == 4) return null
-        return ['confirm', 'merge', 'split', 'reject'][choice]
+        return ['merge', 'split', 'confirm', 'reject'][choice]
     }
 
     private static void tag(def node, String status) {
