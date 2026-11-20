@@ -98,8 +98,10 @@ class MeshIndex {
     }
 
     private static void collect(File directory, List<File> candidates) {
+        // Any document is a candidate entry, not just work cards: a legal scope's
+        // filings and statute-texts are as enmeshable as a software card.
         DirectoryListing.list(directory, directory.name ?: directory.path).findAll { file ->
-            file.isFile() && (file.name.endsWith('.card.md') || file.name.endsWith('.puml'))
+            file.isFile() && (file.name.endsWith('.md') || file.name.endsWith('.puml'))
         }.each { candidates << it }
     }
 

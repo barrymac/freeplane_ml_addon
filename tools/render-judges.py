@@ -82,10 +82,26 @@ def main():
         if filename in node_ids:
             return node_ids[filename]
         node_id = new_id()
+        surface = 'matter' if kind == 'matter' else SURFACE
         ET.SubElement(branch, 'node', TEXT=title_of(filename), ID=node_id,
-                      LINK=f'file://{os.path.join(MOUNT, "by-tag", SURFACE, filename)}')
+                      LINK=f'file://{os.path.join(MOUNT, "by-tag", surface, filename)}')
         node_ids[filename] = node_id
         return node_id
+
+    # Missing-but-expected: the oracle's four judges the seed did not mint are
+    # rendered as hollow gaps so absence is visible, not silently absent.
+    expected_missing = [
+        'Maria de Fátima Silva Carvalho',
+        'Paulo Alberto Nunes Chenaud',
+        'Manuel Carneiro Bahia de Araujo',
+        'Mário Augusto Albiani Alves Júnior',
+    ]
+    present_titles = {title_of(f) for f in judges}
+    for name in expected_missing:
+        if name not in present_titles:
+            ET.SubElement(judges_branch, 'node',
+                          TEXT=f'{name}  [missing — expected, not yet recovered]',
+                          ID=new_id())
 
     total_edges = 0
     for filename in judges:
@@ -105,10 +121,7 @@ def main():
 
     workspace = ensure_workspace(MOUNT)
     output_path = workspace / 'JudgeRender.mm'
-    header = b'<?xml version="1.0" encoding="UTF-8"?>\n' \
-             b'<!--To view this file, download free mind mapping software Freeplane ' \
-             b'from https://www.freeplane.org -->\n'
-    output_path.write_bytes(header + ET.tostring(map_xml, encoding='utf-8'))
+    output_path.write_bytes(ET.tostring(map_xml, encoding='utf-8'))
     print(f'nodes: {len(node_ids)} (judges + matters)')
     print(f'edges: {total_edges}')
     print(f'written: {output_path}')
