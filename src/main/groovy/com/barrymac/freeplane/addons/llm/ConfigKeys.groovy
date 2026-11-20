@@ -81,7 +81,13 @@ class ConfigKeys {
     /** The single settings file for the whole plugin, neurOS and LLM alike. */
     static final String SETTINGS_FILE = 'addons/promptLlmAddOn/plugin-settings.properties'
 
+    /** Test override for the settings file's parent directory. */
+    static File OVERRIDE_DIR = null
+
     private static File persistedFile(def config) {
+        if (OVERRIDE_DIR != null) {
+            return new File(OVERRIDE_DIR, SETTINGS_FILE)
+        }
         if (config != null && config.freeplaneUserDirectory) {
             return new File(config.freeplaneUserDirectory, SETTINGS_FILE)
         }
