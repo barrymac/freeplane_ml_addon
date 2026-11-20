@@ -36,6 +36,7 @@ class ConfirmCandidate {
     String status = 'hollow'
     String decision
     String mergeTarget
+    Set<String> excludedVariants = [] as Set
 
     /** The strongest evidence for the canonical form, for the confidence chip. */
     double strongest() {

@@ -62,7 +62,11 @@ class ConfirmationPlan {
                 lines << "[[${candidate.proposedType}:${target}]]  ← ${candidate.canonical} " +
                         "(evidence ${String.format('%.2f', candidate.strongest())})"
                 candidate.variants.each { variant ->
-                    lines << "    variant: ${variant.name}  [${variant.chip()}]"
+                    if (candidate.excludedVariants?.contains(variant.name)) {
+                        lines << "    excluded: ${variant.name}  [${variant.chip()}]"
+                    } else {
+                        lines << "    variant: ${variant.name}  [${variant.chip()}]"
+                    }
                 }
             } else if (candidate.status == 'split') {
                 lines << "split: ${candidate.canonical} — kept as separate candidates, no write"
@@ -86,9 +90,10 @@ class ConfirmationPlan {
      * negative control merged. A decision with no attesting name is incomplete.
      */
     static File recordDecision(File log, ConfirmCandidate candidate, String decision, String mergeTarget = null,
-                               String attestedBy = null) {
+                               String attestedBy = null, Set<String> excluded = null) {
         candidate.decision = decision
         candidate.mergeTarget = mergeTarget
+        candidate.excludedVariants = excluded ?: [] as Set
         candidate.status = decision == 'confirm' ? 'confirmed' :
                 decision == 'merge' ? 'merged' :
                 decision == 'split' ? 'split' : 'rejected'

@@ -48,8 +48,10 @@ class NeurosConfirmAction {
                 return
             }
 
-            String decision = decide(ui, candidate)
-            if (decision == null) return
+            Map decisionResult = decide(ui, candidate)
+            if (decisionResult == null) return
+            String decision = decisionResult.decision
+            Set<String> excluded = decisionResult.excluded
             if (candidate.decision) {
                 LogUtils.info("NeurosConfirm: revising ${candidate.decision} on ${candidate.canonical}")
             }
@@ -69,7 +71,7 @@ class NeurosConfirmAction {
             }
             File log = new File(candidatesFile.parentFile, DECISIONS_LOG)
             ConfirmationPlan.recordDecision(log, candidate, decision, mergeTarget,
-                    attestedBy?.trim())
+                    attestedBy?.trim(), excluded)
             tag(node, candidate.status)
             branch.note = ConfirmationPlan.diff(candidates)
             LogUtils.info("NeurosConfirm: ${decision} ${candidate.canonical}" +
@@ -126,25 +128,31 @@ class NeurosConfirmAction {
         return candidates.find { text.startsWith(it.canonical) }
     }
 
-    private static String decide(def ui, ConfirmCandidate candidate) {
+    /**
+     * Choose the decision AND which variants it applies to. A merge is rarely
+     * all-or-nothing: three variants may be the same judge while a fourth is a
+     * misspelling that must stay out. Each variant gets a checkbox so the outlier
+     * is excluded explicitly rather than folded in by default.
+     */
+    private static Map decide(def ui, ConfirmCandidate candidate) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.GridLayout(0, 1))
+        panel.add(new javax.swing.JLabel("<html><b>${candidate.canonical}</b> — choose which variants apply:</html>"))
+        Map<String, javax.swing.JCheckBox> boxes = [:]
+        candidate.variants.each { variant ->
+            javax.swing.JCheckBox box = new javax.swing.JCheckBox(
+                    "${variant.name}  [${variant.chip()}]", true)
+            boxes[variant.name] = box
+            panel.add(box)
+        }
+        panel.add(new javax.swing.JLabel('<html><br>Uncheck any outlier to exclude it from this decision.</html>'))
         String[] options = ['Merge into existing entity…', 'Keep as separate entity (split)',
                             'Confirm as new entity', 'None (reject)', 'Cancel']
-        String meaning = '<html><b>What each action means</b><br>' +
-                '<b>Merge</b> — this candidate IS the same entity as an existing canonical one: ' +
-                'fold it in as an alias of that judge.<br>' +
-                '<b>Split</b> — this candidate is NOT that judge: keep it as a separate entity ' +
-                '(a different person, or a misspelling that must not merge).<br>' +
-                '<b>Confirm as new</b> — this is a real, distinct entity with no existing ' +
-                'canonical to merge into.<br>' +
-                '<b>None</b> — this candidate is noise: discard it.</html>'
-        int choice = JOptionPane.showOptionDialog(ui.currentFrame,
-                "${candidate.canonical}\n\n" +
-                        candidate.variants.collect { "${it.name}  [${it.chip()}]" }.join('\n') +
-                        '\n\n' + meaning,
+        int choice = JOptionPane.showOptionDialog(ui.currentFrame, panel,
                 'Resolve candidate', JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, options, options[0])
         if (choice < 0 || choice == 4) return null
-        return ['merge', 'split', 'confirm', 'reject'][choice]
+        Set<String> excluded = boxes.findAll { name, box -> !box.selected }.keySet()
+        return [decision: ['merge', 'split', 'confirm', 'reject'][choice], excluded: excluded]
     }
 
     private static void tag(def node, String status) {
