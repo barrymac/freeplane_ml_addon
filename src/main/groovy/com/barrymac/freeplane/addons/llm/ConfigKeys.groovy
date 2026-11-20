@@ -95,10 +95,20 @@ class ConfigKeys {
     static String readPersisted(String key) {
         try {
             File file = persistedFile(null)
-            if (!file.isFile()) return null
-            Properties props = new Properties()
-            file.withInputStream { props.load(it) }
-            return props.getProperty(key)
+            if (file.isFile()) {
+                Properties props = new Properties()
+                file.withInputStream { props.load(it) }
+                String value = props.getProperty(key)
+                if (value != null) return value
+            }
+            // Fall back to the old file so a migration never loses a setting.
+            File old = new File(file.parentFile, 'neuros-settings.properties')
+            if (old.isFile()) {
+                Properties legacy = new Properties()
+                old.withInputStream { legacy.load(it) }
+                return legacy.getProperty(key)
+            }
+            return null
         } catch (Exception ignored) {
             return null
         }
