@@ -94,7 +94,8 @@ class ConfirmationPlan {
                 decision == 'split' ? 'split' : 'rejected'
         if (log != null) {
             log.parentFile?.mkdirs()
-            log << "${new Date().format('yyyy-MM-dd HH:mm:ss')}\t${decision}\t" +
+            String revision = candidate.decision ? " (revises ${candidate.decision})" : ''
+            log << "${new Date().format('yyyy-MM-dd HH:mm:ss')}\t${decision}${revision}\t" +
                     "${candidate.canonical}\t${mergeTarget ?: ''}\t" +
                     "${candidate.strongest()}\t${attestedBy ?: 'unattested'}\n"
         }

@@ -50,6 +50,9 @@ class NeurosConfirmAction {
 
             String decision = decide(ui, candidate)
             if (decision == null) return
+            if (candidate.decision) {
+                LogUtils.info("NeurosConfirm: revising ${candidate.decision} on ${candidate.canonical}")
+            }
             String mergeTarget = null
             if (decision == 'merge') {
                 mergeTarget = JOptionPane.showInputDialog(ui.currentFrame,
@@ -87,9 +90,23 @@ class NeurosConfirmAction {
             branch.tags.add(BRANCH_TAG)
             branch.note = ConfirmationPlan.diff(candidates)
         }
+        Map<String, Object> existing = [:]
+        branch.children.each { child ->
+            String text = (child.text ?: '').toString()
+            candidates.each { candidate ->
+                if (text.startsWith(candidate.canonical)) {
+                    existing[candidate.id] = child
+                }
+            }
+        }
         candidates.each { candidate ->
-            def child = branch.createChild(candidate.displayName())
-            child.tags.add('neurOS candidate')
+            def child = existing[candidate.id]
+            if (child == null) {
+                child = branch.createChild(candidate.displayName())
+                child.tags.add('neurOS candidate')
+            } else {
+                child.text = candidate.displayName()
+            }
             child.note = candidate.variants.collect { "${it.name}  [${it.chip()}]" }.join('\n')
         }
         return branch
@@ -101,7 +118,8 @@ class NeurosConfirmAction {
     }
 
     private static String decide(def ui, ConfirmCandidate candidate) {
-        String[] options = ['Confirm', 'Merge…', 'Split', 'None (reject)', 'Cancel']
+        String[] options = ['Confirm as new entity', 'Merge into existing entity…',
+                            'Keep as separate entity (split)', 'None (reject)', 'Cancel']
         int choice = JOptionPane.showOptionDialog(ui.currentFrame,
                 "${candidate.canonical}\n\n" +
                         candidate.variants.collect { "${it.name}  [${it.chip()}]" }.join('\n'),
