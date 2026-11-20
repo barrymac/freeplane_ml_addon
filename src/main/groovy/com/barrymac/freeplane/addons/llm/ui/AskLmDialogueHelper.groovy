@@ -99,6 +99,37 @@ class AskLmDialogueHelper {
                                 temperatureSlider.setLabelTable(labels)
                             }
                         }
+                        // neurOS options, in the same dialogue rather than a second page.
+                        constraints.gridy++
+                        constraints.fill = GridBagConstraints.HORIZONTAL
+                        constraints.anchor = GridBagConstraints.WEST
+                        swingBuilder.panel(constraints: constraints, layout: new GridBagLayout(),
+                                border: BorderFactory.createTitledBorder('neurOS')) {
+                            constraints = new GridBagConstraints()
+                            constraints.insets = new Insets(4, 6, 4, 6)
+                            constraints.gridy = 0
+                            constraints.gridx = 0
+                            constraints.fill = GridBagConstraints.HORIZONTAL
+                            swingBuilder.checkBox(text: 'Dry run only (no files written)',
+                                    selected: com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.neuros.dryRun', 'true') != 'false',
+                                    id: 'neurosDryRun')
+                            constraints.gridy++
+                            swingBuilder.label(text: 'Attested by (who confirms merges)')
+                            swingBuilder.textField(columns: 16,
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.attestedBy', 'barrymac'),
+                                    id: 'neurosAttestedBy')
+                            constraints.gridy++
+                            swingBuilder.label(text: 'Candidates file (optional)')
+                            swingBuilder.textField(columns: 24,
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.neuros.candidatesFile', ''),
+                                    id: 'neurosCandidatesFile')
+                            constraints.gridy++
+                            swingBuilder.label(text: 'Listing timeout (seconds)')
+                            swingBuilder.spinner(
+                                    new javax.swing.SpinnerNumberModel(
+                                            (com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.neuros.listTimeoutSeconds', '20') as int), 1, 300, 1),
+                                    id: 'neurosTimeout')
+                        }
                         constraints.gridy++
                         constraints.fill = GridBagConstraints.NONE // Don't stretch buttons
                         constraints.anchor = GridBagConstraints.EAST // Align buttons to the right
@@ -125,7 +156,13 @@ class AskLmDialogueHelper {
                                             userMessageIndex     : userMessageArea.comboBox.selectedIndex,   // Current index
                                             // Return copies of the lists as they might have been modified (duplicate/delete)
                                             updatedSystemMessages: new ArrayList(systemMessages),
-                                            updatedUserMessages  : new ArrayList(userMessages)
+                                            updatedUserMessages  : new ArrayList(userMessages),
+                                            neuros               : [
+                                                    dryRun           : neurosDryRun.selected,
+                                                    attestedBy       : neurosAttestedBy.text,
+                                                    candidatesFile   : neurosCandidatesFile.text,
+                                                    listTimeoutSeconds: neurosTimeout.value
+                                            ]
                                     ]
                                     // Close the dialog
                                     SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
@@ -157,7 +194,13 @@ class AskLmDialogueHelper {
                                             userMessageIndex     : userMessageArea.comboBox.selectedIndex,   // Current index
                                             // Return copies of the lists as they might have been modified (duplicate/delete)
                                             updatedSystemMessages: new ArrayList(systemMessages),
-                                            updatedUserMessages  : new ArrayList(userMessages)
+                                            updatedUserMessages  : new ArrayList(userMessages),
+                                            neuros               : [
+                                                    dryRun           : neurosDryRun.selected,
+                                                    attestedBy       : neurosAttestedBy.text,
+                                                    candidatesFile   : neurosCandidatesFile.text,
+                                                    listTimeoutSeconds: neurosTimeout.value
+                                            ]
                                     ]
                                     // Close the dialog
                                     SwingUtilities.getWindowAncestor(actionEvent.source).dispose()
