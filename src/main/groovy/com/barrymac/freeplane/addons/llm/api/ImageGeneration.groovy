@@ -1,6 +1,7 @@
 package com.barrymac.freeplane.addons.llm.api
 
 import com.barrymac.freeplane.addons.llm.ConfigKeys
+import com.barrymac.freeplane.addons.llm.Keys
 
 /**
  * Image generation through a chat provider.
@@ -24,21 +25,22 @@ class ImageGeneration {
                 model     : model.trim(),
                 messages  : [[role: 'user', content: prompt.trim()]],
                 modalities: ['image', 'text'],
-                // One request per image keeps the reply shape predictable.
                 n         : images
         ]
     }
 
-    /** Provider key to use, given what the map has configured. */
-    static String keyFor(String provider, def config) {
+    /** Provider key: environment first, then the settings file. */
+    static String keyFor(String provider, def config = null) {
         if (provider == NOVITA) {
-            return config.getProperty('novita.key', '')?.trim()
+            return ConfigKeys.read('novita.key', '')
         }
-        return ConfigKeys.read(config, ConfigKeys.API_KEY, '')?.trim()
+        String fromEnv = Keys.environment(Keys.OPENROUTER)
+        if (fromEnv?.trim()) return fromEnv.trim()
+        return ConfigKeys.read(ConfigKeys.API_KEY, '')?.trim()
     }
 
     /** True when this provider has everything it needs to run. */
-    static boolean isReady(String provider, def config) {
-        return keyFor(provider, config)
+    static boolean isReady(String provider, def config = null) {
+        return keyFor(provider)
     }
 }

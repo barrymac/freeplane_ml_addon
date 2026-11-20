@@ -97,10 +97,10 @@ try {
         // neurOS settings changed in the dialogue take effect immediately, not
         // only when the user remembers to press Save Changes.
         if (dialogResult.neuros) {
-            ConfigKeys.write(config, 'llm.neuros.dryRun', dialogResult.neuros.dryRun ? 'true' : 'false')
-            ConfigKeys.write(config, 'llm.attestedBy', dialogResult.neuros.attestedBy)
-            ConfigKeys.write(config, 'llm.neuros.candidatesFile', dialogResult.neuros.candidatesFile)
-            ConfigKeys.write(config, 'llm.neuros.listTimeoutSeconds', dialogResult.neuros.listTimeoutSeconds)
+            ConfigKeys.write('llm.neuros.dryRun', dialogResult.neuros.dryRun ? 'true' : 'false')
+            ConfigKeys.write('llm.attestedBy', dialogResult.neuros.attestedBy)
+            ConfigKeys.write('llm.neuros.candidatesFile', dialogResult.neuros.candidatesFile)
+            ConfigKeys.write('llm.neuros.listTimeoutSeconds', dialogResult.neuros.listTimeoutSeconds)
         }
         try {
             // 1. Get selected node (using 'c' from script context)
@@ -183,13 +183,13 @@ try {
 
             // 2. Save configuration properties using data from result map
             // Use 'config' from script context
-            ConfigKeys.write(config, ConfigKeys.API_KEY, dialogResult.apiKey)
-            ConfigKeys.write(config, ConfigKeys.MODEL, dialogResult.model)
-            ConfigKeys.write(config, ConfigKeys.MAX_RESPONSE_LENGTH, dialogResult.maxTokens)
-            ConfigKeys.write(config, ConfigKeys.TEMPERATURE, dialogResult.temperature)
-            ConfigKeys.write(config, ConfigKeys.SYSTEM_MESSAGE_INDEX, dialogResult.systemMessageIndex)
-            ConfigKeys.write(config, ConfigKeys.USER_MESSAGE_INDEX, dialogResult.userMessageIndex)
-            ConfigKeys.write(config, ConfigKeys.PROVIDER, dialogResult.provider)
+            ConfigKeys.write(ConfigKeys.API_KEY, dialogResult.apiKey)
+            ConfigKeys.write(ConfigKeys.MODEL, dialogResult.model)
+            ConfigKeys.write(ConfigKeys.MAX_RESPONSE_LENGTH, dialogResult.maxTokens)
+            ConfigKeys.write(ConfigKeys.TEMPERATURE, dialogResult.temperature)
+            ConfigKeys.write(ConfigKeys.SYSTEM_MESSAGE_INDEX, dialogResult.systemMessageIndex)
+            ConfigKeys.write(ConfigKeys.USER_MESSAGE_INDEX, dialogResult.userMessageIndex)
+            ConfigKeys.write(ConfigKeys.PROVIDER, dialogResult.provider)
 
             UiHelper.showInformationMessage(ui, "Changes saved.")
 

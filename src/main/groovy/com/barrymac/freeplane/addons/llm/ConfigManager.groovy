@@ -38,20 +38,20 @@ class ConfigManager {
      */
     static ApiConfig loadBaseConfig(def config) {
         try {
-            def provider = ConfigKeys.read(config, ConfigKeys.PROVIDER, 'openrouter')
-            def model = ConfigKeys.read(config, ConfigKeys.MODEL, DEFAULT_MODEL)
-            def maxTokens = ConfigKeys.read(config, ConfigKeys.MAX_RESPONSE_LENGTH, '2000') as int
-            def temperature = ConfigKeys.read(config, ConfigKeys.TEMPERATURE, '0.7') as double
+            def provider = ConfigKeys.read(ConfigKeys.PROVIDER, 'openrouter')
+            def model = ConfigKeys.read(ConfigKeys.MODEL, DEFAULT_MODEL)
+            def maxTokens = ConfigKeys.read(ConfigKeys.MAX_RESPONSE_LENGTH, '2000') as int
+            def temperature = ConfigKeys.read(ConfigKeys.TEMPERATURE, '0.7') as double
 
             // Get available models from config or use defaults
-            def availableModels = ConfigKeys.read(config, ConfigKeys.AVAILABLE_MODELS)?.split('\n') ?: DEFAULT_MODELS
+            def availableModels = ConfigKeys.read(ConfigKeys.AVAILABLE_MODELS)?.split('\n') ?: DEFAULT_MODELS
 
             LogUtils.info("Loaded configuration: provider=${provider}, model=${model}, maxTokens=${maxTokens}, temperature=${temperature}")
             LogUtils.info("Available models: ${availableModels}")
 
             return new ApiConfig(
                     provider: provider,
-                    apiKey: ConfigKeys.read(config, ConfigKeys.API_KEY, '') ?: '',
+                    apiKey: ConfigKeys.read(ConfigKeys.API_KEY, '') ?: '',
                     model: model,
                     maxTokens: maxTokens,
                     temperature: temperature,
@@ -91,7 +91,7 @@ class ConfigManager {
      */
     static int getSystemMessageIndex(def config) {
         try {
-            def index = ConfigKeys.read(config, ConfigKeys.SYSTEM_MESSAGE_INDEX, '0') as int
+            def index = ConfigKeys.read(ConfigKeys.SYSTEM_MESSAGE_INDEX, '0') as int
             LogUtils.info("System message index: ${index}")
             return index
         } catch (Exception e) {
@@ -108,7 +108,7 @@ class ConfigManager {
      */
     static int getUserMessageIndex(def config) {
         try {
-            def index = ConfigKeys.read(config, ConfigKeys.USER_MESSAGE_INDEX, '0') as int
+            def index = ConfigKeys.read(ConfigKeys.USER_MESSAGE_INDEX, '0') as int
             LogUtils.info("User message index: ${index}")
             return index
         } catch (Exception e) {

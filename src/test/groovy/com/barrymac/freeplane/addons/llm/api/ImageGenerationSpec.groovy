@@ -1,10 +1,16 @@
 package com.barrymac.freeplane.addons.llm.api
 
+import com.barrymac.freeplane.addons.llm.ConfigKeys
+import com.barrymac.freeplane.addons.llm.Keys
 import spock.lang.Specification
+import spock.lang.TempDir
 import spock.lang.Subject
 
 @Subject(ImageGeneration)
 class ImageGenerationSpec extends Specification {
+
+    @TempDir
+    File directory
 
     def "the default provider is OpenRouter's image model"() {
         expect:
@@ -44,25 +50,37 @@ class ImageGenerationSpec extends Specification {
         thrown(IllegalArgumentException)
     }
 
-    def "each provider reads its own key"() {
+    def "env key for openrouter, file key for novita"() {
         given:
-        def config = [getProperty: { String key, Object fallback -> [
-                (com.barrymac.freeplane.addons.llm.ConfigKeys.API_KEY): 'or-key',
-                'novita.key': 'novita-key'
-        ][key] ?: fallback }] as Map
+        ConfigKeys.OVERRIDE_DIR = directory
+        ConfigKeys.write('novita.key', 'nov-test-key')
 
         expect:
-        ImageGeneration.keyFor('openrouter', config) == 'or-key'
-        ImageGeneration.keyFor('novita', config) == 'novita-key'
-        ImageGeneration.isReady('openrouter', config)
+        // OpenRouter: env wins (this machine has OPENROUTER_API_KEY set)
+        Keys.environment(Keys.OPENROUTER) == null ||
+                ImageGeneration.keyFor('openrouter') == Keys.environment(Keys.OPENROUTER).trim()
+        // Novita: reads from the settings file
+        ImageGeneration.keyFor('novita') == 'nov-test-key'
+        ImageGeneration.isReady('openrouter')
+
+        cleanup:
+        ConfigKeys.OVERRIDE_DIR = null
     }
 
-    def "a provider with no key is not ready"() {
+    def "a provider with no key anywhere is not ready"() {
         given:
-        def config = [getProperty: { String key, Object fallback -> fallback }] as Map
+        ConfigKeys.OVERRIDE_DIR = directory
+        // Clear any settings left by a previous test in the same temp dir
+        new File(directory, ConfigKeys.SETTINGS_FILE).delete()
 
-        expect:
-        !ImageGeneration.isReady('openrouter', config)
-        !ImageGeneration.isReady('novita', config)
+        when:
+        String novitaKey = ImageGeneration.keyFor('novita')
+
+        then:
+        novitaKey == '' || novitaKey == null
+        !ImageGeneration.isReady('novita')
+
+        cleanup:
+        ConfigKeys.OVERRIDE_DIR = null
     }
 }

@@ -55,8 +55,8 @@ class ImagePromptEditor {
         params.seed = new Random().nextInt(Integer.MAX_VALUE)
         // Which service draws the image, and with which model. OpenRouter is the
         // default because it serves image models on the same key as chat.
-        params.provider = ConfigKeys.read(config, ConfigKeys.IMAGE_PROVIDER, 'openrouter')
-        params.model = ConfigKeys.read(config, ConfigKeys.IMAGE_MODEL,
+        params.provider = ConfigKeys.read(ConfigKeys.IMAGE_PROVIDER, 'openrouter')
+        params.model = ConfigKeys.read(ConfigKeys.IMAGE_MODEL,
                 'google/gemini-3.1-flash-image')
         def providerBox, modelField
         // --- END MODIFY PARAMETER LOADING ---
@@ -201,8 +201,8 @@ class ImagePromptEditor {
                                     showError(dialog, 'Choose an image model first')
                                     return
                                 }
-                                ConfigKeys.write(config, ConfigKeys.IMAGE_PROVIDER, params.provider)
-                                ConfigKeys.write(config, ConfigKeys.IMAGE_MODEL, params.model)
+                                ConfigKeys.write(ConfigKeys.IMAGE_PROVIDER, params.provider)
+                                ConfigKeys.write(ConfigKeys.IMAGE_MODEL, params.model)
                                 resultMap = [action: 'Generate', prompt: currentPrompt, params: params]
                                 dialog.dispose()
                             } catch (Exception e) {

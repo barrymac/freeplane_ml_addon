@@ -22,16 +22,19 @@ class Keys {
 
     private static Map<String, String> cachedEnvironment
 
-    /** Environment first, then the configured value, then empty. */
-    static String resolve(String environmentName, def config, String configKey = null) {
+    /**
+     * Environment first, then a caller-supplied fallback. Key resolution never
+     * reads the settings file itself — that is ConfigKeys' job, so the caller
+     * passes the file value as the fallback and env always wins.
+     */
+    static String resolve(String environmentName, String fallback = '') {
         String fromEnvironment = environment(environmentName)
         if (fromEnvironment?.trim()) return fromEnvironment.trim()
-        if (config == null || !configKey) return ''
-        return ((String) config.getProperty((String) configKey, (String) '') ?: '').toString().trim()
+        return fallback?.trim() ?: ''
     }
 
-    static String openRouter(def config) {
-        return resolve(OPENROUTER, config, ConfigKeys.API_KEY)
+    static String openRouter() {
+        return resolve(OPENROUTER, ConfigKeys.read(ConfigKeys.API_KEY, ''))
     }
 
     /** Jev has no settings-dialog surface: the environment is the whole story. */

@@ -2,33 +2,40 @@ package com.barrymac.freeplane.addons.llm
 
 import spock.lang.Specification
 import spock.lang.Subject
+import spock.lang.TempDir
 
 @Subject(ConfigManager)
 class ConfigManagerSpec extends Specification {
 
-    /** A Freeplane-like config backed by a map, matching getProperty(key, fallback). */
-    private static Map configOf(Map<String, Object> values) {
-        return [
-                getProperty: { String key, Object fallback = null ->
-                    values.containsKey(key) ? values[key] : fallback
-                },
-                setProperty: { String key, Object value -> values[key] = value },
-                values     : values
-        ] as Map
+    @TempDir
+    File directory
+
+    def setup() {
+        ConfigKeys.OVERRIDE_DIR = directory
+        // Start each test with a clean settings file
+        new File(directory, ConfigKeys.SETTINGS_FILE).delete()
     }
 
-    def "base config reads the neutral keys"() {
+    def cleanup() {
+        ConfigKeys.OVERRIDE_DIR = null
+    }
+
+    private void write(Map<String, String> entries) {
+        ConfigKeys.writeAll(entries)
+    }
+
+    def "base config reads the neutral keys from the file"() {
         given:
-        def config = configOf([
-                (ConfigKeys.PROVIDER)            : 'openrouter',
-                (ConfigKeys.MODEL)               : 'qwen/qwen4-max',
-                (ConfigKeys.MAX_RESPONSE_LENGTH) : '2000',
-                (ConfigKeys.TEMPERATURE)         : '0.7',
-                (ConfigKeys.API_KEY)             : 'test-key'
+        write([
+                (ConfigKeys.PROVIDER)          : 'openrouter',
+                (ConfigKeys.MODEL)             : 'qwen/qwen4-max',
+                (ConfigKeys.MAX_RESPONSE_LENGTH): '2000',
+                (ConfigKeys.TEMPERATURE)       : '0.7',
+                (ConfigKeys.API_KEY)           : 'test-key'
         ])
 
         when:
-        ApiConfig api = ConfigManager.loadBaseConfig(config)
+        ApiConfig api = ConfigManager.loadBaseConfig(null)
 
         then:
         api.provider == 'openrouter'
@@ -41,16 +48,15 @@ class ConfigManagerSpec extends Specification {
 
     def "custom values and a model list are respected"() {
         given:
-        def config = configOf([
-                (ConfigKeys.PROVIDER)         : 'openrouter',
-                (ConfigKeys.MODEL)            : 'deepseek/deepseek-v4.1-flash-1017',
+        write([
+                (ConfigKeys.MODEL)             : 'deepseek/deepseek-v4.1-flash-1017',
                 (ConfigKeys.MAX_RESPONSE_LENGTH): '1500',
-                (ConfigKeys.TEMPERATURE)      : '0.5',
-                (ConfigKeys.AVAILABLE_MODELS) : "model1\nmodel2"
+                (ConfigKeys.TEMPERATURE)       : '0.5',
+                (ConfigKeys.AVAILABLE_MODELS)  : 'model1\nmodel2'
         ])
 
         when:
-        ApiConfig api = ConfigManager.loadBaseConfig(config)
+        ApiConfig api = ConfigManager.loadBaseConfig(null)
 
         then:
         api.model == 'deepseek/deepseek-v4.1-flash-1017'
@@ -61,10 +67,10 @@ class ConfigManagerSpec extends Specification {
 
     def "a broken value falls back instead of failing the dialog"() {
         given:
-        def config = configOf([(ConfigKeys.MAX_RESPONSE_LENGTH): 'not-a-number'])
+        write([(ConfigKeys.MAX_RESPONSE_LENGTH): 'not-a-number'])
 
         when:
-        ApiConfig api = ConfigManager.loadBaseConfig(config)
+        ApiConfig api = ConfigManager.loadBaseConfig(null)
 
         then:
         noExceptionThrown()
@@ -74,25 +80,18 @@ class ConfigManagerSpec extends Specification {
 
     def "the message index reads its neutral key"() {
         given:
-        def config = configOf([(ConfigKeys.SYSTEM_MESSAGE_INDEX): '5', (ConfigKeys.USER_MESSAGE_INDEX): '3'])
+        write([(ConfigKeys.SYSTEM_MESSAGE_INDEX): '5',
+               (ConfigKeys.USER_MESSAGE_INDEX)  : '3'])
 
         expect:
-        ConfigManager.getSystemMessageIndex(config) == 5
-        ConfigManager.getUserMessageIndex(config) == 3
+        ConfigManager.getSystemMessageIndex(null) == 5
+        ConfigManager.getUserMessageIndex(null) == 3
     }
 
     def "an unreadable index defaults to zero"() {
-        given:
-        def config = [
-                getProperty: { String key, Object fallback = null ->
-                    if (key.startsWith('llm.')) throw new IllegalStateException('boom')
-                    return fallback
-                }
-        ] as Map
-
         expect:
-        ConfigManager.getSystemMessageIndex(config) == 0
-        ConfigManager.getUserMessageIndex(config) == 0
+        ConfigManager.getSystemMessageIndex(null) == 0
+        ConfigManager.getUserMessageIndex(null) == 0
     }
 
     def "default models carry no OpenAI or Anthropic ids"() {

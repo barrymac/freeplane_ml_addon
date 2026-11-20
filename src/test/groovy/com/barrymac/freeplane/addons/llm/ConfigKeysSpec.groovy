@@ -2,82 +2,58 @@ package com.barrymac.freeplane.addons.llm
 
 import spock.lang.Specification
 import spock.lang.Subject
+import spock.lang.TempDir
 
 @Subject(ConfigKeys)
 class ConfigKeysSpec extends Specification {
 
-    private static Map configOf(Map<String, Object> values) {
-        return [
-                getProperty: { String key, Object fallback = null ->
-                    values.containsKey(key) ? values[key] : fallback
-                },
-                setProperty: { String key, Object value -> values[key] = value },
-                values     : values
-        ] as Map
+    @TempDir
+    File directory
+
+    def setup() {
+        ConfigKeys.OVERRIDE_DIR = directory
+        new File(directory, ConfigKeys.SETTINGS_FILE).delete()
     }
 
-    def "a neutral key is read directly"() {
+    def cleanup() {
+        ConfigKeys.OVERRIDE_DIR = null
+    }
+
+    def "a key written to the file reads back directly"() {
         given:
-        def config = configOf([(ConfigKeys.MODEL): 'qwen/qwen4-max'])
+        ConfigKeys.write(ConfigKeys.MODEL, 'qwen/qwen4-max')
 
         expect:
-        ConfigKeys.read(config, ConfigKeys.MODEL) == 'qwen/qwen4-max'
+        ConfigKeys.read(ConfigKeys.MODEL) == 'qwen/qwen4-max'
     }
 
-    def "a legacy value is migrated once, then read from the neutral key"() {
+    def "a neutral key is used directly, no config object needed"() {
         given:
-        def values = [(ConfigKeys.LEGACY[ConfigKeys.MODEL]): 'legacy-model']
-        def config = configOf(values)
+        ConfigKeys.write(ConfigKeys.PROVIDER, 'openrouter')
 
-        when:
-        String first = ConfigKeys.read(config, ConfigKeys.MODEL, 'fallback')
-
-        then:
-        first == 'legacy-model'
-        values[ConfigKeys.MODEL] == 'legacy-model'
-
-        when:
-        values.remove(ConfigKeys.LEGACY[ConfigKeys.MODEL])
-        String second = ConfigKeys.read(config, ConfigKeys.MODEL, 'fallback')
-
-        then:
-        second == 'legacy-model'
+        expect:
+        ConfigKeys.read(ConfigKeys.PROVIDER) == 'openrouter'
     }
 
-    def "the neutral key wins over a legacy value"() {
+    def "the neutral key wins over a legacy value in the file"() {
         given:
-        def config = configOf([
+        ConfigKeys.writeAll([
                 (ConfigKeys.PROVIDER)                  : 'openrouter',
-                (ConfigKeys.LEGACY[ConfigKeys.PROVIDER]): 'whatever'
+                (ConfigKeys.LEGACY[ConfigKeys.PROVIDER]): 'openai'
         ])
 
         expect:
-        ConfigKeys.read(config, ConfigKeys.PROVIDER) == 'openrouter'
+        ConfigKeys.read(ConfigKeys.PROVIDER) == 'openrouter'
     }
 
-    def "an unset key returns the caller's fallback"() {
-        given:
-        def config = configOf([:])
-
+    def "an unset key returns the fallback"() {
         expect:
-        ConfigKeys.read(config, ConfigKeys.API_KEY, '') == ''
-        ConfigKeys.read(config, ConfigKeys.TEMPERATURE, '0.7') == '0.7'
+        ConfigKeys.read(ConfigKeys.API_KEY, '') == ''
+        ConfigKeys.read(ConfigKeys.TEMPERATURE, '0.7') == '0.7'
+        ConfigKeys.read('no.such.key') == null
     }
 
-    def "map storage with only single-argument getProperty still reads"() {
-        given:
-        // Freeplane's PropertiesProxy exposes getProperty(String) only.
-        def storage = [getProperty: { String key ->
-            key == ConfigKeys.IMAGE_MODEL ? 'google/gemini-3.1-flash-image' : null
-        }] as Map
-
-        expect:
-        ConfigKeys.read(storage, ConfigKeys.IMAGE_MODEL, 'fallback') ==
-                'google/gemini-3.1-flash-image'
-        ConfigKeys.read(storage, ConfigKeys.API_KEY, '') == ''
-    }
-
-    def "every neutral key that replaced a legacy one is mapped"() {
+    def "every legacy key maps to a neutral key"() {
         expect:
         ConfigKeys.LEGACY.keySet() == [
                 ConfigKeys.PROVIDER, ConfigKeys.MODEL, ConfigKeys.API_KEY,
@@ -85,5 +61,17 @@ class ConfigKeysSpec extends Specification {
                 ConfigKeys.USER_MESSAGE_INDEX, ConfigKeys.TEMPERATURE,
                 ConfigKeys.MAX_RESPONSE_LENGTH
         ] as Set
+    }
+
+    def "writing removes the legacy twin so there is one key per setting"() {
+        given:
+        ConfigKeys.write(ConfigKeys.LEGACY[ConfigKeys.MODEL], 'old-value')
+
+        when:
+        ConfigKeys.write(ConfigKeys.MODEL, 'new-value')
+
+        then:
+        ConfigKeys.read(ConfigKeys.MODEL) == 'new-value'
+        ConfigKeys.readAll()[ConfigKeys.LEGACY[ConfigKeys.MODEL]] == null
     }
 }

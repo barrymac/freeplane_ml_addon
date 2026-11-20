@@ -65,9 +65,9 @@ class NeurosConfirmAction {
             // Remember the name for the next decision so it is one prompt, not a chore.
             String attestedBy = JOptionPane.showInputDialog(ui.currentFrame,
                     'Attested by (who confirms this decision?)',
-                    ConfigKeys.read(config, 'llm.attestedBy', 'barrymac'))
+                    ConfigKeys.read('llm.attestedBy', 'barrymac'))
             if (attestedBy?.trim()) {
-                ConfigKeys.write(config, 'llm.attestedBy', attestedBy.trim())
+                ConfigKeys.write('llm.attestedBy', attestedBy.trim())
             }
             File log = new File(candidatesFile.parentFile, DECISIONS_LOG)
             ConfirmationPlan.recordDecision(log, candidate, decision, mergeTarget,
@@ -79,7 +79,7 @@ class NeurosConfirmAction {
             StringBuilder message = new StringBuilder(
                     "${decision == 'merge' ? 'Merged' : decision == 'confirm' ? 'Confirmed' :
                             decision == 'split' ? 'Split' : 'Rejected'}: ${candidate.canonical}\n\n")
-            boolean dryRun = ConfigKeys.read(config, WriteBack.DRY_RUN_KEY, 'true') != 'false'
+            boolean dryRun = ConfigKeys.read(WriteBack.DRY_RUN_KEY, 'true') != 'false'
             message << ConfirmationPlan.diff(candidates, dryRun)
 
             // Dry-run is the default. When it is explicitly turned off, confirmed

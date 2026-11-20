@@ -112,19 +112,19 @@ class AskLmDialogueHelper {
                             constraints.gridx = 0
                             constraints.fill = GridBagConstraints.HORIZONTAL
                             neurosDryRun = swingBuilder.checkBox(text: 'Dry run only (no files written)',
-                                    selected: (com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.dryRun') ?: 'true') != 'false')
+                                    selected: (com.barrymac.freeplane.addons.llm.ConfigKeys.read('llm.neuros.dryRun') ?: 'true') != 'false')
                             constraints.gridy++
                             swingBuilder.label(text: 'Attested by (who confirms merges)')
                             neurosAttestedBy = swingBuilder.textField(columns: 16,
-                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.attestedBy') ?: 'barrymac')
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read('llm.attestedBy') ?: 'barrymac')
                             constraints.gridy++
                             swingBuilder.label(text: 'Candidates file (optional)')
                             neurosCandidatesFile = swingBuilder.textField(columns: 24,
-                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.candidatesFile') ?: '')
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read('llm.neuros.candidatesFile') ?: '')
                             constraints.gridy++
                             swingBuilder.label(text: 'Listing timeout (seconds)')
                             neurosTimeout = swingBuilder.formattedTextField(columns: 5,
-                                    value: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.listTimeoutSeconds') ?: '20')
+                                    value: com.barrymac.freeplane.addons.llm.ConfigKeys.read('llm.neuros.listTimeoutSeconds') ?: '20')
                         }
                         constraints.gridy++
                         constraints.fill = GridBagConstraints.NONE // Don't stretch buttons
