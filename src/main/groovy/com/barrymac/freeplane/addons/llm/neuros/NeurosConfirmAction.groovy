@@ -30,6 +30,11 @@ class NeurosConfirmAction {
                 UiHelper.showInformationMessage(ui, 'Please select a candidate node first.')
                 return
             }
+            KnowledgeContext context = KnowledgeContext.discover(node.map.file)
+            if (!context.isEnabled()) {
+                UiHelper.showInformationMessage(ui, context.reason)
+                return
+            }
             File candidatesFile = candidatesFile(node)
             List<ConfirmCandidate> candidates = ConfirmationPlan.load(candidatesFile)
             if (candidates.isEmpty()) {
@@ -87,15 +92,30 @@ class NeurosConfirmAction {
             // read-only knowledge surface — and availability is reported honestly.
             if (!dryRun) {
                 try {
-                    File workspace = candidatesFile.parentFile
-                    WriteBack.Outcome outcome = WriteBack.write([candidate], workspace,
+                    // Write directly to the mount — the backend's inotify watcher
+                    // already monitors it, so the card auto-ingests. No separate
+                    // watched workspace needed.
+                    File mount = context.source.path('')
+                    WriteBack.Outcome outcome = WriteBack.write([candidate], mount,
                             attestedBy?.trim())
                     message << '\n\n' << outcome.summary
                     if (outcome.written) {
-                        File statusFile = new File(workspace, "ingest-status/${outcome.written[0].name}")
-                        message << '\n' << (statusFile.isFile() ?
-                                "Ingest status: ${statusFile.getText('UTF-8').readLines().find { it.startsWith('status:') }}" :
-                                'Written locally; availability unconfirmed (no ingest-status surface here yet).')
+                        // Poll ingest-status for the specific file — one file read,
+                        // not a mesh query. Report honestly what the substrate says.
+                        File statusFile = new File(mount, "ingest-status/${outcome.written[0].name}")
+                        if (statusFile.isFile()) {
+                            String status = statusFile.getText('UTF-8')
+                                    .readLines().find { it.startsWith('status:') }
+                            message << '\n' << status
+                            if (status?.contains('VISIBLE')) {
+                                // Invalidate the cached index so the next
+                                // Browse/Draw/Enmesh sees the new entity
+                                MeshIndex.invalidate()
+                                message << '\nCache refreshed — re-run Draw or Browse to see the new connection.'
+                            }
+                        } else {
+                            message << '\nIngestion pending — the substrate will pick it up via inotify.'
+                        }
                     }
                 } catch (Exception problem) {
                     message << '\n\nWrite-back failed: ' << problem.message
