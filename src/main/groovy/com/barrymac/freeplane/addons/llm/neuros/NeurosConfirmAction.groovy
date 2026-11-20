@@ -124,10 +124,6 @@ class NeurosConfirmAction {
                             message << '\nIngestion pending — the substrate will pick it up via inotify.'
                         }
                     }
-                } catch (Exception problem) {
-                    message << '\n\nWrite-back failed: ' << problem.message
-                    LogUtils.severe("Write-back failed: ${problem.message}", problem)
-                }
             }
             UiHelper.showInformationMessage(ui, message.toString())
         } catch (Exception problem) {
