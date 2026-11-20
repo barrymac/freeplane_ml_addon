@@ -47,10 +47,13 @@ class NeurosSettingsAction {
             ConfigKeys.write(config, 'llm.attestedBy', attestedBy.text.trim() ?: 'barrymac')
             ConfigKeys.write(config, 'llm.neuros.candidatesFile', candidatesFile.text.trim())
             ConfigKeys.write(config, 'llm.neuros.listTimeoutSeconds', timeout.value.toString())
-            UiHelper.showInformationMessage(ui,
-                    'Settings saved. Dry-run is ' + (dryRun.selected ? 'ON' : 'OFF') +
-                            (dryRun.selected ? ' — nothing will be written.' :
-                                    ' — confirmed candidates will be written to the local watched workspace.')
+            String summary = 'Settings saved. Dry-run is ' + (dryRun.selected ? 'ON' : 'OFF')
+            if (dryRun.selected) {
+                summary += ' — nothing will be written.'
+            } else {
+                summary += ' — confirmed candidates will be written to the local watched workspace.'
+            }
+            UiHelper.showInformationMessage(ui, summary)
         } catch (Exception problem) {
             LogUtils.severe("Error in NeurosSettings action: ${problem.message}", problem)
             UiHelper.showErrorMessage(ui, "neurOS Settings Error: ${problem.message}")
