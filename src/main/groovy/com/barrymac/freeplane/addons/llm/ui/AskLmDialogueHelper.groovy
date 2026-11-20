@@ -32,6 +32,7 @@ class AskLmDialogueHelper {
 
         Map resultMap = null // Initialize result map
         def askLmDialogWindow // <<< DECLARED HERE
+        def neurosDryRun, neurosAttestedBy, neurosCandidatesFile, neurosTimeout
         def askLmButton       // <<< DECLARED HERE
 
         try {
@@ -110,24 +111,20 @@ class AskLmDialogueHelper {
                             constraints.gridy = 0
                             constraints.gridx = 0
                             constraints.fill = GridBagConstraints.HORIZONTAL
-                            swingBuilder.checkBox(text: 'Dry run only (no files written)',
-                                    selected: (com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.dryRun') ?: 'true') != 'false',
-                                    id: 'neurosDryRun')
+                            neurosDryRun = swingBuilder.checkBox(text: 'Dry run only (no files written)',
+                                    selected: (com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.dryRun') ?: 'true') != 'false')
                             constraints.gridy++
                             swingBuilder.label(text: 'Attested by (who confirms merges)')
-                            swingBuilder.textField(columns: 16,
-                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.attestedBy') ?: 'barrymac',
-                                    id: 'neurosAttestedBy')
+                            neurosAttestedBy = swingBuilder.textField(columns: 16,
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.attestedBy') ?: 'barrymac')
                             constraints.gridy++
                             swingBuilder.label(text: 'Candidates file (optional)')
-                            swingBuilder.textField(columns: 24,
-                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.candidatesFile') ?: '',
-                                    id: 'neurosCandidatesFile')
+                            neurosCandidatesFile = swingBuilder.textField(columns: 24,
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.candidatesFile') ?: '')
                             constraints.gridy++
                             swingBuilder.label(text: 'Listing timeout (seconds)')
-                            swingBuilder.formattedTextField(columns: 5,
-                                    value: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.listTimeoutSeconds') ?: '20',
-                                    id: 'neurosTimeout')
+                            neurosTimeout = swingBuilder.formattedTextField(columns: 5,
+                                    value: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.listTimeoutSeconds') ?: '20')
                         }
                         constraints.gridy++
                         constraints.fill = GridBagConstraints.NONE // Don't stretch buttons
