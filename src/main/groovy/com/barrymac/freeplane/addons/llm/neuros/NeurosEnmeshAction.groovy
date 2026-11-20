@@ -37,6 +37,12 @@ class NeurosEnmeshAction {
             }
             File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
+                if (LinkTargets.isGapMarker(node)) {
+                    UiHelper.showInformationMessage(ui,
+                            'This is a gap marker, not an entry yet. There is nothing to enmesh until ' +
+                                    'this judge is recovered. Select a real judge or matter.')
+                    return
+                }
                 LogUtils.info("NeurosEnmesh: link unresolved — hasLink=${LinkTargets.hasLink(node)} " +
                         "link=${LinkTargets.describe(node)}")
                 UiHelper.showInformationMessage(ui, LinkTargets.hasLink(node) ?
