@@ -59,8 +59,17 @@ class NeurosConfirmAction {
                         'Merge into which canonical entity?', candidate.canonical)
                 if (!mergeTarget?.trim()) return
             }
+            // The human half of acceptance is signed: who attests this merge?
+            // Remember the name for the next decision so it is one prompt, not a chore.
+            String attestedBy = JOptionPane.showInputDialog(ui.currentFrame,
+                    'Attested by (who confirms this decision?)',
+                    ConfigKeys.read(config, 'llm.attestedBy', 'barrymac'))
+            if (attestedBy?.trim()) {
+                ConfigKeys.write(config, 'llm.attestedBy', attestedBy.trim())
+            }
             File log = new File(candidatesFile.parentFile, DECISIONS_LOG)
-            ConfirmationPlan.recordDecision(log, candidate, decision, mergeTarget)
+            ConfirmationPlan.recordDecision(log, candidate, decision, mergeTarget,
+                    attestedBy?.trim())
             tag(node, candidate.status)
             branch.note = ConfirmationPlan.diff(candidates)
             LogUtils.info("NeurosConfirm: ${decision} ${candidate.canonical}" +
