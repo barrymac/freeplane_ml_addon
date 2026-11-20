@@ -64,6 +64,15 @@ class ConfigKeys {
 
     static String read(def config, String key, String fallback = null) {
         if (config == null) return fallback
+
+        // User-facing settings (dry-run, attested-by, candidates file) must
+        // reflect the persisted file immediately: a stale in-memory value from
+        // an earlier script invocation must never shadow what was just saved.
+        if (key.startsWith('llm.neuros.') || key == 'llm.attestedBy') {
+            String persisted = readPersisted(key)
+            if (persisted != null && persisted.trim()) return persisted
+        }
+
         def current = property(config, key, null)
         if (current != null && current.toString().trim()) return current.toString()
 
