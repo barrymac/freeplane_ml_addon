@@ -88,27 +88,19 @@ class NeurosConfirmAction {
             message << ConfirmationPlan.diff(candidates, dryRun)
 
             // Dry-run is the default. When it is explicitly turned off, confirmed
-            // candidates are written to the LOCAL watched workspace — never to the
-            // read-only knowledge surface — and availability is reported honestly.
+            // candidates are written to the map's directory — in a real workspace
+            // that directory IS the substrate's watched workspace, so inotify
+            // picks the card up and it auto-ingests. The mount itself stays
+            // read-only: knowledge reads come from it, card writes go local.
             if (!dryRun) {
-                // Try the mount first (inotify auto-ingest); if it refuses writes,
-                // fall back to the local workspace (the map's directory).
-                File mount = context.source.path('')
-                WriteBack.Outcome outcome
-                File writtenTo = null
                 try {
-                    outcome = WriteBack.write([candidate], mount, attestedBy?.trim())
-                    writtenTo = mount
-                } catch (Exception mountProblem) {
-                    LogUtils.info("NeurosConfirm: mount refused write (${mountProblem.message}), " +
-                            'falling back to local workspace')
-                    outcome = WriteBack.write([candidate], candidatesFile.parentFile,
-                            attestedBy?.trim())
-                    writtenTo = candidatesFile.parentFile
-                }
+                    WriteBack.Outcome outcome = WriteBack.write([candidate],
+                            candidatesFile.parentFile, attestedBy?.trim())
                     message << '\n\n' << outcome.summary
                     if (outcome.written) {
-                        File statusFile = new File(writtenTo,
+                        // The substrate reports ingestion progress on the mount's
+                        // ingest-status surface — one file read, not a mesh query.
+                        File statusFile = new File(context.source.path(''),
                                 "ingest-status/${outcome.written[0].name}")
                         if (statusFile.isFile()) {
                             String status = statusFile.getText('UTF-8')
@@ -124,6 +116,10 @@ class NeurosConfirmAction {
                             message << '\nIngestion pending — the substrate will pick it up via inotify.'
                         }
                     }
+                } catch (Exception problem) {
+                    message << '\n\nWrite-back failed: ' << problem.message
+                    LogUtils.severe("Write-back failed: ${problem.message}", problem)
+                }
             }
             UiHelper.showInformationMessage(ui, message.toString())
         } catch (Exception problem) {
