@@ -88,18 +88,20 @@ class NeurosConfirmAction {
             message << ConfirmationPlan.diff(candidates, dryRun)
 
             // Dry-run is the default. When it is explicitly turned off, confirmed
-            // candidates are written to the map's directory — in a real workspace
-            // that directory IS the substrate's watched workspace, so inotify
-            // picks the card up and it auto-ingests. The mount itself stays
-            // read-only: knowledge reads come from it, card writes go local.
+            // candidates are written where the substrate will ingest them: the
+            // context's write destination (the mount's watched workspace when
+            // the layout separates reads from writes, otherwise the map's own
+            // watched workspace).
             if (!dryRun) {
                 try {
+                    File destination = context.canWrite() ?
+                            new File(context.writeDestination) : candidatesFile.parentFile
                     WriteBack.Outcome outcome = WriteBack.write([candidate],
-                            candidatesFile.parentFile, attestedBy?.trim())
+                            destination, attestedBy?.trim())
                     message << '\n\n' << outcome.summary
                     if (outcome.written) {
-                        // The substrate reports ingestion progress on the mount's
-                        // ingest-status surface — one file read, not a mesh query.
+                        // The substrate reports ingestion progress on the read
+                        // surfaces — one file read, not a mesh query.
                         File statusFile = new File(context.source.path(''),
                                 "ingest-status/${outcome.written[0].name}")
                         if (statusFile.isFile()) {

@@ -49,9 +49,10 @@ class KnowledgeContext {
         }
 
         boolean unavailableLinkSeen = false
+        File mapDirectory = mapFile.absoluteFile.parentFile
         while (directory != null) {
             if (isKnowledgeSurface(directory)) {
-                return enabledSurface(directory)
+                return enabledSurface(directory, mapDirectory)
             }
 
             List<File> links = knowledgeLinks(directory)
@@ -68,9 +69,11 @@ class KnowledgeContext {
             }
             if (validLinks.size() == 1) {
                 File target = validLinks[0].canonicalFile
-                String scope = readScope(target)
+                File readSurfaces = readRoot(target)
+                String scope = readScope(readSurfaces)
                 if (scope) {
-                    return enabled(KnowledgeSource.open(target.path, scope), directory.path)
+                    return enabled(KnowledgeSource.open(readSurfaces.path, scope),
+                            writeDestinationFor(target, directory))
                 }
                 unavailableLinkSeen = true
             } else if (links) {
@@ -87,16 +90,40 @@ class KnowledgeContext {
                 'workspace or a neurOS knowledge location.')
     }
 
-    private static KnowledgeContext enabledSurface(File directory) {
-        String scope = readScope(directory)
+    private static KnowledgeContext enabledSurface(File directory, File mapDirectory) {
+        File readSurfaces = readRoot(directory)
+        String scope = readScope(readSurfaces)
         if (!scope) {
             return disabled('The neurOS knowledge source at this map location is not ready yet.')
         }
-        // A direct knowledge surface is never treated as a safe place to save
-        // new branches. Saving requires a local watched workspace discovered
-        // through a *_KNOWLEDGE link. This keeps live map editing off network
-        // knowledge mounts and avoids lock/save failure loops.
-        return enabled(KnowledgeSource.open(directory.path, scope), null)
+        // A map saved directly on a knowledge surface has no safe save target
+        // unless it sits inside the mount's watched workspace, the one
+        // directory the substrate ingests from. Then the map's own directory
+        // is the write destination; anywhere else on the surface is not.
+        File watched = new File(directory, 'workspace')
+        String writeDestination = null
+        try {
+            if (watched.isDirectory() &&
+                    mapDirectory.absoluteFile.canonicalPath == watched.canonicalPath) {
+                writeDestination = mapDirectory.path
+            }
+        } catch (Exception ignored) {
+            writeDestination = null
+        }
+        return enabled(KnowledgeSource.open(readSurfaces.path, scope), writeDestination)
+    }
+
+    /**
+     * Where confirmed card files are written so the substrate ingests them:
+     * the mount's watched workspace when the layout provides one (reads and
+     * writes separated, the watcher monitors that directory server-side),
+     * otherwise the map's own workspace (a substrate watching the local
+     * directory the map lives in).
+     */
+    private static String writeDestinationFor(File mountRoot, File mapWorkspace) {
+        File watched = new File(mountRoot, 'workspace')
+        if (watched.isDirectory()) return watched.path
+        return mapWorkspace?.path
     }
 
     private static KnowledgeContext enabled(KnowledgeSource source, String writeDestination) {
@@ -109,6 +136,23 @@ class KnowledgeContext {
 
     /** The cartridge README or contract is the explicit enablement marker. */
     private static boolean isKnowledgeSurface(File directory) {
+        return readRoot(directory) != null
+    }
+
+    /**
+     * The read-surface root for a mount directory: the directory itself when
+     * the surfaces sit at its root, or its KNOWLEDGE subdirectory when the
+     * layout separates the read surfaces from the watched workspace.
+     */
+    private static File readRoot(File directory) {
+        if (directory == null || !directory.isDirectory()) return null
+        if (hasReadSurfaces(directory)) return directory
+        File nested = new File(directory, 'KNOWLEDGE')
+        if (hasReadSurfaces(nested)) return nested
+        return null
+    }
+
+    private static boolean hasReadSurfaces(File directory) {
         if (!directory.isDirectory()) return false
         boolean cartridgePresent = new File(directory, 'README.cartridge').isFile() ||
                 new File(directory, 'cartridge-contract').isFile()

@@ -97,6 +97,137 @@ class KnowledgeContextSpec extends Specification {
         context.writeDestination == workspace.path
     }
 
+    def "a separated mount reads through KNOWLEDGE and writes to its watched workspace"() {
+        given:
+        File mount = new File(root, 'mount')
+        File surfaces = knowledgeSurface(new File(mount, 'KNOWLEDGE'), 'ninep-scope')
+        File watched = new File(mount, 'workspace')
+        watched.mkdirs()
+        File workspace = new File(root, 'workspace')
+        workspace.mkdirs()
+        Files.createSymbolicLink(new File(workspace, 'LEGAL_KNOWLEDGE').toPath(), mount.toPath())
+        File map = mapIn(workspace)
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'ninep-scope'
+        // Reads resolve against the KNOWLEDGE surfaces, not the mount root
+        context.source.path('').path == surfaces.path
+        // Writes land in the mount's watched workspace so the substrate ingests them
+        context.canWrite()
+        context.writeDestination == watched.path
+    }
+
+    def "a map saved inside a separated mount's workspace writes where it lives"() {
+        given:
+        File mount = new File(root, 'mount')
+        knowledgeSurface(new File(mount, 'KNOWLEDGE'), 'ninep-scope')
+        File watched = new File(mount, 'workspace')
+        File map = mapIn(watched)
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'ninep-scope'
+        context.canWrite()
+        context.writeDestination == watched.path
+    }
+
+    def "a separated mount without a watched workspace falls back to the map's workspace"() {
+        given:
+        File mount = new File(root, 'mount')
+        knowledgeSurface(new File(mount, 'KNOWLEDGE'), 'ninep-scope')
+        File workspace = new File(root, 'workspace')
+        workspace.mkdirs()
+        Files.createSymbolicLink(new File(workspace, 'LEGAL_KNOWLEDGE').toPath(), mount.toPath())
+        File map = mapIn(workspace)
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'ninep-scope'
+        context.source.path('').path.endsWith('KNOWLEDGE')
+        context.canWrite()
+        context.writeDestination == workspace.path
+    }
+
+    def "a KNOWLEDGE directory without a cartridge is not a knowledge source"() {
+        given:
+        File mount = new File(root, 'mount')
+        File nested = new File(mount, 'KNOWLEDGE')
+        nested.mkdirs()
+        new File(nested, 'by-query').mkdirs()
+        new File(nested, 'watcher-status').text = 'scope: ghost-scope\n'
+        File workspace = new File(root, 'workspace')
+        workspace.mkdirs()
+        Files.createSymbolicLink(new File(workspace, 'LEGAL_KNOWLEDGE').toPath(), mount.toPath())
+        File map = mapIn(workspace)
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        !context.enabled
+        context.reason.contains('not ready yet')
+    }
+
+    def "a map nested deeper inside the watched workspace gets no write destination"() {
+        given:
+        File mount = new File(root, 'mount')
+        knowledgeSurface(new File(mount, 'KNOWLEDGE'), 'ninep-scope')
+        new File(mount, 'workspace').mkdirs()
+        File map = mapIn(new File(mount, 'workspace/deep'))
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'ninep-scope'
+        !context.canWrite()
+        context.writeDestination == null
+    }
+
+    def "a map on the read surfaces of a separated mount cannot write"() {
+        given:
+        File mount = new File(root, 'mount')
+        File surfaces = knowledgeSurface(new File(mount, 'KNOWLEDGE'), 'ninep-scope')
+        new File(mount, 'workspace').mkdirs()
+        File map = mapIn(new File(surfaces, 'nested'))
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'ninep-scope'
+        !context.canWrite()
+        context.writeDestination == null
+    }
+
+    def "root-level surfaces win over a nested KNOWLEDGE directory when both exist"() {
+        given:
+        File mount = knowledgeSurface(new File(root, 'mount'), 'root-scope')
+        knowledgeSurface(new File(mount, 'KNOWLEDGE'), 'nested-scope')
+        new File(mount, 'workspace').mkdirs()
+        File map = mapIn(new File(mount, 'workspace'))
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'root-scope'
+        context.source.path('').path == mount.path
+    }
+
     def "a workspace link without a cartridge README does not enable neurOS"() {
         given:
         File target = new File(root, 'not-a-knowledge-source')
