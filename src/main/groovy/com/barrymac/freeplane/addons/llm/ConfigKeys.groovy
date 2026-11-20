@@ -78,10 +78,18 @@ class ConfigKeys {
         return readPersisted(key) ?: fallback
     }
 
-    /** Small on-disk fallback so a kill never loses a user's explicit choice. */
+    /** The single settings file for the whole plugin, neurOS and LLM alike. */
+    static final String SETTINGS_FILE = 'addons/promptLlmAddOn/plugin-settings.properties'
+
     private static File persistedFile(def config) {
-        return new File(config.freeplaneUserDirectory,
-                'addons/promptLlmAddOn/neuros-settings.properties')
+        if (config != null && config.freeplaneUserDirectory) {
+            return new File(config.freeplaneUserDirectory, SETTINGS_FILE)
+        }
+        // Without a config object (e.g. from a dialog helper that has no scope),
+        // resolve the standard Freeplane user directory so reads never silently
+        // return nothing.
+        String xdg = System.getenv('XDG_CONFIG_HOME') ?: System.getProperty('user.home') + '/.config'
+        return new File("${xdg}/freeplane/1.12.x/${SETTINGS_FILE}")
     }
 
     static String readPersisted(String key) {
