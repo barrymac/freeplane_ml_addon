@@ -76,10 +76,33 @@ class NeurosConfirmAction {
             branch.note = ConfirmationPlan.diff(candidates)
             LogUtils.info("NeurosConfirm: ${decision} ${candidate.canonical}" +
                     (mergeTarget ? " -> ${mergeTarget}" : ''))
-            UiHelper.showInformationMessage(ui,
+            StringBuilder message = new StringBuilder(
                     "${decision == 'merge' ? 'Merged' : decision == 'confirm' ? 'Confirmed' :
-                            decision == 'split' ? 'Split' : 'Rejected'}: ${candidate.canonical}\n\n" +
-                            ConfirmationPlan.diff(candidates))
+                            decision == 'split' ? 'Split' : 'Rejected'}: ${candidate.canonical}\n\n")
+            message << ConfirmationPlan.diff(candidates)
+
+            // Dry-run is the default. When it is explicitly turned off, confirmed
+            // candidates are written to the LOCAL watched workspace — never to the
+            // read-only knowledge surface — and availability is reported honestly.
+            boolean dryRun = ConfigKeys.read(config, WriteBack.DRY_RUN_KEY, 'true') != 'false'
+            if (!dryRun) {
+                try {
+                    File workspace = candidatesFile.parentFile
+                    WriteBack.Outcome outcome = WriteBack.write([candidate], workspace,
+                            attestedBy?.trim())
+                    message << '\n\n' << outcome.summary
+                    if (outcome.written) {
+                        File statusFile = new File(workspace, "ingest-status/${outcome.written[0].name}")
+                        message << '\n' << (statusFile.isFile() ?
+                                "Ingest status: ${statusFile.getText('UTF-8').readLines().find { it.startsWith('status:') }}" :
+                                'Written locally; availability unconfirmed (no ingest-status surface here yet).')
+                    }
+                } catch (Exception problem) {
+                    message << '\n\nWrite-back failed: ' << problem.message
+                    LogUtils.severe("Write-back failed: ${problem.message}", problem)
+                }
+            }
+            UiHelper.showInformationMessage(ui, message.toString())
         } catch (Exception problem) {
             LogUtils.severe("Error in NeurosConfirm action: ${problem.message}", problem)
             UiHelper.showErrorMessage(ui, "Resolve Candidate Error: ${problem.message}")
