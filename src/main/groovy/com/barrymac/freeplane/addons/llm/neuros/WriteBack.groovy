@@ -63,7 +63,7 @@ class WriteBack {
         text << "type: ${candidate.proposedType}\n"
         text << "source: freeplane-addon:confirmation\n\n"
         text << "---\n\n"
-        text << "${candidate.decision == 'merge' ? 'Merged' : candidate.decision.capitalize()}."
+        text << "${candidate.status == 'merged' ? 'Merged' : (candidate.decision ?: candidate.status).capitalize()}"
         if (candidate.mergeTarget) text << " into ${candidate.mergeTarget}"
         text << " (evidence ${String.format('%.2f', candidate.strongest())}).\n\n"
         text << "Variants merged:\n"

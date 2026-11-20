@@ -24,9 +24,13 @@ class KeysSpec extends Specification {
         given:
         def config = new OverloadedConfig(values: [(ConfigKeys.API_KEY): 'from-config'])
 
-        expect:
-        Keys.resolve('A_NAME_THAT_IS_NOT_SET_ANYWHERE', config, ConfigKeys.API_KEY) == 'from-config'
-        ConfigKeys.read(config, ConfigKeys.MODEL, 'fallback') == 'fallback'
+        when:
+        String key = Keys.resolve('A_NAME_THAT_IS_NOT_SET_ANYWHERE', config, ConfigKeys.API_KEY)
+        String model = ConfigKeys.property(config, ConfigKeys.MODEL, 'fallback')
+
+        then:
+        key == 'from-config'
+        model == 'fallback'
     }
 
 
