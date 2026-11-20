@@ -39,7 +39,10 @@ if not nodes:
             nodes.append(f'    <node TEXT="{f.replace(".card.md", "")}" POSITION="right" '
                          f'ID="ID_{index:03d}" LINK="{os.path.join(scope, f)}"/>')
 
-xml = ('<map version="freeplane 1.12.1">\n'
+xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+       '<!--To view this file, download free mind mapping software Freeplane '
+       'from https://www.freeplane.org -->\n'
+       '<map version="freeplane 1.12.1">\n'
        '  <node TEXT="Enmesh demo — pick a node, press Ctrl+Alt+E" FOLDED="false" ID="ID_ROOT">\n'
        + '\n'.join(nodes) + '\n  </node>\n</map>\n')
 open(out, 'w').write(xml)

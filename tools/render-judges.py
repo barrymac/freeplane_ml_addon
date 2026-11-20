@@ -105,7 +105,10 @@ def main():
 
     workspace = ensure_workspace(MOUNT)
     output_path = workspace / 'JudgeRender.mm'
-    ET.ElementTree(map_xml).write(str(output_path), encoding='utf-8', xml_declaration=True)
+    header = b'<?xml version="1.0" encoding="UTF-8"?>\n' \
+             b'<!--To view this file, download free mind mapping software Freeplane ' \
+             b'from https://www.freeplane.org -->\n'
+    output_path.write_bytes(header + ET.tostring(map_xml, encoding='utf-8'))
     print(f'nodes: {len(node_ids)} (judges + matters)')
     print(f'edges: {total_edges}')
     print(f'written: {output_path}')
