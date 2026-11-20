@@ -91,18 +91,25 @@ class NeurosConfirmAction {
             // candidates are written to the LOCAL watched workspace — never to the
             // read-only knowledge surface — and availability is reported honestly.
             if (!dryRun) {
+                // Try the mount first (inotify auto-ingest); if it refuses writes,
+                // fall back to the local workspace (the map's directory).
+                File mount = context.source.path('')
+                WriteBack.Outcome outcome
+                File writtenTo = null
                 try {
-                    // Write directly to the mount — the backend's inotify watcher
-                    // already monitors it, so the card auto-ingests. No separate
-                    // watched workspace needed.
-                    File mount = context.source.path('')
-                    WriteBack.Outcome outcome = WriteBack.write([candidate], mount,
+                    outcome = WriteBack.write([candidate], mount, attestedBy?.trim())
+                    writtenTo = mount
+                } catch (Exception mountProblem) {
+                    LogUtils.info("NeurosConfirm: mount refused write (${mountProblem.message}), " +
+                            'falling back to local workspace')
+                    outcome = WriteBack.write([candidate], candidatesFile.parentFile,
                             attestedBy?.trim())
+                    writtenTo = candidatesFile.parentFile
+                }
                     message << '\n\n' << outcome.summary
                     if (outcome.written) {
-                        // Poll ingest-status for the specific file — one file read,
-                        // not a mesh query. Report honestly what the substrate says.
-                        File statusFile = new File(mount, "ingest-status/${outcome.written[0].name}")
+                        File statusFile = new File(writtenTo,
+                                "ingest-status/${outcome.written[0].name}")
                         if (statusFile.isFile()) {
                             String status = statusFile.getText('UTF-8')
                                     .readLines().find { it.startsWith('status:') }
