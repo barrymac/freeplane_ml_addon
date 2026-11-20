@@ -94,6 +94,14 @@ try {
 
     } else if (dialogResult.action == 'Prompt') {
         LogUtils.info("Processing 'Prompt' action from dialog.")
+        // neurOS settings changed in the dialogue take effect immediately, not
+        // only when the user remembers to press Save Changes.
+        if (dialogResult.neuros) {
+            ConfigKeys.write(config, 'llm.neuros.dryRun', dialogResult.neuros.dryRun ? 'true' : 'false')
+            ConfigKeys.write(config, 'llm.attestedBy', dialogResult.neuros.attestedBy)
+            ConfigKeys.write(config, 'llm.neuros.candidatesFile', dialogResult.neuros.candidatesFile)
+            ConfigKeys.write(config, 'llm.neuros.listTimeoutSeconds', dialogResult.neuros.listTimeoutSeconds)
+        }
         try {
             // 1. Get selected node (using 'c' from script context)
             def node = c.selected
