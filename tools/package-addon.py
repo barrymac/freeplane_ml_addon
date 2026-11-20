@@ -61,6 +61,16 @@ def repack(template: Path, output: Path) -> None:
     if root is None:
         raise SystemExit(f'{template}: no root <node>')
 
+    # Refresh the definition map's default node (metadata + localization) from
+    # src, so a new menuTitleKey resolves instead of showing a raw key.
+    src_root = ET.parse(REPO / 'src' / 'add-on' / 'LLM-AddOn.mm').getroot().find('node')
+    src_default = child_by_text(src_root, 'default')
+    current_default = child_by_text(root, 'default')
+    if src_default is not None and current_default is not None:
+        index = list(root).index(current_default)
+        root.remove(current_default)
+        root.insert(index, src_default)
+
     # Take each script's attributes from the CURRENT definition map, not from
     # the template: a permission changed in src must reach the package.
     definition = ET.parse(REPO / 'src' / 'add-on' / 'LLM-AddOn.mm')

@@ -111,23 +111,23 @@ class AskLmDialogueHelper {
                             constraints.gridx = 0
                             constraints.fill = GridBagConstraints.HORIZONTAL
                             swingBuilder.checkBox(text: 'Dry run only (no files written)',
-                                    selected: com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.neuros.dryRun', 'true') != 'false',
+                                    selected: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.dryRun') ?: 'true' != 'false',
                                     id: 'neurosDryRun')
                             constraints.gridy++
                             swingBuilder.label(text: 'Attested by (who confirms merges)')
                             swingBuilder.textField(columns: 16,
-                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.attestedBy', 'barrymac'),
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.attestedBy') ?: 'barrymac',
                                     id: 'neurosAttestedBy')
                             constraints.gridy++
                             swingBuilder.label(text: 'Candidates file (optional)')
                             swingBuilder.textField(columns: 24,
-                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.neuros.candidatesFile', ''),
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.candidatesFile') ?: '',
                                     id: 'neurosCandidatesFile')
                             constraints.gridy++
                             swingBuilder.label(text: 'Listing timeout (seconds)')
                             swingBuilder.spinner(
                                     new javax.swing.SpinnerNumberModel(
-                                            (com.barrymac.freeplane.addons.llm.ConfigKeys.read(config, 'llm.neuros.listTimeoutSeconds', '20') as int), 1, 300, 1),
+                                            (com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.listTimeoutSeconds') ?: '20' as int), 1, 300, 1),
                                     id: 'neurosTimeout')
                         }
                         constraints.gridy++
