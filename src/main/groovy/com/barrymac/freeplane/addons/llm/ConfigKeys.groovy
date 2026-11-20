@@ -75,7 +75,38 @@ class ConfigKeys {
                 return old.toString()
             }
         }
-        return fallback
+        return readPersisted(key) ?: fallback
+    }
+
+    /** Small on-disk fallback so a kill never loses a user's explicit choice. */
+    private static File persistedFile(def config) {
+        return new File(config.freeplaneUserDirectory,
+                'addons/promptLlmAddOn/neuros-settings.properties')
+    }
+
+    static String readPersisted(String key) {
+        try {
+            File file = persistedFile(null)
+            if (!file.isFile()) return null
+            Properties props = new Properties()
+            file.withInputStream { props.load(it) }
+            return props.getProperty(key)
+        } catch (Exception ignored) {
+            return null
+        }
+    }
+
+    static void persist(def config, String key, Object value) {
+        try {
+            File file = persistedFile(config)
+            file.parentFile.mkdirs()
+            Properties props = new Properties()
+            if (file.isFile()) file.withInputStream { props.load(it) }
+            props.setProperty(key, value == null ? '' : value.toString())
+            file.withOutputStream { props.store(it, 'neurOS settings') }
+        } catch (Exception problem) {
+            org.freeplane.core.util.LogUtils.warn("Could not persist ${key}: ${problem.message}")
+        }
     }
 
     static void write(def config, String key, Object value) {
@@ -83,5 +114,7 @@ class ConfigKeys {
         // Freeplane's setProperty is String-only: a model's maxTokens (Integer)
         // or temperature (Double) must be coerced, never passed as a raw number.
         config.setProperty(key, value == null ? '' : value.toString())
+        // Also persist on disk so an abrupt stop never loses the setting.
+        persist(config, key, value)
     }
 }

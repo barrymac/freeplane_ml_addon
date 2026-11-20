@@ -52,8 +52,10 @@ class ConfirmationPlan {
     }
 
     /** The dry-run diff: the marker lines this plan would write, with reasons. */
-    static String diff(List<ConfirmCandidate> candidates) {
-        List<String> lines = ['DRY RUN — nothing has been written.', '']
+    static String diff(List<ConfirmCandidate> candidates, boolean dryRun = true) {
+        List<String> lines = [dryRun ?
+                'DRY RUN — nothing has been written.' :
+                'WRITE — confirmed entities are written to the local watched workspace.', '']
         int writable = 0
         candidates.each { candidate ->
             if (isWritable(candidate)) {

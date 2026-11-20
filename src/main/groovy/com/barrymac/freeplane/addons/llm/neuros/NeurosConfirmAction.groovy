@@ -79,12 +79,12 @@ class NeurosConfirmAction {
             StringBuilder message = new StringBuilder(
                     "${decision == 'merge' ? 'Merged' : decision == 'confirm' ? 'Confirmed' :
                             decision == 'split' ? 'Split' : 'Rejected'}: ${candidate.canonical}\n\n")
-            message << ConfirmationPlan.diff(candidates)
+            boolean dryRun = ConfigKeys.read(config, WriteBack.DRY_RUN_KEY, 'true') != 'false'
+            message << ConfirmationPlan.diff(candidates, dryRun)
 
             // Dry-run is the default. When it is explicitly turned off, confirmed
             // candidates are written to the LOCAL watched workspace — never to the
             // read-only knowledge surface — and availability is reported honestly.
-            boolean dryRun = ConfigKeys.read(config, WriteBack.DRY_RUN_KEY, 'true') != 'false'
             if (!dryRun) {
                 try {
                     File workspace = candidatesFile.parentFile
