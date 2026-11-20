@@ -46,6 +46,12 @@ class LinkTargets {
         return null
     }
 
+    /** A gap marker rendered by the missing-entity view, not a real entry. */
+    static boolean isGapMarker(def node) {
+        String text = (node?.text ?: '').toString()
+        return text.contains('[missing')
+    }
+
     /** True when the node carries a link, readable or not. */
     static boolean hasLink(def node) {
         try {

@@ -24,6 +24,12 @@ class NeurosPreviewAction {
                 UiHelper.showInformationMessage(ui, 'Please select a node first.')
                 return
             }
+            if (LinkTargets.isGapMarker(node)) {
+                UiHelper.showInformationMessage(ui,
+                        'This is a gap marker, not an entry yet. There is nothing to preview until ' +
+                                'this judge is recovered. Select a real judge or matter.')
+                return
+            }
             String source = readSource(node)
             if (source == null) {
                 UiHelper.showInformationMessage(ui,

@@ -30,6 +30,12 @@ class NeurosMeshAction {
             }
             File seedFile = LinkTargets.fileFor(node)
             if (seedFile == null || !seedFile.isFile()) {
+                if (LinkTargets.isGapMarker(node)) {
+                    UiHelper.showInformationMessage(ui,
+                            'This is a gap marker, not an entry yet. There is nothing to read until ' +
+                                    'this judge is recovered. Select a real judge or matter.')
+                    return
+                }
                 UiHelper.showInformationMessage(ui, LinkTargets.hasLink(node) ?
                         "The link on this node does not point at a readable file: " +
                                 LinkTargets.describe(node) :
