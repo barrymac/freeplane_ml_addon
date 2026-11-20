@@ -32,7 +32,7 @@ class AskLmDialogueHelper {
 
         Map resultMap = null // Initialize result map
         def askLmDialogWindow // <<< DECLARED HERE
-        def neurosDryRun, neurosAttestedBy, neurosCandidatesFile, neurosTimeout
+        def neurosDryRun, neurosAttestedBy, neurosCandidatesFile, neurosKnowledgeLink, neurosTimeout
         def askLmButton       // <<< DECLARED HERE
 
         try {
@@ -122,6 +122,12 @@ class AskLmDialogueHelper {
                             neurosCandidatesFile = swingBuilder.textField(columns: 24,
                                     text: com.barrymac.freeplane.addons.llm.ConfigKeys.read('llm.neuros.candidatesFile') ?: '')
                             constraints.gridy++
+                            swingBuilder.label(text: 'Knowledge link (when several are present)')
+                            neurosKnowledgeLink = swingBuilder.textField(columns: 24,
+                                    toolTipText: 'Which *_KNOWLEDGE link to bind to, e.g. LEGAL_KNOWLEDGE. Only needed when the workspace has more than one.',
+                                    text: com.barrymac.freeplane.addons.llm.ConfigKeys.read(
+                                            com.barrymac.freeplane.addons.llm.neuros.KnowledgeContext.LINK_KEY) ?: '')
+                            constraints.gridy++
                             swingBuilder.label(text: 'Listing timeout (seconds)')
                             neurosTimeout = swingBuilder.formattedTextField(columns: 5,
                                     value: com.barrymac.freeplane.addons.llm.ConfigKeys.read('llm.neuros.listTimeoutSeconds') ?: '20')
@@ -157,6 +163,7 @@ class AskLmDialogueHelper {
                                                     dryRun           : neurosDryRun.selected,
                                                     attestedBy       : neurosAttestedBy.text,
                                                     candidatesFile   : neurosCandidatesFile.text,
+                                                    knowledgeLink    : neurosKnowledgeLink.text,
                                                     listTimeoutSeconds: neurosTimeout.value
                                             ]
                                     ]
@@ -195,6 +202,7 @@ class AskLmDialogueHelper {
                                                     dryRun           : neurosDryRun.selected,
                                                     attestedBy       : neurosAttestedBy.text,
                                                     candidatesFile   : neurosCandidatesFile.text,
+                                                    knowledgeLink    : neurosKnowledgeLink.text,
                                                     listTimeoutSeconds: neurosTimeout.value
                                             ]
                                     ]

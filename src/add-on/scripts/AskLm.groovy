@@ -100,6 +100,8 @@ try {
             ConfigKeys.write('llm.neuros.dryRun', dialogResult.neuros.dryRun ? 'true' : 'false')
             ConfigKeys.write('llm.attestedBy', dialogResult.neuros.attestedBy)
             ConfigKeys.write('llm.neuros.candidatesFile', dialogResult.neuros.candidatesFile)
+            ConfigKeys.write(com.barrymac.freeplane.addons.llm.neuros.KnowledgeContext.LINK_KEY,
+                    dialogResult.neuros.knowledgeLink)
             ConfigKeys.write('llm.neuros.listTimeoutSeconds', dialogResult.neuros.listTimeoutSeconds)
         }
         try {

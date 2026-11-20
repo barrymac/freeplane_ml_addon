@@ -1,5 +1,7 @@
 package com.barrymac.freeplane.addons.llm.neuros
 
+import com.barrymac.freeplane.addons.llm.ConfigKeys
+
 import java.nio.file.Files
 
 /**
@@ -14,6 +16,9 @@ import java.nio.file.Files
  * scope picker, and no guessed defaults.
  */
 class KnowledgeContext {
+
+    /** Settings key designating which *_KNOWLEDGE link this plugin binds to. */
+    static final String LINK_KEY = 'llm.neuros.knowledgeLink'
 
     final KnowledgeSource source
     final String writeDestination
@@ -64,17 +69,29 @@ class KnowledgeContext {
                 }
             }
             if (validLinks.size() > 1) {
-                return disabled('This map workspace contains more than one neurOS knowledge ' +
-                        'source. neurOS cannot choose between them for you.')
+                // Multiple cartridges in one workspace is the normal neurOS
+                // shape; the operator designates which one this plugin binds
+                // to. No guessing: an absent or wrong designation refuses
+                // loudly and names the choices.
+                String designated = ConfigKeys.read(LINK_KEY, '')?.trim()
+                File chosen = validLinks.find { it.name == designated }
+                if (chosen != null) {
+                    KnowledgeContext fromLink = contextFromLink(chosen, directory)
+                    if (fromLink != null) return fromLink
+                    unavailableLinkSeen = true
+                } else {
+                    String names = validLinks.collect { it.name }.sort().join(', ')
+                    return disabled(designated ?
+                            "The designated knowledge link '${designated}' is not one of the " +
+                                    "sources in this workspace (${names})." :
+                            'This map workspace has more than one neurOS knowledge source ' +
+                                    "(${names}). Pick one in the Chat GPT Communicator " +
+                                    'settings, neurOS section: knowledge link.')
+                }
             }
             if (validLinks.size() == 1) {
-                File target = validLinks[0].canonicalFile
-                File readSurfaces = readRoot(target)
-                String scope = readScope(readSurfaces)
-                if (scope) {
-                    return enabled(KnowledgeSource.open(readSurfaces.path, scope),
-                            writeDestinationFor(target, directory))
-                }
+                KnowledgeContext fromLink = contextFromLink(validLinks[0], directory)
+                if (fromLink != null) return fromLink
                 unavailableLinkSeen = true
             } else if (links) {
                 unavailableLinkSeen = true
@@ -88,6 +105,20 @@ class KnowledgeContext {
         }
         return disabled('neurOS is not enabled for this map. It is not in a neurOS-enabled ' +
                 'workspace or a neurOS knowledge location.')
+    }
+
+    /**
+     * Resolve one valid *_KNOWLEDGE link into a context: reads through its
+     * surface root, writes where that mount's layout watches. Returns null
+     * when the link is valid but its scope is not readable yet.
+     */
+    private static KnowledgeContext contextFromLink(File link, File mapWorkspace) {
+        File target = link.canonicalFile
+        File readSurfaces = readRoot(target)
+        String scope = readScope(readSurfaces)
+        if (!scope) return null
+        return enabled(KnowledgeSource.open(readSurfaces.path, scope),
+                writeDestinationFor(target, mapWorkspace))
     }
 
     private static KnowledgeContext enabledSurface(File directory, File mapDirectory) {

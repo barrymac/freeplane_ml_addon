@@ -1,5 +1,6 @@
 package com.barrymac.freeplane.addons.llm.neuros
 
+import com.barrymac.freeplane.addons.llm.ConfigKeys
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.TempDir
@@ -11,6 +12,9 @@ class KnowledgeContextSpec extends Specification {
 
     @TempDir
     File root
+
+    @TempDir
+    File directory
 
     private File knowledgeSurface(File directory, String scope) {
         directory.mkdirs()
@@ -256,13 +260,91 @@ class KnowledgeContextSpec extends Specification {
         Files.createSymbolicLink(new File(workspace, 'FIRST_KNOWLEDGE').toPath(), first.toPath())
         Files.createSymbolicLink(new File(workspace, 'SECOND_KNOWLEDGE').toPath(), second.toPath())
         File map = mapIn(workspace)
+        ConfigKeys.OVERRIDE_DIR = directory
+        ConfigKeys.write(KnowledgeContext.LINK_KEY, '')
 
         when:
         def context = KnowledgeContext.discover(map)
 
         then:
         !context.enabled
-        context.reason.contains('more than one')
+        context.reason.contains('more than one neurOS knowledge source')
+        context.reason.contains('FIRST_KNOWLEDGE')
+        context.reason.contains('SECOND_KNOWLEDGE')
+        context.reason.contains('settings')
+
+        cleanup:
+        ConfigKeys.OVERRIDE_DIR = null
+    }
+
+    def "a designated link resolves the ambiguity"() {
+        given:
+        File first = knowledgeSurface(new File(root, 'first'), 'first')
+        File second = knowledgeSurface(new File(root, 'second'), 'second')
+        File workspace = new File(root, 'workspace')
+        workspace.mkdirs()
+        Files.createSymbolicLink(new File(workspace, 'FIRST_KNOWLEDGE').toPath(), first.toPath())
+        Files.createSymbolicLink(new File(workspace, 'SECOND_KNOWLEDGE').toPath(), second.toPath())
+        File map = mapIn(workspace)
+        ConfigKeys.OVERRIDE_DIR = directory
+        ConfigKeys.write(KnowledgeContext.LINK_KEY, 'FIRST_KNOWLEDGE')
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'first'
+        context.canWrite()
+        context.writeDestination == workspace.path
+
+        cleanup:
+        ConfigKeys.OVERRIDE_DIR = null
+    }
+
+    def "a designation naming no present link fails loudly"() {
+        given:
+        File first = knowledgeSurface(new File(root, 'first'), 'first')
+        File second = knowledgeSurface(new File(root, 'second'), 'second')
+        File workspace = new File(root, 'workspace')
+        workspace.mkdirs()
+        Files.createSymbolicLink(new File(workspace, 'FIRST_KNOWLEDGE').toPath(), first.toPath())
+        Files.createSymbolicLink(new File(workspace, 'SECOND_KNOWLEDGE').toPath(), second.toPath())
+        File map = mapIn(workspace)
+        ConfigKeys.OVERRIDE_DIR = directory
+        ConfigKeys.write(KnowledgeContext.LINK_KEY, 'ABSENT_KNOWLEDGE')
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        !context.enabled
+        context.reason.contains('ABSENT_KNOWLEDGE')
+        context.reason.contains('FIRST_KNOWLEDGE')
+
+        cleanup:
+        ConfigKeys.OVERRIDE_DIR = null
+    }
+
+    def "a single link is used regardless of the designation"() {
+        given:
+        File target = knowledgeSurface(new File(root, 'target'), 'only-scope')
+        File workspace = new File(root, 'workspace')
+        workspace.mkdirs()
+        Files.createSymbolicLink(new File(workspace, 'LEGAL_KNOWLEDGE').toPath(), target.toPath())
+        File map = mapIn(workspace)
+        ConfigKeys.OVERRIDE_DIR = directory
+        ConfigKeys.write(KnowledgeContext.LINK_KEY, 'SOMETHING_ELSE')
+
+        when:
+        def context = KnowledgeContext.discover(map)
+
+        then:
+        context.enabled
+        context.source.scope == 'only-scope'
+
+        cleanup:
+        ConfigKeys.OVERRIDE_DIR = null
     }
 
     def "a contract-only knowledge surface is recognized during cartridge warmup"() {
