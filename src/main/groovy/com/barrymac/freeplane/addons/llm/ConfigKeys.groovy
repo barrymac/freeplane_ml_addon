@@ -78,8 +78,10 @@ class ConfigKeys {
         return fallback
     }
 
-    static void write(def config, String key, String value) {
+    static void write(def config, String key, Object value) {
         if (config == null) throw new IllegalArgumentException('No configuration to write to.')
-        config.setProperty(key, value)
+        // Freeplane's setProperty is String-only: a model's maxTokens (Integer)
+        // or temperature (Double) must be coerced, never passed as a raw number.
+        config.setProperty(key, value == null ? '' : value.toString())
     }
 }
