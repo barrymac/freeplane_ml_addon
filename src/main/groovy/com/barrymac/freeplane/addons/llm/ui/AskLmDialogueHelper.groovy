@@ -111,7 +111,7 @@ class AskLmDialogueHelper {
                             constraints.gridx = 0
                             constraints.fill = GridBagConstraints.HORIZONTAL
                             swingBuilder.checkBox(text: 'Dry run only (no files written)',
-                                    selected: com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.dryRun') ?: 'true' != 'false',
+                                    selected: (com.barrymac.freeplane.addons.llm.ConfigKeys.readPersisted('llm.neuros.dryRun') ?: 'true') != 'false',
                                     id: 'neurosDryRun')
                             constraints.gridy++
                             swingBuilder.label(text: 'Attested by (who confirms merges)')
