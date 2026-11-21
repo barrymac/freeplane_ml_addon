@@ -260,7 +260,7 @@
 <attribute NAME="addons.${name}.neurosPublishCheck" VALUE="Check Preview Before Publishing"/>
 <attribute NAME="addons.${name}.neurosEnmesh" VALUE="Enmesh This Node"/>
 <attribute NAME="addons.${name}.neurosConfirm" VALUE="Resolve Candidate Entities"/>
-<attribute NAME="addons.${name}.neurosPushCard" VALUE="Save Branch to neurOS"/>
+<attribute NAME="addons.${name}.neurosPushCard" VALUE="Save Branch as Task"/>
 </node>
 </node>
 <node TEXT="deinstall" POSITION="top_or_left" ID="ID_1927303474" CREATED="1685111823977" MODIFIED="1744150100002">
@@ -534,7 +534,7 @@
 <attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosCodeAtlas"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
-<attribute NAME="keyboardShortcut" VALUE="control alt shift C"/>
+<attribute NAME="keyboardShortcut" VALUE="control alt shift A"/>
 <attribute NAME="execute_scripts_without_asking" VALUE="true"/>
 <attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
@@ -594,7 +594,7 @@
 <attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosSearch"/>
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
-<attribute NAME="keyboardShortcut" VALUE=""/>
+<attribute NAME="keyboardShortcut" VALUE="control alt S"/>
 <attribute NAME="execute_scripts_without_asking" VALUE="true"/>
 <attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
