@@ -75,6 +75,10 @@ class CodeAtlasAction {
         int files = render(container, parsed, surface)
         String truncation = renditions.size() > MAX_FILES ?
                 " Showing the first ${MAX_FILES} of ${renditions.size()}." : ''
+        if (truncation) {
+            container.note = (container.note ? container.note + '\n\n' : '') +
+                    "Showing the first ${MAX_FILES} of ${renditions.size()} visible renditions."
+        }
         return "${scanNote}\n\nCode atlas: ${files} file${files == 1 ? '' : 's'} " +
                 "across ${parsed.collect { it.lang }.unique().size()} language" +
                 "${parsed.collect { it.lang }.unique().size() == 1 ? '' : 's'}.${truncation}"

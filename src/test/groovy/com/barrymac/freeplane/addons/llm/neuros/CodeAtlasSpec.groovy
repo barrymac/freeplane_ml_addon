@@ -190,6 +190,9 @@ lang=rust lane=tree-sitter errors=3 decls=0 imports=0 resolved=0
 
         then:
         summary.contains("first ${CodeAtlasAction.MAX_FILES} of 55")
+        def containerNote = map.root.children.find {
+            it.tags.contains(CodeAtlasAction.CONTAINER_TAG) }.note
+        containerNote.contains('first 50 of 55 visible renditions')
         def container = map.root.children.find { it.tags.contains(CodeAtlasAction.CONTAINER_TAG) }
         def language = container.children.find { it.text.startsWith('TypeScript') }
         language.children.size() == CodeAtlasAction.MAX_FILES
