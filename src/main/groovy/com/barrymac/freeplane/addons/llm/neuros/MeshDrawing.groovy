@@ -122,7 +122,8 @@ class MeshDrawing {
         return container
     }
 
-    private static def findTagged(def root, String tag) {
+    /** Shared tag search: the code atlas reuses the same idempotency rule. */
+    static def findTagged(def root, String tag) {
         Deque<Object> queue = new ArrayDeque<>()
         queue << root
         int visited = 0
