@@ -56,4 +56,24 @@ class MeshMarkersSpec extends Specification {
         MeshMarkers.read('', null).isEmpty()
         MeshMarkers.read(null, null).isEmpty()
     }
+    def "path-shaped targets normalize to their basename"() {
+        given:
+        String text = """---
+list: Backlog
+---
+[[card:00000000-1111-2222-3333-444444444444]]
+[[references:docs/diagrams/loam-app-logs-cap-guard.puml]]
+[[references:packages/api/src/logger.ts]]
+[[authored-by:sisyphus]]
+"""
+
+        when:
+        List<MeshEdge> edges = MeshMarkers.read(text, null)
+
+        then:
+        edges.find { it.marker == 'references' }.target == 'loam-app-logs-cap-guard.puml'
+        edges.findAll { it.marker == 'references' }*.target.sort() ==
+                ['loam-app-logs-cap-guard.puml', 'logger.ts']
+        edges.find { it.marker == 'authored-by' }.target == 'sisyphus'
+    }
 }

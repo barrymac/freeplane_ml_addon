@@ -24,6 +24,13 @@ class MeshMarkers {
             String target = matcher.group(2).trim()
             if (!target) continue
             if (marker == 'card' && selfId && target.equalsIgnoreCase(selfId)) continue
+            // A path-shaped target names the same file its basename does:
+            // identity matching is by name, so normalize once, here, for
+            // every reader — a declared link must not read as missing just
+            // because it was written with its directory attached.
+            if (target.contains('/')) {
+                target = target.substring(target.lastIndexOf('/') + 1)
+            }
             String key = "${marker}|${target.toLowerCase()}"
             if (!seen.add(key)) continue
             edges << new MeshEdge(

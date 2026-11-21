@@ -172,10 +172,10 @@ lang=rust lane=tree-sitter errors=3 decls=0 imports=0 resolved=0
 
         then:
         summary.contains('queued') || summary.contains('completed')
-        // The scoped command was written (the fixture never drains, so the
-        // honest message is "queued" and the render still happened)
-        new File(mount, '.index').text.contains('"path":"workspace"') ||
-                new File(mount, '.index').text.contains('visited:')
+        // The full-workspace scan command was written (the fixture never
+        // drains, so the honest message is "queued" and the render still
+        // happened)
+        new File(mount, '.index').text.contains('go')
     }
 
     def "the file count is bounded with an honest truncation note"() {

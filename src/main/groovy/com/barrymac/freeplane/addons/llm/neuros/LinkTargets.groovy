@@ -46,8 +46,15 @@ class LinkTargets {
         return null
     }
 
-    /** A gap marker rendered by the missing-entity view, not a real entry. */
+    /**
+     * A gap marker rendered by the missing-entity view, not a real entry.
+     * Identity here is the tag; the text convention is kept for markers
+     * minted before tags existed (render-judges' early output).
+     */
     static boolean isGapMarker(def node) {
+        try {
+            if (node?.tags?.contains('neurOS mesh gap')) return true
+        } catch (Exception ignored) { }
         String text = (node?.text ?: '').toString()
         return text.contains('[missing')
     }

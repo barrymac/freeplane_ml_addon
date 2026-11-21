@@ -95,7 +95,7 @@ class CodeAtlasAction {
             if (before.readLines().any { it.startsWith('visited:') && it.trim() != 'visited: 0' }) {
                 return 'Index journal already has visits.'
             }
-            index.setText('{"path":"workspace"}', 'UTF-8')
+            index.setText('go', 'UTF-8')
             for (int poll = 0; poll < MAX_SCAN_POLLS; poll++) {
                 Thread.sleep(POLL_MILLIS)
                 String now = index.getText('UTF-8')
