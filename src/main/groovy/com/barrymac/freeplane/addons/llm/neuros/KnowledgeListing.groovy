@@ -60,11 +60,58 @@ class KnowledgeListing {
             // rather than showing an identifier or a bare extension.
             if (title.startsWith('.')) title = ''
         }
+        // Names that carry no human title (a bare identifier, or a stem that
+        // ends before it says anything, like 'pr-.md') get theirs from the
+        // entry's own first heading — never from the identifier itself.
+        if (!isHumanTitle(title)) {
+            title = headingOf(file) ?: ''
+        }
         return new KnowledgeEntry(
                 displayName: title ?: (subtype ?: 'Knowledge entry'),
                 uuid: uuid,
                 subtype: subtype ?: '',
                 listingFile: file)
+    }
+
+    /** A title a person can read: not a bare identifier, not a broken stem. */
+    private static boolean isHumanTitle(String name) {
+        if (!name?.trim()) return false
+        if (name ==~ /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/ ) return false
+        int dot = name.lastIndexOf('.')
+        String stem = dot > 0 ? name.substring(0, dot) : name
+        if (!stem || stem.endsWith('-') || stem.endsWith('_')) return false
+        return true
+    }
+
+    /**
+     * The first markdown heading, PlantUML title or card title field within a
+     * bounded prefix of the file. One small read, only for entries whose
+     * file name is not a human title.
+     */
+    private static String headingOf(File file) {
+        try {
+            if (file == null || !file.isFile() || !file.canRead()) return null
+            if (file.length() > 1_000_000L) return null
+            String found = null
+            file.withReader('UTF-8') { reader ->
+                String line
+                int lines = 0
+                while (found == null && lines < 40 && (line = reader.readLine()) != null) {
+                    lines++
+                    String trimmed = line.trim()
+                    if (trimmed.startsWith('# ') && trimmed.length() > 2) {
+                        found = trimmed.substring(2).trim()
+                    } else if (trimmed.startsWith('title:') && trimmed.length() > 6) {
+                        found = trimmed.substring(6).trim()
+                    } else if (trimmed.startsWith('title ') && trimmed.length() > 6) {
+                        found = trimmed.substring(6).trim()
+                    }
+                }
+            }
+            return found
+        } catch (Exception ignored) {
+            return null
+        }
     }
 
     private static Map truncationStatus(File directory) {

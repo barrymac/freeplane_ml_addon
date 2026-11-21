@@ -126,4 +126,51 @@ class KnowledgeListingSpec extends Specification {
         page.entries.size() == KnowledgeListing.MAX_PAGE_SIZE
         page.hasMore
     }
+    def "a bare-identifier file takes its title from the entry's first heading"() {
+        given:
+        def source = openSource()
+        def typeDir = new File(root, 'by-tag/invented-type')
+        typeDir.mkdirs()
+        new File(typeDir, '947579ca-dce2-405f-ae47-a967cd338697').text =
+                '@startuml\ntitle Gatekeeper permission flow\nalpha -> beta\n@enduml\n'
+
+        when:
+        def page = KnowledgeListing.list(source, 'by-tag/invented-type', 0, 10, 'invented-type')
+
+        then:
+        page.entries.size() == 1
+        page.entries[0].displayName == 'Gatekeeper permission flow'
+    }
+
+    def "a markdown heading titles an entry whose file stem says nothing"() {
+        given:
+        def source = openSource()
+        def typeDir = new File(root, 'by-tag/invented-type')
+        typeDir.mkdirs()
+        new File(typeDir, 'pr-.md').text =
+                '---\nlist: Backlog\n---\n# Union external-ref writes through the 9p mount\nbody\n'
+
+        when:
+        def page = KnowledgeListing.list(source, 'by-tag/invented-type', 0, 10, 'invented-type')
+
+        then:
+        page.entries.size() == 1
+        page.entries[0].displayName == 'Union external-ref writes through the 9p mount'
+    }
+
+    def "an unreadable or heading-less entry falls back to the subtype, never the identifier"() {
+        given:
+        def source = openSource()
+        def typeDir = new File(root, 'by-tag/invented-type')
+        typeDir.mkdirs()
+        new File(typeDir, '947579ca-dce2-405f-ae47-a967cd338697').text = 'no heading at all\njust a body\n'
+        new File(typeDir, 'x-.md').text = 'body only\n'
+
+        when:
+        def page = KnowledgeListing.list(source, 'by-tag/invented-type', 0, 10, 'invented-type')
+
+        then:
+        page.entries.every { it.displayName == 'invented-type' || it.displayName == 'Knowledge entry' }
+        page.entries.every { !it.displayName.contains('947579ca') }
+    }
 }

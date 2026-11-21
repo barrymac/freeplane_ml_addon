@@ -43,13 +43,26 @@ class NeurosBrowseAction {
                 expandListing(node, source, limits, storage, true, ui)
                 return
             }
-            if (hasTag(node, 'neurOS surface') || hasTag(node, 'neurOS type')) {
+            if (hasTag(node, 'neurOS surface') || hasTag(node, 'neurOS type') ||
+                    hasTag(node, 'neurOS work-view')) {
                 expandListing(node, source, limits, storage, false, ui)
                 return
             }
             if (hasTag(node, 'neurOS knowledge')) {
                 UiHelper.showInformationMessage(ui,
                         'This knowledge catalog is already open. Select a surface or type to expand it.')
+                return
+            }
+
+            // A node INSIDE an existing catalog never becomes a second catalog:
+            // catalogs nested in catalogs hide the real structure. Reveal the
+            // catalog that is already there instead.
+            def catalogRoot = ancestorTagged(node, 'neurOS knowledge')
+            if (catalogRoot != null) {
+                try { c.select(catalogRoot) } catch (Exception ignored) { }
+                UiHelper.showInformationMessage(ui,
+                        'A knowledge catalog is already open in this map (now selected). ' +
+                                'Expand one of its surfaces or types instead.')
                 return
             }
 
@@ -251,6 +264,18 @@ class NeurosBrowseAction {
 
     private static boolean hasTag(def node, String tag) {
         return node?.tags?.contains(tag)
+    }
+
+    /** Nearest ancestor carrying the tag, or null — walk is bounded by depth. */
+    private static def ancestorTagged(def node, String tag) {
+        def current = node?.parent
+        int depth = 0
+        while (current != null && depth < 64) {
+            if (current.tags?.contains(tag)) return current
+            current = current.parent
+            depth++
+        }
+        return null
     }
 
     private static String offsetKey(def node) {
