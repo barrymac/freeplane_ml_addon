@@ -18,6 +18,10 @@ class PumlMeshReader {
     private static final java.util.regex.Pattern IDENTITY =
             ~/\[\[card:([^\]\s]+)\]\]/
 
+    /** Standalone markers, in PlantUML ('), C-style (//) or bare lines. */
+    private static final java.util.regex.Pattern STANDALONE =
+            ~/^\s*(?:'|\/\/)?\s*\[\[([a-z][a-z0-9-]*):([^\]\s]+)\]\]/
+
     private static final java.util.regex.Pattern RELATIONSHIP =
             ~/^\s*([A-Za-z0-9_]+)\s*(?:-->|\.\.>|--\|>|-\.->|==>)\s*([A-Za-z0-9_]+)\s*(?::\s*(.*?))?\s*$/
 
@@ -33,6 +37,33 @@ class PumlMeshReader {
                 def identity = IDENTITY.matcher(declaration.group(1))
                 if (identity.find()) {
                     aliasToCard[declaration.group(2)] = identity.group(1)
+                }
+                return
+            }
+            // A standalone marker states the diagram's own relationship to its
+            // target: [[references:src/foo.ts]], [[depicts:plane]]. The edge
+            // source is the diagram itself (null = the seed); the target is a
+            // file path, normalised to its basename so identity matching sees
+            // the same name the scope indexes.
+            def standalone = STANDALONE.matcher(line)
+            if (standalone.find()) {
+                String kind = standalone.group(1)
+                String target = standalone.group(2)
+                // 'card' is identity (declarations carry the card they
+                // document), handled by the alias mapping — not a relation.
+                if (kind != 'card' && target && edges.size() < maxEdges) {
+                    String normalised = target.contains('/') ?
+                            target.substring(target.lastIndexOf('/') + 1) : target
+                    String key = "|${normalised}|${kind}"
+                    if (seen.add(key)) {
+                        edges << new MeshEdge(
+                                source: null,
+                                target: normalised,
+                                marker: kind,
+                                label: MeshVocabulary.label(kind),
+                                family: MeshVocabulary.family(kind),
+                                declared: MeshVocabulary.isDeclared(kind))
+                    }
                 }
                 return
             }

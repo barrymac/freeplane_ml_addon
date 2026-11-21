@@ -62,4 +62,50 @@ SCOPE --> DOOR : confirms boundary crossing
         expect:
         PumlMeshReader.read(diagram).isEmpty()
     }
+    def "standalone reference markers become seed edges with basenames"() {
+        given:
+        String text = """' ── enmeshment ──
+' [[references:docs/diagrams/02-access-plane.puml]]
+' [[references:tasks/p0-laws-as-types-scaffold.card.md]]
+' [[references:src/auth/service.ts]]
+
+@startuml
+' [[depicts:ontic-gke-plane]]
+' [[owned-by:barry]]
+' Card: [[card:063f606f-f01b-4bb1-aa73-7cdf6dfbbced]]
+rectangle "hub" as H
+@enduml
+"""
+
+        when:
+        List<MeshEdge> edges = PumlMeshReader.read(text)
+
+        then:
+        // Five standalone markers: three references, depicts, owned-by
+        edges.size() == 5
+        def references = edges.findAll { it.marker == 'references' }
+        references.size() == 3
+        references.every { it.source == null && it.declared }
+        references.every { it.family == MeshVocabulary.REFERENCE }
+        // Path targets normalise to basenames for identity matching
+        references*.target.sort() == ['02-access-plane.puml', 'p0-laws-as-types-scaffold.card.md', 'service.ts']
+        def depicts = edges.find { it.marker == 'depicts' }
+        depicts.target == 'ontic-gke-plane'
+        depicts.label == 'depicts'
+    }
+
+    def "duplicate standalone markers dedupe and the card marker does not become an edge"() {
+        given:
+        String text = """' [[references:docs/a.puml]]
+' [[references:docs/a.puml]]
+' [[card:063f606f-f01b-4bb1-aa73-7cdf6dfbbced]]
+"""
+
+        when:
+        List<MeshEdge> edges = PumlMeshReader.read(text)
+
+        then:
+        edges.size() == 1
+        edges[0].target == 'a.puml'
+    }
 }

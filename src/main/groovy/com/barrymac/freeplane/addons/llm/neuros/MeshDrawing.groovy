@@ -49,14 +49,23 @@ class MeshDrawing {
     void add(MeshEdge edge) {
         MeshNode sourceEntry = edge.source ? (index.find(edge.source) ?: index.forFile(seedNode.link?.file)) : null
         MeshNode targetEntry = index.find(edge.target)
-        if (targetEntry == null) {
+        // A marker edge without its own source states the seed's relationship
+        // (a diagram's [[references:...]] lines): the seed node is the source.
+        def source = sourceEntry != null ? nodeFor(sourceEntry) :
+                (edge.source == null ? seedNode : null)
+        // The scope index only holds documents (.md/.puml). A code target —
+        // carried by an atlas node as its declared source file — is found in
+        // the map by identity instead of invented or dropped.
+        def target = nodeFor(targetEntry)
+        if (target == null && edge.target) {
+            target = findExisting(seedNode.map.root, null, edge.target)
+        }
+        if (target == null) {
             unresolved++
             missing << edge.target
             return
         }
-        def source = nodeFor(sourceEntry)
-        def target = nodeFor(targetEntry)
-        if (source == null || target == null || source.is(target)) {
+        if (source == null || source.is(target)) {
             skipped++
             return
         }
@@ -147,6 +156,15 @@ class MeshDrawing {
             def file = current.link?.file
             if (path && pathOf(file) == path) return current
             if (name && file?.name == name) return current
+            // A generated node may declare its source file as an attribute —
+            // code-atlas file nodes do, since their link points at the
+            // rendition, not the source. The declared source is identity.
+            // Attribute proxies vary in shape and some nodes carry none at
+            // all; a miss is an unresolved edge, never a drawing failure.
+            if (name) {
+                String declared = sourceFileOf(current)
+                if (name == declared) return current
+            }
             queue.addAll(current.children)
         }
         return null
@@ -176,6 +194,19 @@ class MeshDrawing {
     int getUnresolved() { unresolved }
 
     Set<String> getMissing() { missing }
+
+    /** The node's declared source file, whatever shape the proxy exposes. */
+    private static String sourceFileOf(def node) {
+        try {
+            Object value = node.attributes?.get('source-file')
+            if (value != null) return String.valueOf(value)
+        } catch (Exception ignored) { }
+        try {
+            Object alt = node['source-file']
+            if (alt != null) return String.valueOf(alt)
+        } catch (Exception ignored) { }
+        return null
+    }
 
     private static String pathOf(File file) {
         return file == null ? null : file.absolutePath

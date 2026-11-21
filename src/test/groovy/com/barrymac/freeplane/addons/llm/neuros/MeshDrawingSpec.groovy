@@ -261,6 +261,7 @@ class MeshDrawingSpec extends Specification {
         List<FakeNode> children = []
         List<FakeConnector> connectorsOut = []
         Set<String> tags = [] as Set
+        Map<String, String> attributes = [:]
         FakeMap map
 
         FakeNode createChild(String title) {
@@ -290,5 +291,54 @@ class MeshDrawingSpec extends Specification {
         int width
         int[] dashArray
         boolean endArrow
+    }
+    def "a diagram marker wires onto the atlas node declaring that source file"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+        // A code-atlas file node: its identity is its declared source file,
+        // not its link (which points at the rendition).
+        FakeNode atlasFile = map.root.createChild('service.ts')
+        atlasFile.attributes['source-file'] = 'service.ts'
+
+        MeshDrawing drawing = new MeshDrawing(diagram, index)
+        MeshEdge edge = new MeshEdge(
+                source: null, target: 'service.ts', marker: 'references',
+                label: MeshVocabulary.label('references'),
+                family: MeshVocabulary.family('references'),
+                declared: true)
+
+        when:
+        drawing.add(edge)
+
+        then:
+        drawing.drawn == 1
+        def connector = diagram.connectorsOut.find { it.target.is(atlasFile) }
+        connector != null
+        connector.middleLabel == 'references'
+        drawing.unresolved == 0
+    }
+
+    def "a marker target present in neither index nor map counts unresolved, not invented"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+
+        MeshDrawing drawing = new MeshDrawing(diagram, index)
+        MeshEdge edge = new MeshEdge(
+                source: null, target: 'ghost.ts', marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true)
+
+        when:
+        drawing.add(edge)
+
+        then:
+        drawing.drawn == 0
+        drawing.unresolved == 1
+        diagram.connectorsOut.isEmpty()
     }
 }

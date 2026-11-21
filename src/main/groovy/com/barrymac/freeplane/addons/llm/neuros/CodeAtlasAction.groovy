@@ -147,6 +147,9 @@ class CodeAtlasAction {
                 def fileNode = languageNode.createChild(rendition.title())
                 fileNode.tags.add(FILE_TAG)
                 fileNode.attributes.add('rendition', rendition.uuid)
+                // The declared source file is this node's identity for mesh
+                // matching: a diagram referencing the file by name wires here.
+                if (rendition.file) fileNode.attributes.add('source-file', rendition.file)
                 if (rendition.sourceSha256) fileNode.attributes.add('source_sha256', rendition.sourceSha256)
                 fileNode.note = "lang=${rendition.lang} lane=${rendition.lane}" +
                         (rendition.isDegraded() ? '\nDEGRADED: ' +
