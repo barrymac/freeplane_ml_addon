@@ -145,9 +145,10 @@ try {
             "Map context: ${contextBox.selected ? 'included' : 'not included'}"
 
     hits.each { hit ->
-        String title = hit.displayName?.trim() ?: "Untitled ${hit.subtype ?: 'knowledge'}"
+        String title = hit.prettyName()
         def hitNode = parentNode.createChild(title)
         hitNode.tags.add('neurOS result')
+        if (hit.subtype) hitNode.tags.add("neurOS ${hit.subtype}")
         hitNode.note = "Type: ${hit.subtype ?: 'unknown'}\n" +
                 "${source.description()}\n" +
                 'Use the link on this node to open the source material.'

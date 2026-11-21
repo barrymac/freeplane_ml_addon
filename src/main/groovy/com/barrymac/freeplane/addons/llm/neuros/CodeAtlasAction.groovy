@@ -24,6 +24,7 @@ class CodeAtlasAction {
     static final String CONTAINER_TITLE = 'Code atlas'
     static final String CONTAINER_TAG = 'neurOS code atlas'
     static final String FILE_TAG = 'neurOS code file'
+    static final String GROUP_TAG = 'neurOS code group'
     static final int MAX_FILES = 50
     static final int MAX_SCAN_POLLS = 6
     static final long POLL_MILLIS = 500
@@ -123,8 +124,14 @@ class CodeAtlasAction {
     private static def findOrBuildContainer(def node) {
         def existing = MeshDrawing.findTagged(node.map.root, 'neurOS code atlas')
         if (existing != null) {
-            // Refresh in place: clear the previous render, keep the container.
-            new ArrayList(existing.children).each { it.delete() }
+            // Refresh in place, but ONLY what this generator made: tagged
+            // groups and file nodes go, anything a person added under the
+            // atlas stays exactly where it was. Never destroy reader context.
+            new ArrayList(existing.children).each { child ->
+                if (child.tags?.contains(GROUP_TAG) || child.tags?.contains(FILE_TAG)) {
+                    child.delete()
+                }
+            }
             return existing
         }
         def container = node.map.root.createChild(CONTAINER_TITLE)
@@ -142,6 +149,7 @@ class CodeAtlasAction {
         int files = 0
         byLanguage.each { lang, group ->
             def languageNode = container.createChild("${capitalise(lang)} (${group.size()} file${group.size() == 1 ? '' : 's'})")
+            languageNode.tags.add(GROUP_TAG)
             languageNode.setFolded(true)
             group.each { rendition ->
                 def fileNode = languageNode.createChild(rendition.title())

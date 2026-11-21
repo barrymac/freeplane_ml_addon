@@ -98,6 +98,25 @@ ${extra}
         chip.note.contains('Unresolved')
     }
 
+    def "a person's own nodes under the atlas survive a refresh"() {
+        given:
+        rendition('aaaa1111-0000-0000-0000-000000000001', 'index.ts', 'typescript')
+        CodeAtlasAction.generate(seed, context())
+        def container = map.root.children.find { it.tags.contains(CodeAtlasAction.CONTAINER_TAG) }
+        def myNote = container.createChild('my reading note')
+        myNote.note = 'hand-written context'
+
+        when:
+        rendition('aaaa2222-0000-0000-0000-000000000002', 'main.rs', 'rust')
+        CodeAtlasAction.generate(seed, context())
+
+        then:
+        container.children.any { it.text == 'my reading note' && it.note == 'hand-written context' }
+        // and the generated content refreshed
+        container.children*.text.sort().contains('Rust (1 file)')
+        container.children*.text.sort().contains('my reading note')
+    }
+
     def "a second generate replaces the old atlas, never nests a second one"() {
         given:
         rendition('aaaa1111-0000-0000-0000-000000000001', 'index.ts', 'typescript')
