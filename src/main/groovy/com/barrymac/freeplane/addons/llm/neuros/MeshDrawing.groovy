@@ -111,7 +111,16 @@ class MeshDrawing {
         }
         if (exists) return false
         def connector = source.addConnectorTo(target)
-        connector.middleLabel = edge.label
+        connector.middleLabel = edge.cycle ? "${edge.label} (cycle!)" : edge.label
+        // A cycle edge is a defect, not a family relation: contradiction red,
+        // thick and solid so it stands out from the honest DAG around it.
+        if (edge.cycle) {
+            connector.color = new java.awt.Color(0xd8, 0x3a, 0x2c)
+            connector.width = 3
+            connector.endArrow = true
+            connector.dashArray = null
+            return true
+        }
         // Provisional proposals read as pencilled-in: grey and dashed, whatever
         // family they belong to, so nobody mistakes them for accepted structure.
         connector.color = edge.proposed ?

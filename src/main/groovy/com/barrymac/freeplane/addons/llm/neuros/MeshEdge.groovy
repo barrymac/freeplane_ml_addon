@@ -17,4 +17,6 @@ class MeshEdge {
     boolean declared
     /** Provisional: proposed by a judgement, not yet accepted. */
     boolean proposed
+    /** This edge closes a dependency cycle — a defect, not a family relation. */
+    boolean cycle
 }

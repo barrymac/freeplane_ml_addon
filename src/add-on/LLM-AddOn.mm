@@ -255,6 +255,7 @@
 <attribute NAME="addons.${name}.neurosPreview" VALUE="Preview neurOS Content"/>
 <attribute NAME="addons.${name}.neurosPreviewPopup" VALUE="Preview neurOS Content"/>
 <attribute NAME="addons.${name}.neurosMesh" VALUE="Draw neurOS Relationships"/>
+<attribute NAME="addons.${name}.neurosDependency" VALUE="Draw Dependency DAG"/>
 <attribute NAME="addons.${name}.neurosCodeAtlas" VALUE="Generate Code Atlas"/>
 <attribute NAME="addons.${name}.neurosContradictions" VALUE="Find neurOS Disagreements"/>
 <attribute NAME="addons.${name}.neurosPublishCheck" VALUE="Check Preview Before Publishing"/>
@@ -291,6 +292,7 @@
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPreview.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPreviewPopup.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosMesh.groovy"/>
+<attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosDependency.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosCodeAtlas.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosContradictions.groovy"/>
 <attribute NAME="delete" VALUE="${installationbase}/addons/${name}/scripts/NeurosPublishCheck.groovy"/>
@@ -535,6 +537,18 @@
 <attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
 <attribute NAME="executionMode" VALUE="on_single_node"/>
 <attribute NAME="keyboardShortcut" VALUE="control alt shift A"/>
+<attribute NAME="execute_scripts_without_asking" VALUE="true"/>
+<attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
+<attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_exec_restriction" VALUE="false"/>
+<attribute NAME="execute_scripts_without_network_restriction" VALUE="false"/>
+</node>
+<node TEXT="NeurosDependency.groovy" ID="ID_NEUROS_DEPENDENCY" CREATED="1786920000014" MODIFIED="1786920000014">
+<attribute_layout NAME_WIDTH="202.49999 pt" VALUE_WIDTH="156.75 pt"/>
+<attribute NAME="menuTitleKey" VALUE="addons.${name}.neurosDependency"/>
+<attribute NAME="menuLocation" VALUE="${addonsMenu}"/>
+<attribute NAME="executionMode" VALUE="on_single_node"/>
+<attribute NAME="keyboardShortcut" VALUE="control alt D"/>
 <attribute NAME="execute_scripts_without_asking" VALUE="true"/>
 <attribute NAME="execute_scripts_without_file_restriction" VALUE="true"/>
 <attribute NAME="execute_scripts_without_write_restriction" VALUE="false"/>
