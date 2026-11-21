@@ -80,8 +80,8 @@ ${extra}
         container != null
         // Two language containers, one file node each
         def languages = container.children
-        languages*.text.sort() == ['Rust (1 file)', 'Typescript (1 file)']
-        def tsFile = languages.find { it.text.startsWith('Typescript') }.children[0]
+        languages*.text.sort() == ['Rust (1 file)', 'TypeScript (1 file)']
+        def tsFile = languages.find { it.text.startsWith('TypeScript') }.children[0]
         tsFile.text == 'index.ts'
         tsFile.tags.contains(CodeAtlasAction.FILE_TAG)
         tsFile.attributes['rendition'] == 'aaaa1111-0000-0000-0000-000000000001'
@@ -130,7 +130,7 @@ ${extra}
         map.root.children.count { it.tags.contains(CodeAtlasAction.CONTAINER_TAG) } == 1
         def container = map.root.children.find { it.tags.contains(CodeAtlasAction.CONTAINER_TAG) }
         // Both languages are the fresh render, not the old one plus the new one
-        container.children*.text.sort() == ['Rust (1 file)', 'Typescript (1 file)']
+        container.children*.text.sort() == ['Rust (1 file)', 'TypeScript (1 file)']
     }
 
     def "a degraded rendition renders with an honest note, not hidden"() {
@@ -191,7 +191,7 @@ lang=rust lane=tree-sitter errors=3 decls=0 imports=0 resolved=0
         then:
         summary.contains("first ${CodeAtlasAction.MAX_FILES} of 55")
         def container = map.root.children.find { it.tags.contains(CodeAtlasAction.CONTAINER_TAG) }
-        def language = container.children.find { it.text.startsWith('Typescript') }
+        def language = container.children.find { it.text.startsWith('TypeScript') }
         language.children.size() == CodeAtlasAction.MAX_FILES
     }
 

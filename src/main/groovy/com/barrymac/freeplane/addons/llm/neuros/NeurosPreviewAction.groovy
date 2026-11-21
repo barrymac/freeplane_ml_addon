@@ -151,13 +151,11 @@ class NeurosPreviewAction {
 
     /** Prime a Markdown image preview for subsequent rollovers. */
     private static void primePreviewNote(def node, File cached, String label, float zoom) {
-        String preview = "![${label}](${cached.toURI().toString()})"
-        String existing = (node.note ?: '').toString()
-        if (!existing.contains(cached.toURI().toString())) {
-            node.note = existing ? existing + '\n\n' + preview : preview
-        }
+        // The rendered preview lives in externalObject (Freeplane's in-map
+        // embed), NOT in the note text. A local file: URI to our own cache is
+        // viewer chrome, not substrate content — it must never end up in map
+        // exports or downstream renders.
         node.noteContentType = 'markdown'
-        // Embed the rendered preview in the map as well as in the note.
         node.externalObject.file = cached
         node.externalObject.zoom = zoom
     }

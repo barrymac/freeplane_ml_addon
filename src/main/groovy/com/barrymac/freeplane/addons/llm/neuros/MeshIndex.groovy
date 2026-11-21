@@ -33,10 +33,12 @@ class MeshIndex {
     private final Map<String, MeshNode> byId = [:]
     private final Map<String, MeshNode> byTitle = [:]
     private final Map<String, MeshNode> byFile = [:]
+    private File scopeRoot
 
     static MeshIndex load(File scopeRoot, int limit = MAX_ENTRIES) {
         MeshIndex index = new MeshIndex()
         if (scopeRoot == null) return index
+        index.scopeRoot = scopeRoot
 
         String key = "${scopeRoot.absolutePath}|${limit}".toString()
         Object[] cached = CACHE[key]
@@ -65,6 +67,23 @@ class MeshIndex {
     /** Drop the cached listing, so a changed scope is seen immediately. */
     static void invalidate() {
         CACHE.clear()
+    }
+
+    /**
+     * The substrate's by-label surface: one uuid line per entry carrying the
+     * label. One entry means the target is real; several mean the label is
+     * shared, which is ambiguity, not absence. Unreadable or absent means no
+     * entry — the caller falls back to the honest gap.
+     */
+    List<String> labelLookup(String name) {
+        if (!name?.trim() || scopeRoot == null) return []
+        try {
+            File label = new File(scopeRoot, "by-label/${name.trim()}")
+            if (!label.isFile()) return []
+            return label.getText('UTF-8').readLines().collect { it.trim() }.findAll { it }
+        } catch (Exception ignored) {
+            return []
+        }
     }
 
     MeshNode find(String target) {

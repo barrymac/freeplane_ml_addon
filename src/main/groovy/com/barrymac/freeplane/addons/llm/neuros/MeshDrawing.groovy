@@ -28,6 +28,7 @@ class MeshDrawing {
     private int alreadyThere
     private int unresolved
     private int skipped
+    private int ambiguous
     private final Set<String> missing = new LinkedHashSet<>()
     private final List<Object[]> missingEdges = []
     private final Set<String> resolvedNames = [] as Set
@@ -62,6 +63,27 @@ class MeshDrawing {
         def target = nodeFor(targetEntry)
         if (target == null && edge.target) {
             target = findExisting(seedNode.map.root, null, edge.target)
+        }
+        if (target == null && edge.target) {
+            // The substrate's by-label surface is the last authority: a single
+            // entry resolves the target even outside the indexed surfaces;
+            // several entries mean the label is shared — an ambiguity, never
+            // an absence and never a silent pick.
+            List<String> labelled = index.labelLookup(edge.target)
+            if (labelled.size() == 1) {
+                File labelFile = new File(index.scopeRoot, "by-label/${edge.target}")
+                target = findExisting(seedNode.map.root, null, edge.target) ?:
+                        containerNode().createChild(edge.target)
+                target.link.file = labelFile
+                target.tags.add(ENTRY_TAG)
+                if (!target.note) target.note = "Resolved by label: ${labelled[0]}"
+                resolvedNames << edge.target
+                removeStaleGap(edge.target)
+            } else if (labelled.size() > 1) {
+                renderAmbiguous(source ?: seedNode, edge, labelled)
+                ambiguous++
+                return
+            }
         }
         if (target == null) {
             unresolved++
@@ -202,6 +224,53 @@ class MeshDrawing {
         }
     }
 
+    /**
+     * Several entries share one label: the map says so instead of pretending
+     * absence or guessing a winner. Candidates hang off the ambiguity marker,
+     * each linked where the substrate points, so a person chooses the target.
+     */
+    private void renderAmbiguous(def from, MeshEdge edge, List<String> labelled) {
+        def marker = findOrBuildAmbiguous(edge.target, labelled)
+        removeStaleGap(edge.target)
+        boolean exists = from.connectorsOut.any { connector ->
+            connector.target?.id == marker.id && connector.middleLabel == edge.label
+        }
+        if (!exists) {
+            def connector = from.addConnectorTo(marker)
+            connector.middleLabel = edge.label
+            connector.color = new java.awt.Color(0x88, 0x88, 0x88)
+            connector.width = 1
+            connector.endArrow = true
+            connector.dashArray = [4, 6] as int[]
+        }
+    }
+
+    private def findOrBuildAmbiguous(String target, List<String> labelled) {
+        int count = labelled.size()
+        def existing = containerNode().children.find { child ->
+            child.tags?.contains('neurOS mesh ambiguous') &&
+                    child.text?.toString()?.startsWith(target + ' ')
+        }
+        if (existing != null) return existing
+        def marker = containerNode().createChild(
+                "${target} [ambiguous \u2014 ${count} entries share this label]")
+        marker.tags.add('neurOS mesh ambiguous')
+        marker.tags.add('neurOS mesh ambiguous')
+        marker.note = "This name is shared by ${count} entries. It is not missing — " +
+                'it is ambiguous. Pick the intended target from the candidates below; ' +
+                'nothing is wired until you choose.'
+        labelled.each { uuid ->
+            def candidate = marker.createChild(uuid)
+            candidate.note = "Candidate entry ${uuid}"
+            try {
+                candidate.link.file = new File(index.scopeRoot, "by-id/${uuid.substring(0, 2)}/${uuid}")
+            } catch (Exception ignored) {
+                // A candidate link that cannot be resolved leaves the note truthful.
+            }
+        }
+        return marker
+    }
+
     private void connectGap(def from, def gap, MeshEdge edge) {
         boolean exists = from.connectorsOut.any { connector ->
             connector.target?.id == gap.id && connector.middleLabel == edge.label
@@ -265,6 +334,7 @@ class MeshDrawing {
         List<String> parts = ["${drawn} relationship${drawn == 1 ? '' : 's'} drawn"]
         if (alreadyThere) parts << "${alreadyThere} already in the map"
         if (created) parts << "${created} related entr${created == 1 ? 'y' : 'ies'} added"
+        if (ambiguous) parts << "${ambiguous} name${ambiguous == 1 ? '' : 's'} shared by several entries"
         if (unresolved) parts << "${unresolved} link${unresolved == 1 ? '' : 's'} " +
                 "point${unresolved == 1 ? 's' : ''} outside this scope"
         if (skipped) parts << "${skipped} could not be placed"

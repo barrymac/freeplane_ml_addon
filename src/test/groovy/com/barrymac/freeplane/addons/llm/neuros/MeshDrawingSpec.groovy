@@ -425,4 +425,78 @@ class MeshDrawingSpec extends Specification {
         def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
         container.children.count { it.tags.contains('neurOS mesh gap') } == MeshDrawing.MAX_NEW_ENTRIES
     }
+    def "a by-label single entry resolves where the index does not reach"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+        new File(scope, 'by-label').mkdirs()
+        new File(scope, 'by-label/defaults.dhall').text = 'b1873e88-4216-44ff-9b30-f34083e63d1f\n'
+        def drawing = new MeshDrawing(diagram, index)
+
+        when:
+        drawing.add(new MeshEdge(source: null, target: 'defaults.dhall', marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        drawing.renderGaps()
+
+        then:
+        drawing.drawn == 1
+        def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
+        def entry = container.children.find { it.text == 'defaults.dhall' }
+        entry != null
+        entry.link.file.name == 'defaults.dhall'
+        !container.children.any { it.tags.contains('neurOS mesh gap') }
+        !container.children.any { it.tags.contains('neurOS mesh ambiguous') }
+    }
+
+    def "two entries sharing a label render ambiguous with candidates, not missing"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+        new File(scope, 'by-label').mkdirs()
+        new File(scope, 'by-label/manifest.yaml').text =
+                'ebb2e2c6-5816-462e-bde6-f37dfb796e83\nc8fcf364-0000-0000-0000-000000000000\n'
+        def drawing = new MeshDrawing(diagram, index)
+
+        when:
+        drawing.add(new MeshEdge(source: null, target: 'manifest.yaml', marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        drawing.renderGaps()
+
+        then:
+        drawing.drawn == 0
+        def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
+        def marker = container.children.find { it.tags.contains('neurOS mesh ambiguous') }
+        marker != null
+        marker.text.contains('ambiguous')
+        marker.children.size() == 2
+        marker.children.every { it.note.contains('Candidate entry') }
+        !container.children.any { it.tags.contains('neurOS mesh gap') }
+        def connector = diagram.connectorsOut.find { it.target.is(marker) }
+        connector != null
+        connector.dashArray != null
+    }
+
+    def "a label with no entries stays an honest gap"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+        new File(scope, 'by-label').mkdirs()
+        def drawing = new MeshDrawing(diagram, index)
+
+        when:
+        drawing.add(new MeshEdge(source: null, target: 'ghost.ts', marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        drawing.renderGaps()
+
+        then:
+        drawing.unresolved == 1
+        def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
+        container.children.any { it.tags.contains('neurOS mesh gap') }
+    }
 }

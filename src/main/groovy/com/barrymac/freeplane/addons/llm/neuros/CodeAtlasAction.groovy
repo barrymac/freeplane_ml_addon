@@ -199,8 +199,17 @@ class CodeAtlasAction {
         }
     }
 
+    private static final Map<String, String> LANGUAGE_LABELS = [
+            typescript: 'TypeScript', javascript: 'JavaScript', kotlin: 'Kotlin',
+            groovy: 'Groovy', rust: 'Rust', go: 'Go', python: 'Python',
+            java: 'Java', dhall: 'Dhall', scss: 'SCSS', dockerfile: 'Dockerfile',
+            protobuf: 'Protobuf', shell: 'Shell', c: 'C', cpp: 'C++'
+    ]
+
+    /** The display form of a language name, with proper casing when known. */
     private static String capitalise(String value) {
         if (!value) return value
-        return value.substring(0, 1).toUpperCase() + value.substring(1)
+        return LANGUAGE_LABELS[value.toLowerCase()] ?:
+                value.substring(0, 1).toUpperCase() + value.substring(1)
     }
 }
