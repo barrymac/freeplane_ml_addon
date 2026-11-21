@@ -29,6 +29,8 @@ class MeshDrawing {
     private int unresolved
     private int skipped
     private final Set<String> missing = new LinkedHashSet<>()
+    private final List<Object[]> missingEdges = []
+    private final Set<String> resolvedNames = [] as Set
 
     MeshDrawing(def seedNode, MeshIndex index) {
         this.seedNode = seedNode
@@ -43,6 +45,7 @@ class MeshDrawing {
     static MeshDrawing draw(def seedNode, MeshIndex index, List<MeshEdge> edges) {
         MeshDrawing drawing = new MeshDrawing(seedNode, index)
         edges.each { edge -> drawing.add(edge) }
+        drawing.renderGaps()
         return drawing
     }
 
@@ -63,12 +66,15 @@ class MeshDrawing {
         if (target == null) {
             unresolved++
             missing << edge.target
+            missingEdges <<([edge, source] as Object[])
             return
         }
         if (source == null || source.is(target)) {
             skipped++
             return
         }
+        resolvedNames << nameOf(target)
+        removeStaleGap(edge.target)
         if (firstTarget == null) firstTarget = target
         if (connect(source, target, edge)) {
             drawn++
@@ -129,6 +135,91 @@ class MeshDrawing {
             container.note = 'Entries related to this map, linked to their knowledge source.'
         }
         return container
+    }
+
+    /**
+     * Unresolved declared targets render as gap markers: hollow nodes saying
+     * what is missing and who declares it. A gap is a worklist entry — the
+     * map shows the linking that has not happened yet — and it disappears on
+     * the next run once the target resolves.
+     */
+    private void renderGaps() {
+        if (missingEdges.isEmpty()) {
+            removeOrphanGaps()
+            return
+        }
+        List<String> remaining = []
+        missingEdges.each { pair ->
+            MeshEdge edge = pair[0]
+            def from = pair[1] ?: seedNode
+            if (resolvedNames.contains(edge.target)) return
+            if (remaining.size() >= MAX_NEW_ENTRIES) {
+                remaining << edge.target
+                return
+            }
+            def gap = findGapNode(edge.target)
+            if (gap == null) {
+                gap = containerNode().createChild("${edge.target} [missing \u2014 not yet declared anywhere]")
+                gap.tags.add('neurOS mesh gap')
+                gap.note = "Declared as [[${edge.marker}:${edge.target}]] but no entry carries this " +
+                        'identity yet. Close the gap by linking the declaring artifact to the real ' +
+                        'target, or ingesting the target so it becomes visible.'
+                remaining << edge.target
+            }
+            connectGap(from, gap, edge)
+        }
+    }
+
+    /** Gap nodes whose targets resolved this run are removed, not just orphaned. */
+    private void removeStaleGap(String target) {
+        def gap = findGapNode(target)
+        if (gap != null) {
+            try {
+                gap.connectorsIn?.each { it.remove() }
+            } catch (Exception ignored) { }
+            try {
+                gap.connectorsOut?.each { it.remove() }
+            } catch (Exception ignored) { }
+            gap.delete()
+        }
+    }
+
+    /** With nothing missing, drop gap nodes left over from an earlier run. */
+    private void removeOrphanGaps() {
+        def container = findTagged(seedNode.map.root, CONTAINER_TAG)
+        if (container == null) return
+        new ArrayList(container.children).each { child ->
+            if (child.tags?.contains('neurOS mesh gap')) child.delete()
+        }
+    }
+
+    private def findGapNode(String target) {
+        def container = findTagged(seedNode.map.root, CONTAINER_TAG)
+        if (container == null) return null
+        return container.children.find { child ->
+            child.tags?.contains('neurOS mesh gap') &&
+                    child.text?.toString()?.startsWith(target + ' ')
+        }
+    }
+
+    private void connectGap(def from, def gap, MeshEdge edge) {
+        boolean exists = from.connectorsOut.any { connector ->
+            connector.target?.id == gap.id && connector.middleLabel == edge.label
+        }
+        if (exists) return
+        def connector = from.addConnectorTo(gap)
+        connector.middleLabel = edge.label
+        // A gap reads as pencilled-in: grey and dashed, like provisional
+        // proposals, so nobody mistakes it for accepted structure.
+        connector.color = new java.awt.Color(0x88, 0x88, 0x88)
+        connector.width = 1
+        connector.endArrow = true
+        connector.dashArray = [4, 6] as int[]
+    }
+
+    private static String nameOf(def node) {
+        def file = node?.link?.file
+        return file?.name ?: node?.text?.toString()
     }
 
     /** Shared tag search: the code atlas reuses the same idempotency rule. */

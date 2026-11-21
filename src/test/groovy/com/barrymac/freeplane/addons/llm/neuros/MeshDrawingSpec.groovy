@@ -264,12 +264,18 @@ class MeshDrawingSpec extends Specification {
         Map<String, String> attributes = [:]
         FakeMap map
 
+        FakeNode parent
+
         FakeNode createChild(String title) {
             // Freeplane returns a link proxy for every node, so assigning
             // node.link.file on a fresh node must work here too.
-            FakeNode node = new FakeNode(text: title, map: map, link: new FakeLink())
+            FakeNode node = new FakeNode(text: title, map: map, link: new FakeLink(), parent: this)
             children << node
             return node
+        }
+
+        void delete() {
+            parent?.children?.remove(this)
         }
 
         FakeConnector addConnectorTo(FakeNode target) {
@@ -340,5 +346,83 @@ class MeshDrawingSpec extends Specification {
         drawing.drawn == 0
         drawing.unresolved == 1
         diagram.connectorsOut.isEmpty()
+    }
+    def "an unresolved declared target renders a gap marker with a pencilled connector"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+        def drawing = new MeshDrawing(diagram, index)
+
+        expect:
+        'reference edge to nothing resolves as a gap, not silence'
+        when:
+        drawing.add(new MeshEdge(source: null, target: 'service.ts', marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        drawing.renderGaps()
+
+        then:
+        drawing.unresolved == 1
+        def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
+        def gap = container.children.find { it.tags.contains('neurOS mesh gap') }
+        gap != null
+        gap.text.startsWith('service.ts [missing')
+        gap.note.contains('[[references:service.ts]]')
+        def connector = diagram.connectorsOut.find { it.target.is(gap) }
+        connector != null
+        connector.middleLabel == 'references'
+        connector.color == new java.awt.Color(0x88, 0x88, 0x88)
+        connector.dashArray != null
+    }
+
+    def "a gap disappears once its target resolves on a later run"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('auth-flow.puml')
+        diagram.link.file = new File(scope, 'auth-flow.puml')
+        diagram.link.file.text = 'diagram body'
+        String target = 'later.puml'
+        def first = new MeshDrawing(diagram, index)
+        first.add(new MeshEdge(source: null, target: target, marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        first.renderGaps()
+        def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
+        container.children.any { it.tags.contains('neurOS mesh gap') }
+
+        when:
+        // The target lands in the scope and joins the index, exactly like a
+        // fresh rendition becoming visible; the next run wires the real node.
+        new File(scope, target).text = 'later body'
+        index.add(new File(scope, target))
+        def second = new MeshDrawing(diagram, index)
+        second.add(new MeshEdge(source: null, target: target, marker: 'references',
+                label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        second.renderGaps()
+
+        then:
+        second.drawn == 1
+        !container.children.any { it.tags.contains('neurOS mesh gap') }
+    }
+
+
+    def "gap nodes are bounded like real entries"() {
+        given:
+        def map = newTree()
+        FakeNode diagram = map.root.createChild('many.puml')
+        diagram.link.file = new File(scope, 'many.puml')
+        diagram.link.file.text = 'diagram body'
+        def drawing = new MeshDrawing(diagram, index)
+
+        when:
+        (1..20).each { index ->
+            drawing.add(new MeshEdge(source: null, target: "ghost${index}.ts", marker: 'references',
+                    label: 'references', family: MeshVocabulary.REFERENCE, declared: true))
+        }
+        drawing.renderGaps()
+
+        then:
+        def container = map.root.children.find { it.tags.contains(MeshDrawing.CONTAINER_TAG) }
+        container.children.count { it.tags.contains('neurOS mesh gap') } == MeshDrawing.MAX_NEW_ENTRIES
     }
 }
